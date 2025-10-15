@@ -10,6 +10,6 @@ import java.util.List;
 @AllArgsConstructor
 public class CartDTO {
     private Long id;
-    private Long userId;
+    private UserDTO user;
     private List<CartItemDTO> items;
 }

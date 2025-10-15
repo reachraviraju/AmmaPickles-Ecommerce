@@ -1,5 +1,7 @@
 package com.ammapickles.backend.entity;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +22,7 @@ public class Product {
 
     private String name;
     private String description;
-    private double price;
+    private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
     private Size size;  
