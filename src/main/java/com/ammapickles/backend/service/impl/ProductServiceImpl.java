@@ -3,6 +3,7 @@ package com.ammapickles.backend.service.impl;
 import com.ammapickles.backend.dto.ProductDTO;
 import com.ammapickles.backend.entity.Category;
 import com.ammapickles.backend.entity.Product;
+import com.ammapickles.backend.exception.ResourceNotFoundException;
 import com.ammapickles.backend.repository.CategoryRepository;
 import com.ammapickles.backend.repository.ProductRepository;
 import com.ammapickles.backend.service.ProductService;
@@ -33,14 +34,15 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDTO getProductById(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
         return mapToDTO(product);
     }
 
     @Override
     public ProductDTO addProduct(ProductDTO productDTO) {
         Category category = categoryRepository.findById(productDTO.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + productDTO.getCategoryId()));
+
         Product product = modelMapper.map(productDTO, Product.class);
         product.setCategory(category);
         Product saved = productRepository.save(product);
@@ -50,9 +52,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDTO updateProduct(Long id, ProductDTO productDTO) {
         Product existing = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
         Category category = categoryRepository.findById(productDTO.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() ->  new ResourceNotFoundException("Category not found with id: " + productDTO.getCategoryId()));
+
         modelMapper.map(productDTO, existing);
         existing.setCategory(category);
         Product updated = productRepository.save(existing);
@@ -62,16 +65,22 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
-            throw new RuntimeException("Product not found");
+            throw new ResourceNotFoundException("Product not found with id: " + id);
         }
         productRepository.deleteById(id);
     }
 
+    
+    
     @Override
     public List<ProductDTO> getProductsByCategory(Long categoryId) {
-        return productRepository.findByCategoryId(categoryId).stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
+        List<Product> products = productRepository.findByCategoryId(categoryId);
+        if (products.isEmpty()) {
+            throw new ResourceNotFoundException("No products found for category id: " + categoryId);
+        }
+        return products.stream()
+                       .map(this::mapToDTO)
+                       .collect(Collectors.toList());
     }
 
     @Override

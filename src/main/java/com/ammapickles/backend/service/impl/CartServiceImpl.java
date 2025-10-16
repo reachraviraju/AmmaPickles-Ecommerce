@@ -5,6 +5,7 @@ import com.ammapickles.backend.entity.Cart;
 import com.ammapickles.backend.entity.CartItem;
 import com.ammapickles.backend.entity.Product;
 import com.ammapickles.backend.entity.User;
+import com.ammapickles.backend.exception.ResourceNotFoundException;
 import com.ammapickles.backend.repository.CartItemRepository;
 import com.ammapickles.backend.repository.CartRepository;
 import com.ammapickles.backend.repository.ProductRepository;
@@ -31,8 +32,10 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public List<CartItemDTO> getCartItems(Long userId) {
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+    	
+    	Cart cart = cartRepository.findByUserId(userId)
+    	        .orElseThrow(() -> new ResourceNotFoundException("Cart not found for userId: " + userId));
+
         return cart.getItems().stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -40,11 +43,13 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public CartItemDTO addToCart(Long userId, Long productId, int quantity) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
+        
+    	User user = userRepository.findById(userId)
+    	        .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        
+    	Product product = productRepository.findById(productId)
+    	        .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+    	
         Cart cart = cartRepository.findByUserId(userId).orElseGet(() -> {
             Cart newCart = new Cart();
             newCart.setUser(user);
@@ -69,8 +74,10 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public CartItemDTO updateCartItem(Long cartItemId, CartItemDTO cartItemDTO) {
-        CartItem existing = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+    	
+    	CartItem existing = cartItemRepository.findById(cartItemId)
+    	        .orElseThrow(() -> new ResourceNotFoundException("CartItem not found with id: " + cartItemId));
+ 
         existing.setQuantity(cartItemDTO.getQuantity());
         CartItem updated = cartItemRepository.save(existing);
         return mapToDTO(updated);
@@ -79,7 +86,8 @@ public class CartServiceImpl implements CartService {
     @Override
     public void removeCartItem(Long cartItemId) {
         if (!cartItemRepository.existsById(cartItemId)) {
-            throw new RuntimeException("Cart item not found");
+            throw new ResourceNotFoundException("CartItem not found with id: " + cartItemId);
+            
         }
         cartItemRepository.deleteById(cartItemId);
     }
@@ -87,7 +95,8 @@ public class CartServiceImpl implements CartService {
     @Override
     public void clearCart(Long userId) {
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found for userId: " + userId));
+
         cart.getItems().clear();
         cartItemRepository.deleteAll(cart.getItems());
     }

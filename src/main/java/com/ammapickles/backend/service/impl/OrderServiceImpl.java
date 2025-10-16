@@ -3,6 +3,7 @@ package com.ammapickles.backend.service.impl;
 import com.ammapickles.backend.dto.OrderDTO;
 import com.ammapickles.backend.dto.OrderItemDTO;
 import com.ammapickles.backend.entity.*;
+import com.ammapickles.backend.exception.ResourceNotFoundException;
 import com.ammapickles.backend.repository.*;
 import com.ammapickles.backend.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -37,16 +38,19 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDTO placeOrder(Long userId, OrderDTO orderDTO) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
 
         Address deliveryAddress = addressRepository.findById(orderDTO.getDeliveryAddress().getId())
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() ->  new ResourceNotFoundException("Address not found with id: " + orderDTO.getDeliveryAddress().getId()));
+
 
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user id: " + userId));
+
 
         if (cart.getItems().isEmpty()) {
-            throw new RuntimeException("Cart is empty");
+            throw new IllegalStateException("Cart is empty, cannot place order");
         }
 
         Order order = new Order();
@@ -83,14 +87,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDTO getOrderById(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
         return mapToDTO(order);
     }
 
     @Override
     public void cancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
         order.setStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
     }

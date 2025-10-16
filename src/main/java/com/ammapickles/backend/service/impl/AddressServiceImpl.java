@@ -25,36 +25,47 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public List<AddressDTO> getAddressesByUser(Long userId) {
-        List<Address> addresses = addressRepository.findByUserId(userId);
-        return addresses.stream()
+        return addressRepository.findByUserId(userId)
+                .stream()
                 .map(address -> modelMapper.map(address, AddressDTO.class))
                 .collect(Collectors.toList());
     }
+    
+    @Override
+    public AddressDTO getAddressById(Long addressId) {
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new RuntimeException("Address not found"));
+        return modelMapper.map(address, AddressDTO.class);
+    }
 
     @Override
-    public AddressDTO addAddress(Long userId, AddressDTO addressDTO) {
+    public AddressDTO createAddress(Long userId, AddressDTO addressDTO) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
         Address address = modelMapper.map(addressDTO, Address.class);
         address.setUser(user);
-        Address saved = addressRepository.save(address);
-        return modelMapper.map(saved, AddressDTO.class);
+
+        Address savedAddress = addressRepository.save(address);
+        return modelMapper.map(savedAddress, AddressDTO.class);
     }
 
     @Override
     public AddressDTO updateAddress(Long addressId, AddressDTO addressDTO) {
-        Address existing = addressRepository.findById(addressId)
+        Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new RuntimeException("Address not found"));
-        modelMapper.map(addressDTO, existing);
-        Address updated = addressRepository.save(existing);
+
+        address.setStreet(addressDTO.getStreet());
+        address.setCity(addressDTO.getCity());
+        address.setState(addressDTO.getState());
+        address.setPincode(addressDTO.getPincode());
+
+        Address updated = addressRepository.save(address);
         return modelMapper.map(updated, AddressDTO.class);
     }
 
     @Override
     public void deleteAddress(Long addressId) {
-        if (!addressRepository.existsById(addressId)) {
-            throw new RuntimeException("Address not found");
-        }
         addressRepository.deleteById(addressId);
     }
 }

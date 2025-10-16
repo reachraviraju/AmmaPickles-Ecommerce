@@ -2,6 +2,7 @@ package com.ammapickles.backend.service.impl;
 
 import com.ammapickles.backend.dto.CategoryDTO;
 import com.ammapickles.backend.entity.Category;
+import com.ammapickles.backend.exception.ResourceNotFoundException;
 import com.ammapickles.backend.repository.CategoryRepository;
 import com.ammapickles.backend.service.CategoryService;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDTO getCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
         return modelMapper.map(category, CategoryDTO.class);
     }
 
@@ -45,7 +46,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDTO updateCategory(Long id, CategoryDTO categoryDTO) {
         Category existing = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new  ResourceNotFoundException("Category not found with id: " + id));
         modelMapper.map(categoryDTO, existing);
         Category updated = categoryRepository.save(existing);
         return modelMapper.map(updated, CategoryDTO.class);
@@ -54,7 +55,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {
-            throw new RuntimeException("Category not found");
+            throw new ResourceNotFoundException("Category not found with id: " + id);
         }
         categoryRepository.deleteById(id);
     }
