@@ -1,0 +1,13 @@
+spring.application.name=AmmaPickles
+
+server.port=8080
+
+# MySQL config
+
+spring.datasource.url=jdbc:mysql://localhost:3306/amma_pickles
+spring.datasource.username=root
+spring.datasource.password=your_password
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
