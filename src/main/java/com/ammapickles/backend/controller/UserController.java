@@ -1,5 +1,6 @@
 package com.ammapickles.backend.controller;
 
+import com.ammapickles.backend.dto.LoginRequest;
 import com.ammapickles.backend.dto.UserDTO;
 import com.ammapickles.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +20,10 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDTO> loginUser(@RequestParam String username,
-                                             @RequestParam String password) {
-        return ResponseEntity.ok(userService.login(username, password));
+    public ResponseEntity<UserDTO> loginUser(@RequestBody LoginRequest loginResquest) {
+    	
+         UserDTO userDTO = userService.login( loginResquest.getUsername(), loginResquest.getPassword());
+        return ResponseEntity.ok(userDTO);
     }
 
     @GetMapping("/{id}")
