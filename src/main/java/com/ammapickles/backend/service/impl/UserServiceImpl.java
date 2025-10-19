@@ -1,5 +1,6 @@
 package com.ammapickles.backend.service.impl;
 
+import com.ammapickles.backend.dto.ResetPasswordDTO;
 import com.ammapickles.backend.dto.UserDTO;
 import com.ammapickles.backend.entity.Role;
 import com.ammapickles.backend.entity.User;
@@ -51,6 +52,16 @@ public class UserServiceImpl implements UserService {
         
         
         
+    } 
+    
+    
+    public void resetPassword(String username, ResetPasswordDTO resetPasswordDTO)
+    {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> 
+                                         new ResourceNotFoundException("user not found"+username));
+      
+          user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
+          userRepository.save(user);
     }
     
     
@@ -73,7 +84,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         return modelMapper.map(user, UserDTO.class);
     }
-
+    
     @Override
     public UserDTO updateUser(Long id, UserDTO userDTO) {
         User user = userRepository.findById(id)

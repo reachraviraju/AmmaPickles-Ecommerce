@@ -1,5 +1,6 @@
 package com.ammapickles.backend.service;
 
+import com.ammapickles.backend.dto.ResetPasswordDTO;
 import com.ammapickles.backend.dto.UserDTO;
 
 
@@ -10,5 +11,5 @@ public interface UserService {
 	    UserDTO getUserById(Long id);
 	    UserDTO updateUser(Long id, UserDTO userDTO);
     
-    
+         void resetPassword(String username , ResetPasswordDTO  resetPasswordDTO);
 }

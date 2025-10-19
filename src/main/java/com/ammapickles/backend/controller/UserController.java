@@ -1,6 +1,7 @@
 package com.ammapickles.backend.controller;
 
 import com.ammapickles.backend.dto.LoginRequest;
+import com.ammapickles.backend.dto.ResetPasswordDTO;
 import com.ammapickles.backend.dto.UserDTO;
 import com.ammapickles.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,13 @@ public class UserController {
     	
          UserDTO userDTO = userService.login( loginResquest.getUsername(), loginResquest.getPassword());
         return ResponseEntity.ok(userDTO);
+    }
+    
+    @PutMapping("/reset-password/{username}")
+    public ResponseEntity<String> resetPassword(@PathVariable String username , @RequestBody ResetPasswordDTO resetPasswordDTO)
+    {
+    	userService.resetPassword(username, resetPasswordDTO);
+    	return  ResponseEntity.ok("Password updated successfully");
     }
 
     @GetMapping("/{id}")

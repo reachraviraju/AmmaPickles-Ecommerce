@@ -2,6 +2,7 @@ package com.ammapickles.backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,8 +16,17 @@ public class SecurityConfig {
         http
             .csrf().disable()
             .authorizeHttpRequests()
-                .requestMatchers("/api/users/register", "/api/users/login").permitAll()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                  //public 
+                .requestMatchers("/api/users/register", "/api/users/login" , "/api/users/products/**").permitAll()
+                .requestMatchers("/api/users/reset-password/**").permitAll()
+                  //customer
+                .requestMatchers("/api/cart/**" ,"/api/orders/**").hasRole("CUSTOMER")
+                   //admin
+                .requestMatchers(HttpMethod.POST,"/api/products/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT,"/api/products/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE,"/api/products/**").hasRole("ADMIN")
+                
+                   
                 .anyRequest().authenticated()
             .and()
             .httpBasic(); // You can switch to formLogin() if needed
