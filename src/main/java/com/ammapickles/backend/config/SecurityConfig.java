@@ -16,20 +16,16 @@ public class SecurityConfig {
         http
             .csrf().disable()
             .authorizeHttpRequests()
-                  //public 
-                .requestMatchers("/api/users/register", "/api/users/login" , "/api/users/products/**").permitAll()
+  
+                .requestMatchers("/api/users/register", "/api/users/login" , "/api/products/**").permitAll()
                 .requestMatchers("/api/users/reset-password/**").permitAll()
-                  //customer
                 .requestMatchers("/api/cart/**" ,"/api/orders/**").hasRole("CUSTOMER")
-                   //admin
                 .requestMatchers(HttpMethod.POST,"/api/products/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT,"/api/products/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE,"/api/products/**").hasRole("ADMIN")
-                
-                   
+                .requestMatchers(HttpMethod.DELETE,"/api/products/**").hasRole("ADMIN") 
                 .anyRequest().authenticated()
             .and()
-            .httpBasic(); // You can switch to formLogin() if needed
+            .httpBasic(); // can switch to formLogin() if needed
         return http.build();
     }
 

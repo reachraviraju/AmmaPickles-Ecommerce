@@ -86,12 +86,14 @@ Seed `roles` table with: `ADMIN`, `CUSTOMER`.
 
 ### Users
 
-| Method | Endpoint              | Description         |
-| ------ | --------------------- | ------------------- |
-| POST   | `/api/users/register` | Register a new user |
-| POST   | `/api/users/login`    | Login user          |
-| GET    | `/api/users/{id}`     | Get user by ID      |
-| PUT    | `/api/users/{id}`     | Update user         |
+| Method | Endpoint                                | Description         |
+| ------ | --------------------------------------- | ------------------- |
+| POST   | `/api/users/register`                   | Register a new user |
+| POST   | `/api/users/login`                      | Login user          |
+| GET    | `/api/users/{id}`                       | Get user by ID      |
+| PUT    | `/api/users/{id}`                       | Update user         |
+| PUT    | `/api/users/reset-password/{username}`  | Rest password       |
+
 
 **Sample Request: Register**
 
