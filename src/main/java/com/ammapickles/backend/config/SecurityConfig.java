@@ -17,12 +17,13 @@ public class SecurityConfig {
             .csrf().disable()
             .authorizeHttpRequests()
   
-                .requestMatchers("/api/users/register", "/api/users/login" , "/api/products/**").permitAll()
+                .requestMatchers("/api/users/register", "/api/users/login").permitAll()
                 .requestMatchers("/api/users/reset-password/**").permitAll()
                 .requestMatchers("/api/cart/**" ,"/api/orders/**").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.GET,"/api/products/**").permitAll()
                 .requestMatchers(HttpMethod.POST,"/api/products/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT,"/api/products/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE,"/api/products/**").hasRole("ADMIN") 
+                .requestMatchers(HttpMethod.DELETE,"/api/products/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             .and()
             .httpBasic(); // can switch to formLogin() if needed
