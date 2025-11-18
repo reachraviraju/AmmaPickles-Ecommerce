@@ -27,83 +27,127 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
     private final ModelMapper modelMapper;
 
+    private static final BigDecimal ZERO = BigDecimal.ZERO;
+
+    // user 
+
     @Override
     public List<OrderDTO> getOrdersByUser(Long userId) {
-        List<Order> orders = orderRepository.findByUserId(userId);
-        return orders.stream()
+        return orderRepository.findByUserId(userId)
+                .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
+    public OrderDTO getOrderByIdForUser(Long orderId, Long userId) {
+        Order order = orderRepository.findByIdAndUserId(orderId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found or access denied"));
+        return mapToDTO(order);
+    }
+
+    @Override
     public OrderDTO placeOrder(Long userId, OrderDTO orderDTO) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-
-
-        Address deliveryAddress = addressRepository.findById(orderDTO.getDeliveryAddress().getId())
-                .orElseThrow(() ->  new ResourceNotFoundException("Address not found with id: " + orderDTO.getDeliveryAddress().getId()));
-
-
+        User user = getUserOrThrow(userId);
+        Address address = getAddressOrThrow(orderDTO.getDeliveryAddress().getId());
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user id: " + userId));
 
+        if (cart.getItems().isEmpty())
+            throw new IllegalStateException("Cart is empty. Cannot place order.");
 
-        if (cart.getItems().isEmpty()) {
-            throw new IllegalStateException("Cart is empty, cannot place order");
-        }
-
+        // Create order
         Order order = new Order();
         order.setUser(user);
-        order.setDeliveryAddress(deliveryAddress);
+        order.setDeliveryAddress(address);
         order.setStatus(OrderStatus.PENDING);
-        order.setTotalAmount(BigDecimal.ZERO);
-        order.setDeliveryCharge(BigDecimal.ZERO); 
-
-        Order savedOrder = orderRepository.save(order);
+        order.setDeliveryCharge(ZERO);
 
         // Map cart items to order items
-        for (CartItem cartItem : cart.getItems()) {
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(savedOrder);
-            orderItem.setProduct(cartItem.getProduct());
-            orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setPrice(cartItem.getProduct().getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
-            orderItemRepository.save(orderItem);
+        List<OrderItem> orderItems = cart.getItems().stream()
+                .map(cartItem -> {
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.setOrder(order);
+                    orderItem.setProduct(cartItem.getProduct());
+                    orderItem.setQuantity(cartItem.getQuantity());
+                    orderItem.setPrice(
+                            cartItem.getProduct().getPrice()
+                                    .multiply(BigDecimal.valueOf(cartItem.getQuantity()))
+                    );
+                    return orderItem;
+                })
+                .collect(Collectors.toList());
 
-            // Add to total amount
-            savedOrder.setTotalAmount(savedOrder.getTotalAmount().add(orderItem.getPrice()));
-        }
+        // Calculate total
+        BigDecimal totalAmount = orderItems.stream()
+                .map(OrderItem::getPrice)
+                .reduce(ZERO, BigDecimal::add);
 
-        savedOrder = orderRepository.save(savedOrder);
+        order.setTotalAmount(totalAmount);
 
-        // Clear cart after order placement
-        cart.getItems().clear();
-        cartRepository.save(cart);
+        // Save order + items
+        Order savedOrder = orderRepository.save(order);
+        orderItemRepository.saveAll(orderItems);
+
+        // Clear cart
+        clearCart(cart);
 
         return mapToDTO(savedOrder);
     }
 
     @Override
-    public OrderDTO getOrderById(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
-        return mapToDTO(order);
-    }
-
-    @Override
     public void cancelOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+        Order order = getOrderOrThrow(orderId);
+
+        if (order.getStatus() == OrderStatus.DELIVERED)
+            throw new IllegalStateException("Delivered orders cannot be cancelled");
+
         order.setStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
     }
 
-    // Helper method
+    // admin 
+
+    @Override
+    public List<OrderDTO> getAllOrders() {
+        return orderRepository.findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public OrderDTO getOrderById(Long orderId) {
+        return mapToDTO(getOrderOrThrow(orderId));
+    }
+
+    // helper methods 
+
+    private User getUserOrThrow(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+    }
+
+    private Address getAddressOrThrow(Long addressId) {
+        return addressRepository.findById(addressId)
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found with id: " + addressId));
+    }
+
+    private Order getOrderOrThrow(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+    }
+
+    private void clearCart(Cart cart) {
+        cart.getItems().clear();
+        cartRepository.save(cart);
+    }
+
     private OrderDTO mapToDTO(Order order) {
         OrderDTO dto = modelMapper.map(order, OrderDTO.class);
         dto.setUserId(order.getUser().getId());
-        if (order.getOrderItems() != null) {
+
+        if (order.getOrderItems() != null && !order.getOrderItems().isEmpty()) {
             List<OrderItemDTO> items = order.getOrderItems().stream()
                     .map(item -> {
                         OrderItemDTO itemDTO = new OrderItemDTO();
@@ -113,9 +157,11 @@ public class OrderServiceImpl implements OrderService {
                         itemDTO.setQuantity(item.getQuantity());
                         itemDTO.setPrice(item.getPrice());
                         return itemDTO;
-                    }).collect(Collectors.toList());
+                    })
+                    .collect(Collectors.toList());
             dto.setOrderItems(items);
         }
+
         return dto;
     }
 }

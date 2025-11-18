@@ -30,9 +30,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO registerUser(UserDTO userDTO) {
-        if (userRepository.existsByUsername(userDTO.getUsername())) {
-            throw new BadRequestException("Username already exists");
-        }
+    	
+    	userDTO.setEmail(userDTO.getEmail().toLowerCase());
+    	
         if (userRepository.existsByEmail(userDTO.getEmail())) {
             throw new BadRequestException("Email already exists");
         }
@@ -40,42 +40,40 @@ public class UserServiceImpl implements UserService {
         User user = modelMapper.map(userDTO, User.class);
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
-        // Assign default CUSTOMER role
+        // Assign default ROLE_CUSTOMER
         Role customerRole = roleRepository.findByName("ROLE_CUSTOMER")
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+                      .orElseThrow(() -> new ResourceNotFoundException("Default role not found"));
         Set<Role> roles = new HashSet<>();
         roles.add(customerRole);
         user.setRoles(roles);
 
         User savedUser = userRepository.save(user);
         return modelMapper.map(savedUser, UserDTO.class);
-        
-        
-        
-    } 
-    
-    
-    public void resetPassword(String username, ResetPasswordDTO resetPasswordDTO)
-    {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> 
-                                         new ResourceNotFoundException("user not found"+username));
-      
-          user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
-          userRepository.save(user);
     }
-    
-    
 
     @Override
-    public UserDTO login(String username, String password) {
-        User user = userRepository.findByUsername(username)
-        		.orElseThrow(() -> new ResourceNotFoundException("User not found with username : " + username));
+    public UserDTO login(String email, String password) {
+    	
+    	 email = email.toLowerCase();
+    	
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid email or password"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new BadRequestException("Invalid password");
+        	
+            throw new BadRequestException("Invalid email or password");
         }
 
         return modelMapper.map(user, UserDTO.class);
+    }
+
+    @Override
+    public void resetPassword(String email, ResetPasswordDTO resetPasswordDTO) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + email));
+
+        user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
+        userRepository.save(user);
     }
 
     @Override
@@ -86,12 +84,29 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
+    public UserDTO getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+        return modelMapper.map(user, UserDTO.class);
+    }
+
+
+    @Override
     public UserDTO updateUser(Long id, UserDTO userDTO) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
+        
+        String normalizedEmail = userDTO.getEmail().toLowerCase();
+
+        // Check if email already exists 
+        if (!user.getEmail().equalsIgnoreCase(normalizedEmail)
+                && userRepository.existsByEmail(normalizedEmail)) {
+            throw new BadRequestException("Email already exists");
+        }
+
         user.setUsername(userDTO.getUsername());
-        user.setEmail(userDTO.getEmail());
+        user.setEmail(normalizedEmail);
         user.setAddress(userDTO.getAddress());
         user.setPhoneNumber(userDTO.getPhoneNumber());
 
@@ -102,4 +117,5 @@ public class UserServiceImpl implements UserService {
         User updatedUser = userRepository.save(user);
         return modelMapper.map(updatedUser, UserDTO.class);
     }
+
 }

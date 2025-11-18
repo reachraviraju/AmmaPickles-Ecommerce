@@ -7,7 +7,18 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class AmmaPicklesApplication {
 
 	public static void main(String[] args) {
+		
+		
 		SpringApplication.run(AmmaPicklesApplication.class, args);
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	}
 
-}
+} 

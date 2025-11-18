@@ -15,33 +15,26 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/register")
-    public ResponseEntity<UserDTO> registerUser(@RequestBody UserDTO userDTO) {
-        return ResponseEntity.ok(userService.registerUser(userDTO));
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<UserDTO> loginUser(@RequestBody LoginRequest loginResquest) {
-    	
-         UserDTO userDTO = userService.login( loginResquest.getUsername(), loginResquest.getPassword());
-        return ResponseEntity.ok(userDTO);
-    }
     
-    @PutMapping("/reset-password/{username}")
-    public ResponseEntity<String> resetPassword(@PathVariable String username , @RequestBody ResetPasswordDTO resetPasswordDTO)
-    {
-    	userService.resetPassword(username, resetPasswordDTO);
-    	return  ResponseEntity.ok("Password updated successfully");
-    }
 
+    // Fetch user by ID
+    
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
+    // Update user info
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Long id,
                                               @RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.updateUser(id, userDTO));
     }
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<UserDTO> getUserByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(userService.getUserByEmail(email));
+    }
+
+    
 }

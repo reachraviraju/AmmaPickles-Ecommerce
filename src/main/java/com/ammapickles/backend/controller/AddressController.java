@@ -15,29 +15,56 @@ public class AddressController {
 
     private final AddressService addressService;
 
+    // Get all addresses for a user
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<AddressDTO>> getAddressesByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(addressService.getAddressesByUser(userId));
+   
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<AddressDTO> getAddressById(@PathVariable Long id) {
-        return ResponseEntity.ok(addressService.getAddressById(id));
+    // Get specific address by ID
+    @GetMapping("/{addressId}")
+    public ResponseEntity<AddressDTO> getAddressById(@PathVariable Long addressId) {
+        return ResponseEntity.ok(addressService.getAddressById(addressId));
     }
 
+    //Create new address for user
     @PostMapping("/user/{userId}")
-    public ResponseEntity<AddressDTO> createAddress(@PathVariable Long userId, @RequestBody AddressDTO addressDTO) {
+    public ResponseEntity<AddressDTO> createAddress(
+            @PathVariable Long userId,
+            @RequestBody AddressDTO addressDTO) {
         return ResponseEntity.ok(addressService.createAddress(userId, addressDTO));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<AddressDTO> updateAddress(@PathVariable Long id, @RequestBody AddressDTO addressDTO) {
-        return ResponseEntity.ok(addressService.updateAddress(id, addressDTO));
+    //  Update existing address
+    @PutMapping("/{addressId}")
+    public ResponseEntity<AddressDTO> updateAddress( @PathVariable Long addressId,  @RequestBody AddressDTO addressDTO) {
+        return ResponseEntity.ok(addressService.updateAddress(addressId, addressDTO));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAddress(@PathVariable Long id) {
-        addressService.deleteAddress(id);
-        return ResponseEntity.noContent().build();
+    //  Delete specific address for a user
+    @DeleteMapping("/user/{userId}/{addressId}")
+    public ResponseEntity<Void> deleteAddress(  @PathVariable Long userId,   @PathVariable Long addressId) {
+    	
+        addressService.deleteAddress(userId, addressId);
+        return ResponseEntity.noContent().build(); 
+        
+ 
+        
+        
+        
+        
+        
+        
+       
+        
+        
+        
+        
+        
+        
+        
+   
+       
     }
 }

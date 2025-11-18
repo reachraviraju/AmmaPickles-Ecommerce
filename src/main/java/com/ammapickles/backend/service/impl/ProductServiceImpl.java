@@ -26,9 +26,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductDTO> getAllProducts() {
-        return productRepository.findAll().stream()
-                .map(product -> mapToDTO(product))
-                .collect(Collectors.toList());
+        return productRepository.findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());    
     }
 
     @Override
@@ -45,66 +46,58 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = modelMapper.map(productDTO, Product.class);
         product.setCategory(category);
+
         Product saved = productRepository.save(product);
         return mapToDTO(saved);
     }
-    
+
     @Override
     public ProductDTO updateProduct(Long id, ProductDTO productDTO) {
-    	
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
-        
-                                         // it will only map fields that should change
-        
+
         existing.setName(productDTO.getName());
         existing.setDescription(productDTO.getDescription());
         existing.setPrice(productDTO.getPrice());
         existing.setQuantity(productDTO.getQuantity());
         existing.setSize(productDTO.getSize());
 
-              // Handle category explicitly
         Category category = categoryRepository.findById(productDTO.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + productDTO.getCategoryId()));
         existing.setCategory(category);
 
         Product updated = productRepository.save(existing);
-        return mapToDTO(updated);
+        return mapToDTO(updated);       
+        
+        
+    }
+
+   
+    
+    @Override
+    public void deleteProduct(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+        productRepository.delete(product);
     }
 
 
- 
-     
-
-    @Override
-     public void deleteProduct(Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Product not found with id: " + id);
-        }
-        productRepository.deleteById(id);
-     }
-
-    
-    
     @Override
     public List<ProductDTO> getProductsByCategory(Long categoryId) {
-        List<Product> products = productRepository.findByCategoryId(categoryId);
-        if (products.isEmpty()) {
-            throw new ResourceNotFoundException("No products found for category id: " + categoryId);
-        }
-        return products.stream()
-                       .map(this::mapToDTO)
-                       .collect(Collectors.toList());
+        return productRepository.findByCategoryId(categoryId)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<ProductDTO> searchProducts(String name) {
-        return productRepository.findByNameContainingIgnoreCase(name).stream()
+        return productRepository.findByNameContainingIgnoreCase(name)
+                .stream()
                 .map(this::mapToDTO)
-                .collect(Collectors.toList()); 
+                .collect(Collectors.toList());
     }
 
-    // Helper method for mapping
     private ProductDTO mapToDTO(Product product) {
         ProductDTO dto = modelMapper.map(product, ProductDTO.class);
         if (product.getCategory() != null) {

@@ -3,6 +3,7 @@ package com.ammapickles.backend.service.impl;
 import com.ammapickles.backend.dto.AddressDTO;
 import com.ammapickles.backend.entity.Address;
 import com.ammapickles.backend.entity.User;
+import com.ammapickles.backend.exception.ResourceNotFoundException;
 import com.ammapickles.backend.repository.AddressRepository;
 import com.ammapickles.backend.repository.UserRepository;
 import com.ammapickles.backend.service.AddressService;
@@ -30,42 +31,47 @@ public class AddressServiceImpl implements AddressService {
                 .map(address -> modelMapper.map(address, AddressDTO.class))
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     public AddressDTO getAddressById(Long addressId) {
         Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found with id: " + addressId));
         return modelMapper.map(address, AddressDTO.class);
     }
 
     @Override
     public AddressDTO createAddress(Long userId, AddressDTO addressDTO) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         Address address = modelMapper.map(addressDTO, Address.class);
         address.setUser(user);
 
-        Address savedAddress = addressRepository.save(address);
-        return modelMapper.map(savedAddress, AddressDTO.class);
+        Address saved = addressRepository.save(address);
+        return modelMapper.map(saved, AddressDTO.class);
     }
 
     @Override
     public AddressDTO updateAddress(Long addressId, AddressDTO addressDTO) {
-        Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+        Address existing = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found with id: " + addressId));
 
-        address.setStreet(addressDTO.getStreet());
-        address.setCity(addressDTO.getCity());
-        address.setState(addressDTO.getState());
-        address.setPincode(addressDTO.getPincode());
+        // Map updates onto existing entity
+        modelMapper.map(addressDTO, existing);
 
-        Address updated = addressRepository.save(address);
+        Address updated = addressRepository.save(existing);
         return modelMapper.map(updated, AddressDTO.class);
     }
 
     @Override
-    public void deleteAddress(Long addressId) {
-        addressRepository.deleteById(addressId);
+    public void deleteAddress(Long userId, Long addressId) {
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found with id: " + addressId));
+
+        if (!address.getUser().getId().equals(userId)) {
+            throw new IllegalStateException("You are not authorized to delete this address");
+        }
+
+        addressRepository.delete(address);
     }
 }

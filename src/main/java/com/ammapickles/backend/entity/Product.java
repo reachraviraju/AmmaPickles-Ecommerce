@@ -26,6 +26,9 @@ public class Product {
 
     @Enumerated(EnumType.STRING)
     private Size size;  
+    
+    
+
 
     private Integer quantity;
 

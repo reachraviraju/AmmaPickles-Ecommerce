@@ -11,25 +11,27 @@ It supports basic authentication, role-based access, and CRUD operations.
 
 ## Features 🚀
 
-* User registration & login
-* Admin & Customer roles
-* CRUD for Products & Categories
-* Cart management (add/update/remove/clear)
-* Order placement & tracking
-* Address management
-* Password encryption (BCrypt) & Basic authentication
+* JWT-based Authentication & Authorization  
+* User registration & login  
+* Password reset via email  
+* Admin & Customer roles  
+* CRUD for Products & Categories  
+* Cart management (add/update/remove/clear)  
+* Order placement & tracking  
+* Address management  
+* BCrypt password encryption  
 
 ---
 
 ## Tech Stack 🛠
 
-* Java 17
-* Spring Boot 3.x
-* Spring Data JPA
-* Spring Security
-* ModelMapper
-* MySQL
-* Maven
+* Java 17  
+* Spring Boot 3.x  
+* Spring Security (JWT)  
+* Spring Data JPA  
+* ModelMapper  
+* MySQL  
+* Maven  
 
 ---
 
@@ -58,6 +60,8 @@ spring.datasource.username=root
 spring.datasource.password=your_password
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
+jwt.secret=your_secret_key
+
 ```
 
 3. Build & run:
@@ -82,35 +86,55 @@ Seed `roles` table with: `ADMIN`, `CUSTOMER`.
 
 ---
 
-## API Endpoints 📡
+# 📘 Amma Pickles REST API Endpoints
 
-### Users
-
-| Method | Endpoint                                | Description         |
-| ------ | --------------------------------------- | ------------------- |
-| POST   | `/api/users/register`                   | Register a new user |
-| POST   | `/api/users/login`                      | Login user          |
-| GET    | `/api/users/{id}`                       | Get user by ID      |
-| PUT    | `/api/users/{id}`                       | Update user         |
-| PUT    | `/api/users/reset-password/{username}`  | Rest password       |
-
-
-**Sample Request: Register**
-
-```json
-POST /api/users/register
-{
-  "username": "john",
-  "password": "password123",
-  "email": "john@example.com",
-  "address": "123 Street",
-  "phoneNumber": "9876543210"
-}
-```
 
 ---
 
-### Addresses
+## 🔒 SECURITY CONFIGURATION
+### Spring Security (JWT Based)
+
+| Access            | Endpoint | Description |
+| ----------------- | ----------------------------------------------------- | ------------------------------------------------- |
+| **Public**        | `/api/auth/**`                                        | All authentication endpoints                      |
+| **Public**        | `/api/users/email/**`                                 | Fetch user by email (used for verification/reset) |
+| **Public**        | `GET /api/products/**`                                | Product and category browsing                     |
+| **Customer Only** | `/api/cart/**`, `/api/orders/**`, `/api/addresses/**` | Requires role `CUSTOMER`                          |
+| **Admin Only**    | `/api/products/**`, `/api/categories/**`              | Requires role `ADMIN`                             |
+| **All Others**    | Require valid JWT token                               |                                                   |
+
+---
+
+
+
+## 🔐 AUTH CONTROLLER (`/api/auth`)
+
+Handles registration, login, password reset, and email verification.
+
+| Method | Endpoint                           | Description                              |
+| ------ | ---------------------------------- | ---------------------------------------- |
+| POST   | `/api/auth/register`               | Register a new user                      |
+| POST   | `/api/auth/login`                  | Login user and get JWT token             |
+| PUT    | `/api/auth/reset-password/{email}` | Reset password by email                  |
+| GET    | `/api/auth/verify/{token}`         | Verify user email/token (if implemented) |
+
+---
+
+## 👤 USER CONTROLLER (`/api/users`)
+Manages user profile details.
+
+
+| Method | Endpoint                   | Description          |
+| ------ | -------------------------- | -------------------- |
+| GET    | `/api/users/{id}`          | Get user by ID       |
+| PUT    | `/api/users/{id}`          | Update user details  |
+| GET    | `/api/users/email/{email}` | Get user by email ID |
+
+
+---
+
+## 🏠 ADDRESS CONTROLLER (`/api/addresses`)
+Handles user addresses.
 
 | Method | Endpoint                       | Description                  |
 | ------ | ------------------------------ | ---------------------------- |
@@ -120,35 +144,40 @@ POST /api/users/register
 | PUT    | `/api/addresses/{id}`          | Update address               |
 | DELETE | `/api/addresses/{id}`          | Delete address               |
 
+
 ---
 
-### Products
+## 🏷 CATEGORY CONTROLLER (`/api/categories`)
+Manages product categories.
+
+| Method | Endpoint | Description |
+| ------- | -------- | ------------ |
+| **GET** | `/api/categories` | Get all categories |
+| **GET** | `/api/categories/{id}` | Get category by ID |
+| **POST** | `/api/categories` | Create new category |
+| **PUT** | `/api/categories/{id}` | Update category |
+| **DELETE** | `/api/categories/{id}` | Delete category by ID |
+
+---
+
+## 📦 PRODUCT CONTROLLER (`/api/products`)
+Handles product operations and filters.
 
 | Method | Endpoint                              | Description              |
 | ------ | ------------------------------------- | ------------------------ |
 | GET    | `/api/products`                       | Get all products         |
 | GET    | `/api/products/{id}`                  | Get product by ID        |
-| POST   | `/api/products`                       | Add new product          |
-| PUT    | `/api/products/{id}`                  | Update product           |
-| DELETE | `/api/products/{id}`                  | Delete product           |
+| POST   | `/api/products`                       | Add new product (Admin)  |
+| PUT    | `/api/products/{id}`                  | Update product (Admin)   |
+| DELETE | `/api/products/{id}`                  | Delete product (Admin)   |
 | GET    | `/api/products/category/{categoryId}` | Get products by category |
 | GET    | `/api/products/search?name={name}`    | Search products by name  |
 
----
-
-### Categories
-
-| Method | Endpoint               | Description        |
-| ------ | ---------------------- | ------------------ |
-| GET    | `/api/categories`      | Get all categories |
-| GET    | `/api/categories/{id}` | Get category by ID |
-| POST   | `/api/categories`      | Add new category   |
-| PUT    | `/api/categories/{id}` | Update category    |
-| DELETE | `/api/categories/{id}` | Delete category    |
 
 ---
 
-### Cart
+## 🛒 CART CONTROLLER (`/api/cart`)
+Handles shopping cart logic.
 
 | Method | Endpoint                                                     | Description                 |
 | ------ | ------------------------------------------------------------ | --------------------------- |
@@ -158,9 +187,11 @@ POST /api/users/register
 | DELETE | `/api/cart/item/{cartItemId}`                                | Remove cart item            |
 | DELETE | `/api/cart/user/{userId}/clear`                              | Clear entire cart           |
 
+
 ---
 
-### Orders
+## 🧾 ORDER CONTROLLER (`/api/orders`)
+Handles order placement, tracking, and cancellation.
 
 | Method | Endpoint                    | Description               |
 | ------ | --------------------------- | ------------------------- |
@@ -171,20 +202,37 @@ POST /api/users/register
 
 ---
 
-## Authentication 🔑
 
-* BCrypt password encryption
-* Role-based access (`ADMIN` & `CUSTOMER`)
-* Basic HTTP authentication
-* Public endpoints: `/api/users/register`, `/api/users/login`
+## 🧠 TOKEN FORMAT
+
+Each protected endpoint requires a JWT token in the header:
+
 
 ---
+
+## ✅ TESTING IN POSTMAN
+
+1. **Register** via `/api/auth/register`
+2. **Login** to get JWT token
+3. Use the token in the `Authorization` header
+4. Access other endpoints (User, Product, Cart, Order, etc.)
+
+---
+
 
 ## Error Handling ⚠️
 
 * `ResourceNotFoundException` – thrown when a resource (User, Product, Category, etc.) is not found
 * `RuntimeException` – generic runtime errors
 * Global exception handling can be extended with `@ControllerAdvice`
+
+
+---
+
+## 👨‍💻 Developer
+**Ravi (Raju)**  
+Java Developer | Spring Boot | REST APIs  
+
 
 ---
 
