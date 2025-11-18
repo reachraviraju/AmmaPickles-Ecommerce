@@ -204,8 +204,10 @@ Handles order placement, tracking, and cancellation.
 
 
 
-📌 Sample JSON Payloads (Quick Testing)
-1️⃣ Register
+## 📌 Sample JSON Payloads (Quick Testing)
+
+### **1️⃣ Register**
+```json
 {
   "username": "ravi123",
   "password": "Ravi@1234",
@@ -213,14 +215,30 @@ Handles order placement, tracking, and cancellation.
   "address": "Rajahmundry",
   "phoneNumber": "9876543210"
 }
+```
 
-2️⃣ Login (Returns JWT)
+---
+
+### **2️⃣ Login (Returns JWT)**
+```json
 {
   "username": "ravi123",
   "password": "Ravi@1234"
 }
+```
 
-3️⃣ Add Product (Admin)
+**Response Example**
+```json
+{
+  "message": "Login successful",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+---
+
+### **3️⃣ Add Product (Admin Only)**
+```json
 {
   "name": "Gongura Pickle",
   "description": "Spicy Andhra Gongura pickle",
@@ -229,19 +247,35 @@ Handles order placement, tracking, and cancellation.
   "categoryId": 1,
   "size": "MEDIUM"
 }
+```
 
-4️⃣ Add to Cart
+---
+
+### **4️⃣ Add to Cart**
+```
 POST /api/cart/user/1/product/5?quantity=2
+```
 
-5️⃣ Place Order
+---
+
+### **5️⃣ Place Order**
+```json
 {
-  "deliveryAddress": { "id": 3 }
+  "deliveryAddress": {
+    "id": 3
+  }
 }
+```
 
-6️⃣ Reset Password
+---
+
+### **6️⃣ Reset Password**
+```json
 {
   "newPassword": "Ravi@9999"
 }
+```
+
 
 
 ## 🧠 TOKEN FORMAT
