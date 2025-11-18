@@ -203,6 +203,47 @@ Handles order placement, tracking, and cancellation.
 ---
 
 
+
+📌 Sample JSON Payloads (Quick Testing)
+1️⃣ Register
+{
+  "username": "ravi123",
+  "password": "Ravi@1234",
+  "email": "ravi@example.com",
+  "address": "Rajahmundry",
+  "phoneNumber": "9876543210"
+}
+
+2️⃣ Login (Returns JWT)
+{
+  "username": "ravi123",
+  "password": "Ravi@1234"
+}
+
+3️⃣ Add Product (Admin)
+{
+  "name": "Gongura Pickle",
+  "description": "Spicy Andhra Gongura pickle",
+  "price": 200,
+  "quantity": 50,
+  "categoryId": 1,
+  "size": "MEDIUM"
+}
+
+4️⃣ Add to Cart
+POST /api/cart/user/1/product/5?quantity=2
+
+5️⃣ Place Order
+{
+  "deliveryAddress": { "id": 3 }
+}
+
+6️⃣ Reset Password
+{
+  "newPassword": "Ravi@9999"
+}
+
+
 ## 🧠 TOKEN FORMAT
 
 Each protected endpoint requires a JWT token in the header:
@@ -214,7 +255,7 @@ Each protected endpoint requires a JWT token in the header:
 
 1. **Register** via `/api/auth/register`
 2. **Login** to get JWT token
-3. Use the token in the `Authorization` header
+3. Use the token in the `Authorization` header 
 4. Access other endpoints (User, Product, Cart, Order, etc.)
 
 ---
