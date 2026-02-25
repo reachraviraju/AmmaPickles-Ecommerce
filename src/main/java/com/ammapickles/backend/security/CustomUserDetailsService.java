@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
-
+    
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
@@ -26,6 +26,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         Set<GrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toSet());
+        
+  
+        
+        
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
@@ -34,7 +38,9 @@ public class CustomUserDetailsService implements UserDetailsService {
                 true,     // accountNonExpired
                 true,              // credentialsNonExpired
                 true,   // accountNonLocked
-                authorities
+                authorities 
+                
+                
         );
     }
 }

@@ -22,8 +22,9 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
+        
     }
-
+    
     // Update user info
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Long id,
@@ -34,7 +35,20 @@ public class UserController {
     @GetMapping("/email/{email}")
     public ResponseEntity<UserDTO> getUserByEmail(@PathVariable String email) {
         return ResponseEntity.ok(userService.getUserByEmail(email));
-    }
-
+        
     
+     
+          
+                          
+     
+        
+        
+        
+        
+        
+    }  
+    
+    
+
+
 }

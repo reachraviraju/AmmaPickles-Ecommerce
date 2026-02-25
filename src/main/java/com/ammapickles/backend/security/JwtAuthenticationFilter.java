@@ -26,24 +26,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
+    
             throws ServletException, IOException {
     	
 
-        // Get Authorization header
-        String authHeader = request.getHeader("Authorization");
-
+        // Get Authorization header 
+    	
+        String authHeader = request.getHeader("Authorization"); 
+        
+        
+        
+        
+        
+        
+       
+        
+        
+        
+       
+        
+        
+        
+        
         String token = null;
         String userEmail = null;
 
         // Extract token if it starts with "Bearer "
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            userEmail = jwtUtil.getUserMailFromToken(token);
+            userEmail = jwtUtil.getUserMailFromToken(token); 
+          
         }
-
+          
+        
+       
         // If user not yet authenticated
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
+        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) { 
+        
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
             // Validate token
@@ -56,6 +76,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         );
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                
+                
+                
+                
 
                 //  Set authentication in context
                 SecurityContextHolder.getContext().setAuthentication(authToken);
@@ -63,6 +87,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // Continue filter chain
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(request, response); 
+        
     }
 }

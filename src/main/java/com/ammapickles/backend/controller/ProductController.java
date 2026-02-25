@@ -21,12 +21,20 @@ public class ProductController {
     public ResponseEntity<List<ProductDTO>> getAllProducts() {
         return ResponseEntity.ok(productService.getAllProducts());
     }
-
     
+    
+    
+    
+   
     @GetMapping("/{id}")
+    
     public ResponseEntity<ProductDTO> getProductById(@PathVariable Long id) {     
     	
-        return ResponseEntity.ok(productService.getProductById(id));
+        return ResponseEntity.ok(productService.getProductById(id)); 
+        
+ 
+        
+        
     }
 
                                                                      
@@ -54,13 +62,17 @@ public class ProductController {
    
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<List<ProductDTO>> getProductsByCategory(@PathVariable Long categoryId) {
-        return ResponseEntity.ok(productService.getProductsByCategory(categoryId));   
-        
+        return ResponseEntity.ok(productService.getProductsByCategory(categoryId));      
     }
+    
+    
 
-   
     @GetMapping("/search")
     public ResponseEntity<List<ProductDTO>> searchProducts(@RequestParam String name) {
         return ResponseEntity.ok(productService.searchProducts(name));
     }
+    
+    
+    
+    
 }

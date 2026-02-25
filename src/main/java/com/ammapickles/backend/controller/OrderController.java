@@ -21,8 +21,10 @@ public class OrderController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<OrderDTO>> getOrdersByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(orderService.getOrdersByUser(userId));
+        
     }
-
+    
+    
     // Get specific order for a user (ownership check)
     @GetMapping("/user/{userId}/{orderId}")
     public ResponseEntity<OrderDTO> getOrderByIdForUser(
@@ -30,7 +32,7 @@ public class OrderController {
             @PathVariable Long orderId) {
         return ResponseEntity.ok(orderService.getOrderByIdForUser(orderId, userId));
     }
-
+    
     // Place new order
     @PostMapping("/user/{userId}")
     public ResponseEntity<OrderDTO> placeOrder(
@@ -45,6 +47,10 @@ public class OrderController {
     public ResponseEntity<Void> cancelOrder(@PathVariable Long orderId) {
         orderService.cancelOrder(orderId);
         return ResponseEntity.noContent().build();
+        
+      
+     
+      
     }
 
     // admin
@@ -53,6 +59,7 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<List<OrderDTO>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
+        
     }
 
     // Get specific order by ID (admin use)
