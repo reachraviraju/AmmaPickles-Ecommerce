@@ -1,14 +1,14 @@
 package com.ammapickles.backend.service;
 
-import com.ammapickles.backend.dto.CartDTO;
+import com.ammapickles.backend.dto.cart.CartResponse;
 
 public interface CartService {
 
-    CartDTO getUserCart(Long userId);
+    CartResponse getUserCart(Long userId);
 
-    CartDTO addToCart(Long userId, Long productId, int quantity);
+    CartResponse addToCart(Long userId, Long productId, int quantity);
 
-    CartDTO updateCartItem(Long cartItemId, int quantity);
+    CartResponse updateCartItem(Long cartItemId, int quantity);
 
     void removeCartItem(Long cartItemId);
 
