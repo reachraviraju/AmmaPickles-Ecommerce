@@ -1,60 +1,38 @@
-# =========================
-# Spring Boot / Java
-# =========================
+# ─────────────────────────────────────────────
+# SECRETS — Never push to GitHub!
+# ─────────────────────────────────────────────
+src/main/resources/application.properties
+
+# ─────────────────────────────────────────────
+# MAVEN
+# ─────────────────────────────────────────────
+target/
 *.class
 *.jar
 *.war
-*.log
-*.tmp
 
-# Maven / Gradle
-target/
-build/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-# Spring Boot / Sensitive
-application.properties
-application.yml
-
-# =========================
-# Eclipse / STS
-# =========================
-.apt_generated
+# ─────────────────────────────────────────────
+# ECLIPSE
+# ─────────────────────────────────────────────
 .classpath
-.factorypath
 .project
-.settings
-.springBeans
-.sts4-cache
+.settings/
+.factorypath
 
-# =========================
-# IntelliJ IDEA
-# =========================
-.idea
-*.iws
+# ─────────────────────────────────────────────
+# INTELLIJ (in case you switch later)
+# ─────────────────────────────────────────────
+.idea/
 *.iml
-*.ipr
 
-# =========================
-# NetBeans
-# nbproject/private/
-# /nbbuild/
-# /dist/
-# /nbdist/
-# /.nb-gradle/
-# build/ (already included above)
-
-# =========================
-# VS Code
-# =========================
-.vscode/
-
-# =========================
-# OS / System files
-# =========================
+# ─────────────────────────────────────────────
+# OS FILES
+# ─────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+
+# ─────────────────────────────────────────────
+# LOGS
+# ─────────────────────────────────────────────
+*.log
+logs/

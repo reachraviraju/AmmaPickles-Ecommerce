@@ -1,26 +1,17 @@
 package com.ammapickles.backend.service;
 
-import com.ammapickles.backend.dto.ResetPasswordDTO;
-import com.ammapickles.backend.dto.UserDTO;
+import com.ammapickles.backend.dto.user.UpdateUserRequest;
+import com.ammapickles.backend.dto.user.UserResponse;
 
+// UserService handles ONLY user profile operations
+// Login & register moved to AuthService
 public interface UserService {
 
+    UserResponse getUserById(Long id);
 
+    UserResponse getUserByEmail(String email);
 
-	    UserDTO registerUser(UserDTO userDTO);
-	    
-	    UserDTO login(String email, String password);  
-	    
-	    UserDTO getUserById(Long id);
-	    
-	    UserDTO getUserByEmail(String email);
-	    
-	    UserDTO updateUser(Long id, UserDTO userDTO);
-	    void resetPassword(String email, ResetPasswordDTO resetPasswordDTO); 
+    UserResponse updateUser(Long id, UpdateUserRequest request);
 
-	      
-   
-
-    
-   
+    void deleteUser(Long id);
 }
