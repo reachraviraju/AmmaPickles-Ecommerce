@@ -1,21 +1,19 @@
 package com.ammapickles.backend.service;
 
-import com.ammapickles.backend.dto.AddressDTO;
+import com.ammapickles.backend.dto.address.AddressRequest;
+import com.ammapickles.backend.dto.address.AddressResponse;
+
 import java.util.List;
 
 public interface AddressService {
-	
-	
-	List<AddressDTO> getAddressesByUser(Long userId);
-    AddressDTO getAddressById(Long addressId);
-    AddressDTO createAddress(Long userId, AddressDTO addressDTO);
-    AddressDTO updateAddress(Long addressId, AddressDTO addressDTO);
+
+    List<AddressResponse> getAddressesByUser(Long userId);
+
+    AddressResponse getAddressById(Long addressId);
+
+    AddressResponse createAddress(Long userId, AddressRequest request);
+
+    AddressResponse updateAddress(Long addressId, AddressRequest request);
+
     void deleteAddress(Long userId, Long addressId);
-	
-	 
-	
-	
-	
-	
-   
 }

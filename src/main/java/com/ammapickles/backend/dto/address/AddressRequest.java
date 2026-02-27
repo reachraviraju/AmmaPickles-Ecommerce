@@ -1,0 +1,27 @@
+package com.ammapickles.backend.dto.address;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import lombok.Data;
+
+@Data
+public class AddressRequest {
+
+    @NotBlank(message = "Street is required")
+    private String street;
+
+    @NotBlank(message = "City is required")
+    private String city;
+
+    private String district;
+
+    @NotBlank(message = "State is required")
+    private String state;
+
+    @Pattern(regexp = "^[1-9][0-9]{5}$", message = "Invalid pincode")
+    private String pincode;
+
+    @NotNull(message = "Distance is required for delivery charge calculation")
+    private Double distanceInKm;    
+}

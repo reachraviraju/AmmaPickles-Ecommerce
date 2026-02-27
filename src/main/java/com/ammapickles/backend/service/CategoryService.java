@@ -1,19 +1,21 @@
 package com.ammapickles.backend.service;
 
-import com.ammapickles.backend.dto.CategoryDTO;
+import com.ammapickles.backend.dto.product.CategoryRequest;
+import com.ammapickles.backend.dto.product.CategoryResponse;
+
 import java.util.List;
 
 public interface CategoryService {
 
-    List<CategoryDTO> getAllCategories();
+    List<CategoryResponse> getAllCategories();
 
-    CategoryDTO getCategoryById(Long id);
-   
-      CategoryDTO getCategoryByName(String name);
+    CategoryResponse getCategoryById(Long id);
 
-      CategoryDTO addCategory(CategoryDTO categoryDTO);
+    CategoryResponse getCategoryByName(String name);
 
-     CategoryDTO updateCategory(Long id, CategoryDTO categoryDTO);
-   
+    CategoryResponse addCategory(CategoryRequest request);
+
+    CategoryResponse updateCategory(Long id, CategoryRequest request);
+
     void deleteCategory(Long id);
 }

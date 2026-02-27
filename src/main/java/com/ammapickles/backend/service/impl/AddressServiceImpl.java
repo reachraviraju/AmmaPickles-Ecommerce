@@ -1,6 +1,7 @@
 package com.ammapickles.backend.service.impl;
 
-import com.ammapickles.backend.dto.AddressDTO;
+import com.ammapickles.backend.dto.address.AddressRequest;
+import com.ammapickles.backend.dto.address.AddressResponse;
 import com.ammapickles.backend.entity.Address;
 import com.ammapickles.backend.entity.User;
 import com.ammapickles.backend.exception.ResourceNotFoundException;
@@ -8,70 +9,132 @@ import com.ammapickles.backend.repository.AddressRepository;
 import com.ammapickles.backend.repository.UserRepository;
 import com.ammapickles.backend.service.AddressService;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class AddressServiceImpl implements AddressService {
 
     private final AddressRepository addressRepository;
     private final UserRepository userRepository;
-    private final ModelMapper modelMapper;
+
+
 
     @Override
-    public List<AddressDTO> getAddressesByUser(Long userId) {
-        return addressRepository.findByUserId(userId)
-                .stream()
-                .map(address -> modelMapper.map(address, AddressDTO.class))
-                .collect(Collectors.toList());
-    }
+    @Transactional(readOnly = true)
+    public List<AddressResponse> getAddressesByUser(Long userId) {
+        log.info("Fetching addresses for user: {}", userId);
 
-    @Override
-    public AddressDTO getAddressById(Long addressId) {
-        Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResourceNotFoundException("Address not found with id: " + addressId));
-        return modelMapper.map(address, AddressDTO.class);
-    }
-
-    @Override
-    public AddressDTO createAddress(Long userId, AddressDTO addressDTO) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-
-        Address address = modelMapper.map(addressDTO, Address.class);
-        address.setUser(user);
-
-        Address saved = addressRepository.save(address);
-        return modelMapper.map(saved, AddressDTO.class);
-    }
-
-    @Override
-    public AddressDTO updateAddress(Long addressId, AddressDTO addressDTO) {
-        Address existing = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResourceNotFoundException("Address not found with id: " + addressId));
-
-        // Map updates onto existing entity
-        modelMapper.map(addressDTO, existing);
-
-        Address updated = addressRepository.save(existing);
-        return modelMapper.map(updated, AddressDTO.class);
-    }
-
-    @Override
-    public void deleteAddress(Long userId, Long addressId) {
-        Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResourceNotFoundException("Address not found with id: " + addressId));
-
-        if (!address.getUser().getId().equals(userId)) {
-            throw new IllegalStateException("You are not authorized to delete this address");
+        // Verify user exists first
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("User not found: " + userId);
         }
 
+        return addressRepository.findByUserId(userId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AddressResponse getAddressById(Long addressId) {
+        log.info("Fetching address: {}", addressId);
+
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found: " + addressId));
+
+        return mapToResponse(address);
+    }
+
+    
+
+    @Override
+    @Transactional
+    public AddressResponse createAddress(Long userId, AddressRequest request) {
+        log.info("Creating address for user: {}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+
+        Address address = Address.builder()
+                .street(request.getStreet())
+                .city(request.getCity())
+                .district(request.getDistrict())
+                .state(request.getState())
+                .pincode(request.getPincode())
+                .distanceInKm(request.getDistanceInKm())
+                .user(user)
+                .build();
+
+        Address saved = addressRepository.save(address);
+        log.info("Address created with id: {}", saved.getId());
+
+        return mapToResponse(saved);
+    }
+
+    
+
+    @Override
+    @Transactional
+    public AddressResponse updateAddress(Long addressId, AddressRequest request) {
+        log.info("Updating address: {}", addressId);
+
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found: " + addressId));
+
+        // Update only non-null fields
+        if (request.getStreet() != null) address.setStreet(request.getStreet());
+        if (request.getCity() != null) address.setCity(request.getCity());
+        if (request.getDistrict() != null) address.setDistrict(request.getDistrict());
+        if (request.getState() != null) address.setState(request.getState());
+        if (request.getPincode() != null) address.setPincode(request.getPincode());
+        if (request.getDistanceInKm() != null) address.setDistanceInKm(request.getDistanceInKm());
+
+        // Dirty checking handles save
+        log.info("Address updated: {}", addressId);
+        return mapToResponse(address);
+    }
+
+    
+
+    @Override
+    @Transactional
+    public void deleteAddress(Long userId, Long addressId) {
+        log.info("Deleting address {} for user {}", addressId, userId);
+
+        // Verify address exists AND belongs to this user 
+        Address address = addressRepository.findByIdAndUserId(addressId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Address not found or doesn't belong to user"));
+
         addressRepository.delete(address);
+        log.info("Address deleted: {}", addressId);
+    }
+
+    // PRIVATE HELPER 
+
+    private AddressResponse mapToResponse(Address address) {
+        AddressResponse response = new AddressResponse();
+        response.setId(address.getId());
+        response.setStreet(address.getStreet());
+        response.setCity(address.getCity());
+        response.setDistrict(address.getDistrict());
+        response.setState(address.getState());
+        response.setPincode(address.getPincode());
+        response.setDistanceInKm(address.getDistanceInKm());
+
+        // Formatted address — > useful for order confirmation display
+        response.setFormattedAddress(
+                address.getStreet() + ", " + address.getCity() + ", " +
+                address.getDistrict() + " - " + address.getPincode()
+        );
+
+        return response;
     }
 }

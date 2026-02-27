@@ -1,73 +1,108 @@
 package com.ammapickles.backend.service.impl;
 
-import com.ammapickles.backend.dto.CategoryDTO;
+import com.ammapickles.backend.dto.product.CategoryRequest;
+import com.ammapickles.backend.dto.product.CategoryResponse;
 import com.ammapickles.backend.entity.Category;
 import com.ammapickles.backend.exception.ResourceNotFoundException;
 import com.ammapickles.backend.repository.CategoryRepository;
 import com.ammapickles.backend.service.CategoryService;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final ModelMapper modelMapper;
 
-    @Override
-    public List<CategoryDTO> getAllCategories() {
-        return categoryRepository.findAll().stream()
-                .map(category -> modelMapper.map(category, CategoryDTO.class))
-                .collect(Collectors.toList());
+  
+
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> getAllCategories() {
+        log.info("Fetching all categories");
+        return categoryRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
-    @Override
-    public CategoryDTO getCategoryById(Long id) {
+    @Transactional(readOnly = true)
+    public CategoryResponse getCategoryById(Long id) {
+        log.info("Fetching category with id: {}", id);
         return categoryRepository.findById(id)
-                .map(category -> modelMapper.map(category, CategoryDTO.class))
+                .map(this::mapToResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
     }
 
-    @Override
-    public CategoryDTO getCategoryByName(String name) {
+    @Transactional(readOnly = true)
+    public CategoryResponse getCategoryByName(String name) {
+        log.info("Fetching category with name: {}", name);
         return categoryRepository.findByNameIgnoreCase(name.trim())
-                .map(category -> modelMapper.map(category, CategoryDTO.class))
+                .map(this::mapToResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with name: " + name));
     }
 
-    @Override
-    public CategoryDTO addCategory(CategoryDTO categoryDTO) {
-        String name = categoryDTO.getName().trim();
-        Optional<Category> existing = categoryRepository.findByNameIgnoreCase(name);
-        if (existing.isPresent()) {
+   
+
+    @Transactional
+    public CategoryResponse addCategory(CategoryRequest request) {
+        String name = request.getName().trim();
+        log.info("Adding new category: {}", name);
+
+        //  Chained directly — no unnecessary Optional variable
+        if (categoryRepository.findByNameIgnoreCase(name).isPresent()) {
             throw new IllegalArgumentException("Category already exists: " + name);
         }
-        Category saved = categoryRepository.save(new Category(null, name));
-        return modelMapper.map(saved, CategoryDTO.class);
+
+                        //  Using @Builder instead of new Category(null, name)
+                       // Builder is safer — no risk of wrong constructor argument order
+        Category saved = categoryRepository.save(
+                Category.builder().name(name).build()
+        );
+
+        log.info("Category saved with id: {}", saved.getId());
+        return mapToResponse(saved);
     }
 
-    @Override
-    public CategoryDTO updateCategory(Long id, CategoryDTO categoryDTO) {
+    @Transactional
+    public CategoryResponse updateCategory(Long id, CategoryRequest request) {
+        log.info("Updating category with id: {}", id);
+
         Category existing = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
 
-        existing.setName(categoryDTO.getName().trim());
-        return modelMapper.map(categoryRepository.save(existing), CategoryDTO.class);
+        existing.setName(request.getName().trim());
+
+        // Dirty checking — no need to call save() explicitly!
+        // Hibernate detects the change and saves automatically at end of transaction
+        log.info("Category updated successfully: {}", id);
+        return mapToResponse(existing);
     }
 
-    @Override
+    @Transactional
     public void deleteCategory(Long id) {
-        Category existing = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
-        categoryRepository.delete(existing);
+        log.info("Deleting category with id: {}", id);
+
+        if (!categoryRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Category not found with id: " + id);
+        }
+
+        //  ONE db call instead of find + delete = TWO calls
+        categoryRepository.deleteById(id);
+        log.info("Category deleted successfully: {}", id);
+    }
+
+    // PRIVATE HELPER
+
+    private CategoryResponse mapToResponse(Category category) {
+        CategoryResponse response = new CategoryResponse();
+        response.setId(category.getId());
+        response.setName(category.getName());
+        return response;
     }
 }
-

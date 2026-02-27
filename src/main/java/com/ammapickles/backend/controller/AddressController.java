@@ -1,13 +1,19 @@
 package com.ammapickles.backend.controller;
 
-import com.ammapickles.backend.dto.AddressDTO;
+import com.ammapickles.backend.dto.address.AddressRequest;
+import com.ammapickles.backend.dto.address.AddressResponse;
+import com.ammapickles.backend.dto.common.ApiResponse;
 import com.ammapickles.backend.service.AddressService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/addresses")
 @RequiredArgsConstructor
@@ -15,56 +21,53 @@ public class AddressController {
 
     private final AddressService addressService;
 
-    // Get all addresses for a user
+  
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<AddressDTO>> getAddressesByUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(addressService.getAddressesByUser(userId));
-   
+    public ResponseEntity<ApiResponse<List<AddressResponse>>> getAddressesByUser(
+            @PathVariable Long userId) {
+
+        List<AddressResponse> response = addressService.getAddressesByUser(userId);
+        return ResponseEntity.ok(ApiResponse.success("Addresses fetched successfully", response));
     }
 
-    // Get specific address by ID
-    @GetMapping("/{addressId}")
-    public ResponseEntity<AddressDTO> getAddressById(@PathVariable Long addressId) {
-        return ResponseEntity.ok(addressService.getAddressById(addressId));
+  
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<AddressResponse>> getAddressById(
+            @PathVariable Long id) {
+
+        AddressResponse response = addressService.getAddressById(id);
+        return ResponseEntity.ok(ApiResponse.success("Address fetched successfully", response));
     }
 
-    //Create new address for user
+    
     @PostMapping("/user/{userId}")
-    public ResponseEntity<AddressDTO> createAddress(
+    public ResponseEntity<ApiResponse<AddressResponse>> createAddress(
             @PathVariable Long userId,
-            @RequestBody AddressDTO addressDTO) {
-        return ResponseEntity.ok(addressService.createAddress(userId, addressDTO));
+            @Valid @RequestBody AddressRequest request) {
+
+        AddressResponse response = addressService.createAddress(userId, request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Address created successfully", response));
     }
 
-    //  Update existing address
-    @PutMapping("/{addressId}")
-    public ResponseEntity<AddressDTO> updateAddress( @PathVariable Long addressId,  @RequestBody AddressDTO addressDTO) {
-        return ResponseEntity.ok(addressService.updateAddress(addressId, addressDTO));
-    }
-
-    //  Delete specific address for a user
-    @DeleteMapping("/user/{userId}/{addressId}")
-    public ResponseEntity<Void> deleteAddress(  @PathVariable Long userId,   @PathVariable Long addressId) {
-    	
-        addressService.deleteAddress(userId, addressId);
-        return ResponseEntity.noContent().build(); 
-        
- 
-        
-        
-        
-        
-        
-        
-       
-        
-        
-        
-        
-        
-        
-        
    
-       
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<AddressResponse>> updateAddress(
+            @PathVariable Long id,
+            @Valid @RequestBody AddressRequest request) {
+
+        AddressResponse response = addressService.updateAddress(id, request);
+        return ResponseEntity.ok(ApiResponse.success("Address updated successfully", response));
+    }
+
+   
+    @DeleteMapping("/{userId}/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteAddress(
+            @PathVariable Long userId,
+            @PathVariable Long id) {
+
+        addressService.deleteAddress(userId, id);
+        return ResponseEntity.ok(ApiResponse.success("Address deleted successfully"));
     }
 }

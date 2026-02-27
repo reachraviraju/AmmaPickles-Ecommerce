@@ -1,46 +1,64 @@
 package com.ammapickles.backend.controller;
 
-import com.ammapickles.backend.dto.UserDTO;
-import com.ammapickles.backend.dto.LoginRequest;
-import com.ammapickles.backend.dto.ResetPasswordDTO;
-import com.ammapickles.backend.security.JwtUtil;
-import com.ammapickles.backend.service.UserService;
+import com.ammapickles.backend.dto.auth.AuthResponse;
+import com.ammapickles.backend.dto.auth.LoginRequest;
+import com.ammapickles.backend.dto.auth.RegisterRequest;
+import com.ammapickles.backend.dto.auth.ResetPasswordRequest;
+import com.ammapickles.backend.dto.common.ApiResponse;
+import com.ammapickles.backend.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService userService;
-    private final JwtUtil jwtUtil;
+    private final AuthService authService;
 
-    // REGISTER
+    
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> register(@RequestBody UserDTO userDTO) {
-        UserDTO createdUser = userService.registerUser(userDTO);
-        return ResponseEntity.ok(createdUser);
-    }
-    
-    
+    public ResponseEntity<ApiResponse<AuthResponse>> register(
+            @Valid @RequestBody RegisterRequest request) {
 
-    // LOGIN -> return JWT token
+        log.info("Register request for email: {}", request.getEmail());
+        AuthResponse response = authService.register(request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Registered successfully", response));
+    }
+
+   
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
-        UserDTO user = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
-        String token = jwtUtil.generateToken(user.getEmail());
-        return ResponseEntity.ok(token);
+    public ResponseEntity<ApiResponse<AuthResponse>> login(
+            @Valid @RequestBody LoginRequest request) {
+
+        log.info("Login request for email: {}", request.getEmail());
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(ApiResponse.success("Login successful", response));
     }
 
-    
-    // RESET PASSWORD
-    @PostMapping("/reset-password/{email}")
-    public ResponseEntity<String> resetPassword(
+   
+    @PutMapping("/reset-password/{email}")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
             @PathVariable String email,
-            @RequestBody ResetPasswordDTO resetPasswordDTO) {
-        userService.resetPassword(email, resetPasswordDTO);
-        return ResponseEntity.ok("Password reset successful");
+            @Valid @RequestBody ResetPasswordRequest request) {
+
+        authService.resetPassword(email, request);
+        return ResponseEntity.ok(ApiResponse.success("Password reset successfully"));
+    }
+
+   
+    @GetMapping("/verify/{token}")
+    public ResponseEntity<ApiResponse<Void>> verifyEmail(
+            @PathVariable String token) {
+
+        authService.verifyEmail(token);
+        return ResponseEntity.ok(ApiResponse.success("Email verified successfully"));
     }
 }
