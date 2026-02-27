@@ -1,11 +1,9 @@
 package com.ammapickles.backend.entity;
-import java.math.BigDecimal;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "order_items")
@@ -13,6 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class OrderItem {
 
     @Id
@@ -20,13 +19,19 @@ public class OrderItem {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @ManyToOne
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @Column(nullable = false)
     private Integer quantity;
+
+    
+   
+    @Column(nullable = false)
     private BigDecimal price;
 }
+

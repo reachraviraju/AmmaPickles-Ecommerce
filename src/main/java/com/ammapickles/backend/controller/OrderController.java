@@ -1,13 +1,25 @@
 package com.ammapickles.backend.controller;
 
-import com.ammapickles.backend.dto.OrderDTO;
+import com.ammapickles.backend.dto.common.ApiResponse;
+import com.ammapickles.backend.dto.order.OrderRequest;
+import com.ammapickles.backend.dto.order.OrderResponse;
+import com.ammapickles.backend.security.CustomUserDetails;
 import com.ammapickles.backend.service.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
@@ -15,57 +27,89 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    //user
+    // CUSTOMER ENDPOINTS 
 
-    // Get all orders for a specific user
+    
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<OrderDTO>> getOrdersByUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(orderService.getOrdersByUser(userId));
-        
-    }
-    
-    
-    // Get specific order for a user (ownership check)
-    @GetMapping("/user/{userId}/{orderId}")
-    public ResponseEntity<OrderDTO> getOrderByIdForUser(
-            @PathVariable Long userId,
-            @PathVariable Long orderId) {
-        return ResponseEntity.ok(orderService.getOrderByIdForUser(orderId, userId));
-    }
-    
-    // Place new order
-    @PostMapping("/user/{userId}")
-    public ResponseEntity<OrderDTO> placeOrder(
-            @PathVariable Long userId,
-            @RequestBody OrderDTO orderDTO) {
-        OrderDTO placed = orderService.placeOrder(userId, orderDTO);
-        return new ResponseEntity<>(placed, HttpStatus.CREATED);
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrdersByUser(
+            @PathVariable Long userId) {
+
+        List<OrderResponse> response = orderService.getOrdersByUser(userId);
+        return ResponseEntity.ok(ApiResponse.success("Orders fetched successfully", response));
     }
 
-    // Cancel order
-    @PutMapping("/{orderId}/cancel")
-    public ResponseEntity<Void> cancelOrder(@PathVariable Long orderId) {
-        orderService.cancelOrder(orderId);
-        return ResponseEntity.noContent().build();
-        
-      
-     
-      
+   
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<ApiResponse<OrderResponse>> getOrderById(
+            @PathVariable Long id,
+            //  @AuthenticationPrincipal — gets currently logged in user from JWT
+            // No need to pass userId in URL — we get it from token securely!
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        OrderResponse response = orderService.getOrderByIdForUser(id, userDetails.getId());
+        return ResponseEntity.ok(ApiResponse.success("Order fetched successfully", response));
     }
 
-    // admin
-
-    // Get all orders (admin use)
-    @GetMapping
-    public ResponseEntity<List<OrderDTO>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
-        
-    }
-
-    // Get specific order by ID (admin use)
     
-    @GetMapping("/{orderId}")
-    public ResponseEntity<OrderDTO> getOrderById(@PathVariable Long orderId) {
-        return ResponseEntity.ok(orderService.getOrderById(orderId));
+    @PostMapping
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<ApiResponse<OrderResponse>> placeOrder(
+            @Valid @RequestBody OrderRequest request,
+            // Getting userId from JWT token — not from request body!
+            // User cannot fake their own ID 
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        OrderResponse response = orderService.placeOrder(userDetails.getId(), request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Order placed successfully", response));
+    }
+
+    
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<ApiResponse<Void>> cancelOrder(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        orderService.cancelOrder(id, userDetails.getId());
+        return ResponseEntity.ok(ApiResponse.success("Order cancelled successfully"));
+    }
+
+    // ADMIN ENDPOINTS
+
+    // GET /api/orders/admin/all?page=0&size=10
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Page<OrderResponse>>> getAllOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<OrderResponse> response = orderService.getAllOrders(pageable);
+        return ResponseEntity.ok(ApiResponse.success("All orders fetched", response));
+    }
+
+ 
+    @GetMapping("/admin/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<OrderResponse>> getOrderByIdAdmin(
+            @PathVariable Long id) {
+
+        OrderResponse response = orderService.getOrderById(id);
+        return ResponseEntity.ok(ApiResponse.success("Order fetched successfully", response));
+    }
+
+    // PUT /api/orders/admin/{id}/status?status=SHIPPED
+    @PutMapping("/admin/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
+
+        OrderResponse response = orderService.updateOrderStatus(id, status);
+        return ResponseEntity.ok(ApiResponse.success("Order status updated", response));
     }
 }
