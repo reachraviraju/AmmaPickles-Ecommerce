@@ -1,17 +1,25 @@
 package com.ammapickles.backend.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.function.Function;
 
+
+                                                          // Instead of writing: private static final Logger log = LoggerFactory.getLogger(...)
+                                                          // @Slf4j gives you log variable automatically — log.info(), log.error(), log.warn()
+                                                        // Always use logger instead of System.out.println() in production code
+@Slf4j
 @Component
 public class JwtUtil {
 
@@ -21,50 +29,86 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long expirationTime;
 
-    // Generate token
-    public String generateToken(String username) {
+   
+    // GENERATE TOKEN
+
+    
+    
+    //  Jwts.builder().subject().signWith(key)  cleaner, algorithm auto-detected
+    public String generateToken(String email) {
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
-                .signWith(getSignKey(), SignatureAlgorithm.HS256)
+                .subject(email)                                              // who the token is for
+                .issuedAt(new Date())                                        // when token was created
+                .expiration(new Date(System.currentTimeMillis() + expirationTime))  // when it expires
+                .signWith(getSignKey())                                      // sign with secret key
                 .compact();
-        
-        
     }
 
-    // Extract email/username from token
-    public String getUserMailFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
+   
+    // EXTRACT EMAIL FROM TOKEN
+ 
+
+    
+    public String extractEmail(String token) {
+        return extractClaim(token, Claims::getSubject);
     }
 
-    // Validate token
+  
+    // VALIDATE TOKEN
+   
+
+  
+  
+                        // validate JWT in try-catch 
+                       // Token could be tampered ->  MalformedJwtException
+                      // Token could be expired ->  ExpiredJwtException
+                      // Token could use wrong algorithm - >UnsupportedJwtException
     public boolean validateToken(String token, String userEmail) {
-        String extractedEmail = getUserMailFromToken(token);
-        return extractedEmail.equals(userEmail) && !isTokenExpired(token);
+        try {
+            String extractedEmail = extractEmail(token);
+            return extractedEmail.equals(userEmail) && !isTokenExpired(token);
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT token is expired: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            log.warn("JWT token is malformed: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            log.warn("JWT token is unsupported: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.warn("JWT claims string is empty: {}", e.getMessage());
+        }
+        return false;
     }
 
-    // Check if token expired
+  
+    // PRIVATE HELPERS
+    
+
     private boolean isTokenExpired(String token) {
-        return getExpirationDateFromToken(token).before(new Date());
+        return extractExpiration(token).before(new Date());
     }
 
-    private Date getExpirationDateFromToken(String token) {
-        return getClaimFromToken(token, Claims::getExpiration);
+    private Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
     }
 
-    // Extract claim helper
-    private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSignKey())  // use correct key decoding
+    // Generic method with Function<Claims, T>
+    
+    // Instead of writing separate methods for each claim (subject, expiration, etc.)
+    // We write ONE generic method and pass WHAT to extract as a function
+    // Example :
+    //   extractClaim(token, Claims::getSubject)      -> gets email
+    //   extractClaim(token, Claims::getExpiration)   - > gets expiry date
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        Claims claims = Jwts.parser()                   // NEW API: parser() not parserBuilder()
+                .verifyWith(getSignKey())               // NEW API: verifyWith() not setSigningKey()
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)               // NEW API: parseSignedClaims() not parseClaimsJws()
+                .getPayload();                          // NEW API: getPayload() not getBody()
         return claimsResolver.apply(claims);
     }
 
-    // Proper key handling (Base64 decoding)
-    private Key getSignKey() {
+ 
+    private SecretKey getSignKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }

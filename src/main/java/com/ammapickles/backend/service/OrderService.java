@@ -1,35 +1,38 @@
 package com.ammapickles.backend.service;
 
-import com.ammapickles.backend.dto.OrderDTO;
+import com.ammapickles.backend.dto.order.OrderRequest;
+import com.ammapickles.backend.dto.order.OrderResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 public interface OrderService {
-	
-	//user 
-	
-	 // Get all orders
-    List<OrderDTO> getOrdersByUser(Long userId);
 
-    // Get specific order ensuring it belongs to that user
-    OrderDTO getOrderByIdForUser(Long orderId, Long userId);
+    // CUSTOMER OPERATIONS 
 
-    // Place a new order
-    OrderDTO placeOrder(Long userId, OrderDTO orderDTO);
+    // Get all orders for a specific user
+    List<OrderResponse> getOrdersByUser(Long userId);
 
-    // Cancel an existing order
-    void cancelOrder(Long orderId);
+    // Get specific order  -> verify it belongs to that user 
+    OrderResponse getOrderByIdForUser(Long orderId, Long userId);
 
+    // Place order —> userId comes from JWT token (not from request body)
+    OrderResponse placeOrder(Long userId, OrderRequest request);
+
+    // only PENDING orders can be cancelled
+    void cancelOrder(Long orderId, Long userId);  // userId to verify ownership
     
     
-    // admin
 
-    // Get all orders in the system
-    List<OrderDTO> getAllOrders();
+    //  ADMIN OPERATIONS 
 
-    // Get a specific order by ID (admin)
-    OrderDTO getOrderById(Long orderId);
+       // Paginated —> admin could have thousands of orders
+    Page<OrderResponse> getAllOrders(Pageable pageable);
 
-    
+      // Get any order by ID (admin has access to all)
+    OrderResponse getOrderById(Long orderId);
 
-   
+    // Admin (PENDING -> SHIPPED ->  DELIVERED)
+    OrderResponse updateOrderStatus(Long orderId, String status);
 }
