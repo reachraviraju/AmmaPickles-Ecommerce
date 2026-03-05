@@ -12,12 +12,7 @@ public class AmmaPicklesApplication {
 		SpringApplication.run(AmmaPicklesApplication.class, args);
 		
 		
-		
-		
-		
-		
-		
-		
+	
 		
 	}
 

@@ -21,88 +21,120 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+   
+    // 1  WEB / THYMELEAF  (Session based)
+    
+    //  /home and /products → PUBLIC 
+    //  /cart and /orders   → LOGIN 
+  
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
         http
-            //  CSRF disabled — correct for stateless REST APIs
-            .csrf(csrf -> csrf.disable())
+            .securityMatcher("/", "/home", "/login", "/register",
+            		         "/logout",
+                             "/cart/**", "/orders/**",
+                             "/addresses/**",
+                             "/products/**",
+                             "/css/**", "/images/**", "/js/**",
+                             "/favicon.ico")
 
-            // Stateless session — JWT handles auth, no server-side sessions
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+
             .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-
-            // Return clean JSON 401 instead of ugly HTML when token is missing
-            // ExceptionHandling in Security
-            // Without this, Spring returns a 403 HTML page on unauthorized requests
-            // With this, it returns a clean 401 JSON response — much better for REST APIs
-            .exceptionHandling(ex ->
-                ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
 
             .authorizeHttpRequests(auth -> auth
 
-                                                         //  Public endpoints — no token required
+                // PUBLIC
                 .requestMatchers(
-                    "/api/auth/**",           // login, register, reset-password
-                    "/api/users/verify/**"    // email verification
-                ).permitAll()
+                		"/",
+                	    "/home",
+                	    "/login",
+                	    "/register",
+                	    "/css/**",
+                	    "/images/**",
+                	    "/js/**",
+                	    "/favicon.ico",
+                	    "/products/**"
+                	    
+                      ).permitAll()
 
-                                                        // Public product & category browsing (GET only)
-                .requestMatchers(HttpMethod.GET,
-                    "/api/products/**",
-                    "/api/categories/**"
-                ).permitAll()
+                //  PROTECTED 
+                .requestMatchers("/cart/**").authenticated()
+                .requestMatchers("/orders/**").authenticated()
 
-                                                           // Actuator secured — only expose /health publicly
-                
-    
-                .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers("/actuator/**").hasRole("ADMIN")
-
-                                                         // Customer-only endpoints
-                                                   
-                .requestMatchers(
-                    "/api/cart/**",
-                    "/api/orders/**",
-                    "/api/addresses/**"
-                ).hasRole("CUSTOMER")
-
-                                                                   // Admin-only — product management
-                .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
-
-                                                               //  Admin-only — category management (POST, PUT, DELETE)
-       
-                .requestMatchers(HttpMethod.POST, "/api/categories/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/categories/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN")
-
-                                                                  // User profile — must be logged in
-                .requestMatchers("/api/users/**").authenticated()
-
-                                                                //Everything else requires authentication
                 .anyRequest().authenticated()
             )
 
-                                                           // Add JWT filter before Spring's default username/password filter
+            .formLogin(form -> form
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .usernameParameter("username")
+                .passwordParameter("password")
+                .defaultSuccessUrl("/home", true)
+                .failureUrl("/login?error=true")
+                .permitAll()
+            )
+
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/home")   // after logout -> back to home (still see products)
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+                .permitAll()
+            );
+        
+            
+
+        return http.build();
+    }
+
+    
+    //  2  REST API  (JWT based)
+    @Bean
+    public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/api/**", "/actuator/**")
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .exceptionHandling(ex ->
+                ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+            )
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**", "/api/users/verify/**").permitAll()
+                .requestMatchers(HttpMethod.GET,
+                    "/api/products/**", "/api/categories/**").permitAll()
+                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/actuator/**").hasRole("ADMIN")
+                .requestMatchers("/api/cart/**",
+                                 "/api/orders/**",
+                                 "/api/addresses/**").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.POST,   "/api/products/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT,    "/api/products/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST,   "/api/categories/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT,    "/api/categories/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN")
+                .requestMatchers("/api/users/**").authenticated()
+                .requestMatchers("/addresses/**").authenticated()
+                .anyRequest().authenticated()
+            )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
- 
-                                             // BCrypt automatically adds a random data before hashing
-                                              // So even if two users have same password, their hashed passwords are different
-   
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12); 
+        return new BCryptPasswordEncoder(12);
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 }

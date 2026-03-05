@@ -1,5 +1,6 @@
 package com.ammapickles.backend.service;
 
+import com.ammapickles.backend.dto.product.ProductGroupResponse;
 import com.ammapickles.backend.dto.product.ProductRequest;
 import com.ammapickles.backend.dto.product.ProductResponse;
 import org.springframework.data.domain.Page;
@@ -8,6 +9,11 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface ProductService {
+	
+	
+	List<ProductGroupResponse> getAllProductsGrouped();
+	List<ProductGroupResponse> getProductsGroupedByCategory(Long categoryId);
+	List<ProductGroupResponse> searchProductsGrouped(String name);
 
     //  READ
     

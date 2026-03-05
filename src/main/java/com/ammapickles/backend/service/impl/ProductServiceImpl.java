@@ -1,5 +1,6 @@
 package com.ammapickles.backend.service.impl;
 
+import com.ammapickles.backend.dto.product.ProductGroupResponse;
 import com.ammapickles.backend.dto.product.ProductRequest;
 import com.ammapickles.backend.dto.product.ProductResponse;
 import com.ammapickles.backend.entity.Category;
@@ -16,43 +17,33 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-                                                           // Read methods should use readOnly=true, write methods use full @Transactional
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
-    
+    // READ METHODS
 
-    
-
-              // @Transactional(readOnly = true)
-              // Tells DB: only reading, no writes
-              // DB skips write locks -> faster performance (20-30% improvement on large datasets)
     @Override
     @Transactional(readOnly = true)
     public Page<ProductResponse> getAllProducts(Pageable pageable) {
-        log.info("Fetching all products - page: {}, size: {}", 
+        log.info("Fetching all products - page: {}, size: {}",
                 pageable.getPageNumber(), pageable.getPageSize());
-
-       
-                  // Returns Page<Product> with pagination info —> total pages, total elements
         return productRepository.findAll(pageable)
-                .map(this::mapToResponse);  // map each Product -> ProductResponse
+                .map(this::mapToResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ProductResponse getProductById(Long id) {
         log.info("Fetching product with id: {}", id);
-
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
-
         return mapToResponse(product);
     }
 
@@ -60,11 +51,8 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public Page<ProductResponse> getProductsByCategory(Long categoryId, Pageable pageable) {
         log.info("Fetching products for category id: {}", categoryId);
-
-        // Verify category exists first
         categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
-
         return productRepository.findByCategoryId(categoryId, pageable)
                 .map(this::mapToResponse);
     }
@@ -73,29 +61,64 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public List<ProductResponse> searchProducts(String name) {
         log.info("Searching products with name containing: {}", name);
-
-     
         return productRepository.findByNameContainingIgnoreCase(name)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
     }
 
-   
+    // GROUPED METHODS — for web frontend
 
     @Override
-    @Transactional  // Full transaction for write operations
+    @Transactional(readOnly = true)
+    public List<ProductGroupResponse> getAllProductsGrouped() {
+        log.info("Fetching all products grouped by name");
+        return productRepository.findDistinctProductNames()
+                .stream()
+                .map(name -> {
+                    List<Product> variants = productRepository.findByNameOrderBySizeAsc(name);
+                    return mapToGroupResponse(variants);
+                })
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductGroupResponse> getProductsGroupedByCategory(Long categoryId) {
+        log.info("Fetching products grouped by name for category: {}", categoryId);
+        categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
+        return productRepository.findDistinctProductNamesByCategory(categoryId)
+                .stream()
+                .map(name -> {
+                    List<Product> variants = productRepository
+                            .findByNameAndCategoryIdOrderBySizeAsc(name, categoryId);
+                    return mapToGroupResponse(variants);
+                })
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductGroupResponse> searchProductsGrouped(String keyword) {
+        log.info("Searching grouped products with keyword: {}", keyword);
+        return productRepository.findByNameContainingIgnoreCase(keyword)
+                .stream()
+                .collect(Collectors.groupingBy(Product::getName))
+                .entrySet().stream()
+                .map(entry -> mapToGroupResponse(entry.getValue()))
+                .toList();
+    }
+
+    // WRITE METHODS
+
+    @Override
+    @Transactional
     public ProductResponse addProduct(ProductRequest request) {
         log.info("Adding new product: {}", request.getName());
-
-        // Step 1: Validate category exists
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Category not found with id: " + request.getCategoryId()));
-
-        // Step 2: manually build entity instead of ModelMapper
-                                                                                   // ModelMapper might map 'id' field from request -> could overwrite existing product
-                                                                                 // Manual mapping gives us full control over what gets saved
         Product product = Product.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -104,10 +127,8 @@ public class ProductServiceImpl implements ProductService {
                 .quantity(request.getQuantity())
                 .category(category)
                 .build();
-
         Product saved = productRepository.save(product);
         log.info("Product saved successfully with id: {}", saved.getId());
-
         return mapToResponse(saved);
     }
 
@@ -115,30 +136,18 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductResponse updateProduct(Long id, ProductRequest request) {
         log.info("Updating product with id: {}", id);
-
-        // Step 1: Find existing product
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
-
-        // Step 2: Find new category if changed
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Category not found with id: " + request.getCategoryId()));
-
-        // Step 3: Update only the fields — NEVER change the id
         existing.setName(request.getName());
         existing.setDescription(request.getDescription());
         existing.setPrice(request.getPrice());
         existing.setQuantity(request.getQuantity());
         existing.setSize(request.getSize());
         existing.setCategory(category);
-
-                                         // No need to call productRepository.save() explicitly 
-                                         //  existing is a MANAGED entity inside @Transactional
-                                         // Spring/Hibernate automatically detects changes and saves at end of transaction
-                                             // This is called "Dirty Checking" — a key Hibernate concept!
         log.info("Product updated successfully: {}", id);
-
         return mapToResponse(existing);
     }
 
@@ -146,21 +155,15 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public void deleteProduct(Long id) {
         log.info("Deleting product with id: {}", id);
-
-        // Verify exists first — throw proper error if not found
         if (!productRepository.existsById(id)) {
             throw new ResourceNotFoundException("Product not found with id: " + id);
         }
-
-        // deleteById() — ONE db call instead of findById() + delete() = TWO calls
         productRepository.deleteById(id);
         log.info("Product deleted successfully: {}", id);
     }
 
-    // PRIVATE HELPER
+    // PRIVATE HELPERS
 
-    //  Manual mapping entity -> response (safe and explicit)
-    // We control exactly what fields go into the response
     private ProductResponse mapToResponse(Product product) {
         ProductResponse response = new ProductResponse();
         response.setId(product.getId());
@@ -169,19 +172,40 @@ public class ProductServiceImpl implements ProductService {
         response.setPrice(product.getPrice());
         response.setSize(product.getSize());
         response.setQuantity(product.getQuantity());
-        response.setInStock(product.isInStock());  // uses our helper method from entity
-
-        // Size label — human readable ("1 kg", "2 kg")
+        response.setInStock(product.isInStock());
         if (product.getSize() != null) {
             response.setSizeLabel(product.getSize().getLabel());
         }
-
-        // Category info
         if (product.getCategory() != null) {
             response.setCategoryId(product.getCategory().getId());
             response.setCategoryName(product.getCategory().getName());
         }
-
         return response;
+    }
+
+    private ProductGroupResponse mapToGroupResponse(List<Product> variants) {
+        Product first = variants.get(0);
+
+        ProductGroupResponse group = new ProductGroupResponse();
+        group.setName(first.getName());
+        group.setDescription(first.getDescription());
+        group.setCategoryName(first.getCategory().getName());
+        group.setCategoryId(first.getCategory().getId());
+
+        List<ProductGroupResponse.ProductVariant> variantList = variants.stream()
+                .map(p -> {
+                    ProductGroupResponse.ProductVariant v = new ProductGroupResponse.ProductVariant();
+                    v.setId(p.getId());
+                    v.setSize(p.getSize());
+                    v.setSizeLabel(p.getSize() != null ? p.getSize().getLabel() : "Standard");
+                    v.setPrice(p.getPrice());
+                    v.setInStock(p.isInStock());
+                    v.setQuantity(p.getQuantity());
+                    return v;
+                })
+                .toList();
+
+        group.setVariants(variantList);
+        return group;
     }
 }

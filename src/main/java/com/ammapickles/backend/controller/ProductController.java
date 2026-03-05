@@ -1,6 +1,7 @@
 package com.ammapickles.backend.controller;
 
 import com.ammapickles.backend.dto.common.ApiResponse;
+import com.ammapickles.backend.dto.product.ProductGroupResponse;
 import com.ammapickles.backend.dto.product.ProductRequest;
 import com.ammapickles.backend.dto.product.ProductResponse;
 import com.ammapickles.backend.service.ProductService;
@@ -62,6 +63,8 @@ public class ProductController {
         Page<ProductResponse> response = productService.getProductsByCategory(categoryId, pageable);
         return ResponseEntity.ok(ApiResponse.success("Products fetched successfully", response));
     }
+    
+    
 
     
     @GetMapping("/search")
@@ -71,10 +74,40 @@ public class ProductController {
         List<ProductResponse> response = productService.searchProducts(name);
         return ResponseEntity.ok(ApiResponse.success("Search results", response));
     }
+    
+ 
+    @GetMapping("/grouped")
+    public ResponseEntity<ApiResponse<List<ProductGroupResponse>>> getAllProductsGrouped() {
+        List<ProductGroupResponse> response = productService.getAllProductsGrouped();
+        return ResponseEntity.ok(ApiResponse.success("Grouped products fetched", response));
+    }
+
+    
+    @GetMapping("/grouped/category/{categoryId}")
+    public ResponseEntity<ApiResponse<List<ProductGroupResponse>>> getProductsGroupedByCategory(
+            @PathVariable Long categoryId) {
+        List<ProductGroupResponse> response = productService.getProductsGroupedByCategory(categoryId);
+        return ResponseEntity.ok(ApiResponse.success("Grouped products by category fetched", response));
+    }
+
+ 
+    @GetMapping("/grouped/search")
+    public ResponseEntity<ApiResponse<List<ProductGroupResponse>>> searchProductsGrouped(
+            @RequestParam String keyword) {
+        List<ProductGroupResponse> response = productService.searchProductsGrouped(keyword);
+        return ResponseEntity.ok(ApiResponse.success("Search results", response));
+    }
+    
+    
+    
+    
 
    
     
-              // SecurityConfig + @PreAuthorize
+            
+  // SecurityConfig + @PreAuthorize
+    
+    
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<ProductResponse>> addProduct(

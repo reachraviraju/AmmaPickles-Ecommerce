@@ -17,36 +17,28 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-                                                                  //  @Slf4j gives you 'log' variable automatically via Lombok
-                                                               // Use log.info(), log.warn(), log.error() — never System.out.println() in production!  
-
-
-
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService; // Spring picks CustomUserDetailsService automatically
 
-    // shouldNotFilter()
-    // public URLs don't need JWT checking at all 
-    // This makes your app slightly faster and avoids unnecessary token parsing
+    //Skip JWT filter for ALL web pages
     
-    private static final List<String> PUBLIC_URLS = List.of(
-            "/api/auth/login",
-            "/api/auth/register",
-            "/api/auth/reset-password",
-            "/actuator/health"
+    // These pages use Session login, not JWT
+    private static final List<String> WEB_URLS = List.of(
+            "/home", "/cart", "/orders",
+            "/login", "/register", "/",
+            "/css", "/images", "/js", "/favicon"
     );
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        // If the request path starts with any public URL, skip this filter
-        return PUBLIC_URLS.stream().anyMatch(path::startsWith);
+        String path = request.getServletPath();
+        // Skip JWT check for all web pages
+        return WEB_URLS.stream().anyMatch(path::startsWith);
     }
 
     @Override
@@ -55,69 +47,54 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-                //  Read the Authorization header
+        // Step 1: Read Authorization header
         String authHeader = request.getHeader("Authorization");
 
-        // Check if header exists and starts with "Bearer "
-        // If not, just continue — SecurityConfig will reject unauthenticated requests
+        // Step 2: No token -> skip, SecurityConfig will handle it
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
-            return;  
+            return;
         }
 
-        //  Extract the token (remove "Bearer " prefix — 7 characters)
+        // Step 3: Extract token
         String token = authHeader.substring(7);
         String userEmail = null;
 
-       
-        //  If we don't catch here, a malformed token causes a 500 error
-        // We want a clean 401 Unauthorized instead — much better UX for API consumers
+        // Step 4: Extract email safely
         try {
-            // Was calling getUserMailFromToken() — renamed to extractEmail() in JwtUtil
             userEmail = jwtUtil.extractEmail(token);
         } catch (Exception e) {
-            log.warn("Could not extract email from JWT token: {}", e.getMessage());
+            log.warn("Could not extract email from JWT: {}", e.getMessage());
             filterChain.doFilter(request, response);
-            return;  // Stop here — invalid token, don't authenticate
+            return;
         }
 
-         // If we got an email AND user is not already authenticated
-        //   Why check getAuthentication() == null?
-        //  Avoid re-authenticating on every filter if already done earlier in the chain
+        // Step 5: Authenticate if not already done
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            //  Load full user details from database using email
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
-            //  Validate the token against the loaded user
+            // Step 6: Validate token - uses YOUR original 2-param method
             if (jwtUtil.validateToken(token, userDetails.getUsername())) {
 
-                // Create authentication token
-                // Why null as credentials (2nd param)?
-                // We already trust the JWT — no need to keep the password around
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,
-                                null,                          // credentials = null (intentional)
-                                userDetails.getAuthorities()   // roles: ROLE_ADMIN, ROLE_CUSTOMER
+                                null,
+                                userDetails.getAuthorities()
                         );
 
-                //  Attach request details (IP address, session info etc.)
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request));
 
-                // Set authentication in SecurityContextHolder
-                // This tells Spring Security: "this user is authenticated for this request"
-                // It's thread-local only lives for the duration of this HTTP request
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-
-                log.info("User '{}' authenticated successfully", userEmail);
+                log.info("JWT auth set for user: {}", userEmail);
 
             } else {
-                log.warn("JWT token validation failed for user: {}", userEmail);
+                log.warn("JWT validation failed for: {}", userEmail);
             }
         }
 
-        //  Continue to next filter or controller
         filterChain.doFilter(request, response);
     }
 }
