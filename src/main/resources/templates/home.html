@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Amma Pickles</title>
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F9AB;</text></svg>">
+
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+
+<body>
+
+    <!-- ── Navbar ── -->
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <!-- ── Hero ── -->
+    <section class="ap-hero">
+
+        <span class="hero-badge">Traditional Recipes Since 1985</span>
+
+        <h1>The Taste of <em>Tradition</em><br>in Every Jar</h1>
+
+        <p>Hand-crafted pickles made with love, premium spices and age-old family recipes passed down through generations.</p>
+
+        <form th:action="@{/home}" method="get" class="hero-search">
+            <input type="text"
+                   name="search"
+                   placeholder="Search for pickles..."
+                   th:value="${activeSearch}"/>
+            <button type="submit">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+
+        <div class="hero-stats">
+            <div class="stat">
+                <div class="num shine-gold">30+</div>
+                <div class="lbl">Varieties</div>
+            </div>
+            <div class="stat">
+                <div class="num shine-gold">10K+</div>
+                <div class="lbl">Happy Customers</div>
+            </div>
+            <div class="stat">
+                <div class="num shine-gold">100%</div>
+                <div class="lbl">Natural</div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ── Category Filters ── -->
+    <div class="category-filters">
+
+        <span class="filter-label">Filter:</span>
+
+        <!-- All -->
+        <a th:href="@{/home}"
+           class="filter-btn"
+           th:classappend="${activeCategory == null} ? ' active' : ''">
+            All
+        </a>
+
+        <!-- Dynamic categories -->
+        <a th:each="cat : ${categories}"
+           th:href="@{/home(category=${cat.id})}"
+           th:text="${cat.name}"
+           class="filter-btn"
+           th:classappend="${activeCategory == cat.id} ? ' active' : ''">
+        </a>
+
+    </div>
+
+    <!-- ── Products ── -->
+    <section class="ap-products" id="products">
+
+        <div class="section-head">
+            <span class="tag">✦ Our Collection ✦</span>
+            <h2 th:if="${activeSearch != null}"
+                th:text="'Results for: ' + ${activeSearch}">
+            </h2>
+            <h2 th:unless="${activeSearch != null}">Freshly Made Pickles</h2>
+            <div class="divider-line"></div>
+        </div>
+
+        <!-- Empty state -->
+        <div th:if="${products == null or products.empty}" class="text-center py-5">
+            <div style="font-size:4rem; opacity:0.2;">🫙</div>
+            <p class="text-white-50 mt-3">No pickles found. Try a different search!</p>
+            <a th:href="@{/home}" style="color:var(--gold-mid);">View all pickles &rarr;</a>
+        </div>
+
+        <!-- Product grid -->
+        <div class="container" th:unless="${products == null or products.empty}">
+            <div class="row g-4">
+
+                <div class="col-xl-3 col-md-4 col-sm-6"
+                     th:each="product : ${products}">
+
+                    <div class="product-card"
+                         th:onclick="|window.location.href='/products/${product.variants[0].id}'|">
+
+                        <!-- Image area -->
+                        <div class="card-img-area">
+                            <img th:src="@{/images/default-product.jpg}"
+                                 th:alt="${product.name}"/>
+                            <span class="cat-badge" th:text="${product.categoryName}"></span>
+                            <span class="stock-dot"
+                                  th:classappend="${!product.inStock} ? 'out'"></span>
+                        </div>
+
+                        <!-- Body -->
+                        <div class="card-body-ap">
+                            <h5 th:text="${product.name}"></h5>
+                            <p  th:text="${product.description}"></p>
+                            <div class="card-sizes">
+                                <span th:each="v : ${product.variants}"
+                                      class="card-size-tag"
+                                      th:text="${v.sizeLabel}">
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="card-footer-ap" onclick="event.stopPropagation()">
+
+                            <span class="card-price shine-gold"
+                                  th:text="'&#8377;' + ${product.price}">
+                            </span>
+
+                            <!-- Add to cart — logged in + in stock -->
+                            <form th:if="${product.inStock and username != null}"
+                                  th:action="@{/cart/add/{id}(id=${product.variants[0].id})}"
+                                  method="post">
+                                <input type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn-add">
+                                    <i class="bi bi-cart-plus"></i> Add
+                                </button>
+                            </form>
+
+                            <!-- Add to cart — not logged in + in stock -->
+                            <button th:if="${product.inStock and username == null}"
+                                    class="btn-add"
+                                    onclick="window.location.href='/login'">
+                                <i class="bi bi-cart-plus"></i> Add
+                            </button>
+
+                            <!-- Out of stock -->
+                            <button th:unless="${product.inStock}"
+                                    class="btn-cancel"
+                                    disabled>
+                                Out of Stock
+                            </button>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ── Footer ── -->
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Smooth-scroll to products when search/filter is active
+        const urlParams    = new URLSearchParams(window.location.search);
+        const cameFromHome = document.referrer.includes('/home');
+
+        if (urlParams.has('search') || urlParams.has('category') || cameFromHome) {
+            document.querySelector('.ap-products')
+                    .scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+
+</body>
+</html>

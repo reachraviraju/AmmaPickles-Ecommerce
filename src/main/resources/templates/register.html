@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Register — AmmA Pickles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:wght@700;900&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body class="auth-body">
+
+<div class="auth-wrap">
+
+    <div class="logo-badge-wrap">
+        <div class="logo-opt4">
+            <span class="amma shine-gold">AMMA</span>
+            <div class="divline"></div>
+            <span class="pickles">Pickles</span>
+        </div>
+        <div class="logo-tagline">Join Our Pickle Family</div>
+    </div>
+
+    <div class="auth-card">
+        <h4>Create Account</h4>
+        <div class="sub">Start your pickle journey today!</div>
+
+        <div class="alert-ap" th:if="${error}" th:text="${error}"></div>
+
+        <form th:action="@{/register}" method="post">
+
+            <label class="ap-label">Full Name</label>
+            <input class="ap-input" type="text" name="name"
+                   placeholder="Enter your full name" required/>
+
+            <label class="ap-label">Email Address</label>
+            <input class="ap-input" type="email" name="email"
+                   placeholder="your@email.com" required/>
+
+            <label class="ap-label" for="password">Password</label>
+            <div style="position:relative;">
+                <input class="ap-input" type="password" id="password" name="password"
+                       placeholder="Create a password"
+                       style="padding-right:3rem; margin-bottom:0;" required/>
+                <button type="button" onclick="togglePassword()" id="eyeBtn"
+                        style="position:absolute; right:1rem; top:50%; transform:translateY(-50%);
+                               background:transparent; border:none; cursor:pointer;
+                               color:rgba(212,160,23,0.6); font-size:1.1rem; padding:0;
+                               transition:color 0.2s;">
+                    <i class="bi bi-eye" id="eyeIcon"></i>
+                </button>
+            </div>
+            <div style="margin-bottom:1.2rem;"></div>
+
+            <button type="submit" class="btn-ap">Create Account →</button>
+        </form>
+
+        <div class="auth-divider"><span>or</span></div>
+        <div class="auth-footer">Already have an account? <a href="/login">Login here</a></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+    /* ── 1. Password visibility toggle ── */
+    function togglePassword() {
+        const input   = document.getElementById('password');
+        const icon    = document.getElementById('eyeIcon');
+        const btn     = document.getElementById('eyeBtn');
+        const visible = input.type === 'text';
+
+        input.type      = visible ? 'password' : 'text';
+        icon.className  = visible ? 'bi bi-eye' : 'bi bi-eye-slash';
+        btn.style.color = visible ? 'rgba(212,160,23,0.6)' : 'rgba(212,160,23,1)';
+    }
+
+    /* ── 2. Auto-scroll & Enter-to-next  ──
+       These run on page load, NOT inside togglePassword            */
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const inputs = Array.from(document.querySelectorAll('.ap-input'));
+
+        // Scroll focused field to centre of screen
+        inputs.forEach(el => {
+            el.addEventListener('focus', () => {
+                setTimeout(() => {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 150);   // wait for mobile keyboard to finish opening
+            });
+        });
+
+        // Enter key moves to next field instead of submitting mid-form
+        inputs.forEach((input, index) => {
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && index < inputs.length - 1) {
+                    e.preventDefault();
+                    inputs[index + 1].focus();   // triggers scroll above
+                }
+            });
+        });
+
+    });
+
+</script>
+</body>
+</html>

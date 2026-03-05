@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<body>
+
+<nav th:fragment="navbar" class="ap-navbar">
+
+    <!-- Logo -->
+    <a href="/home" class="logo-opt1">
+        <span class="amma shine-gold">AMMA</span>
+        <div class="gold-line"></div>
+        <span class="pickles">Pickles</span>
+    </a>
+
+    <!-- Nav Pills -->
+    <div class="nav-pills">
+
+        <!-- Welcome message -->
+        <span class="welcome-txt"
+              th:if="${username != null}"
+              th:text="'Hello 👋 ' + ${username}">
+        </span>
+
+        <!-- Cart (logged in only) -->
+        <a href="/cart" class="pill-gold"
+           th:if="${username != null}">
+            <i class="bi bi-cart3"></i> Cart
+        </a>
+
+        <!-- My Orders (logged in only) -->
+        <a href="/orders" class="pill-ghost"
+           th:if="${username != null}">
+            My Orders
+        </a>
+
+        <!-- Logout (logged in only) -->
+        <form th:if="${username != null}"
+              th:action="@{/logout}"
+              method="post"
+              style="margin:0; padding:0;">
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}"/>
+            <button type="submit" class="pill-ghost"
+                    style="background:transparent; cursor:pointer;">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </button>
+        </form>
+
+        <!-- Login (logged out only) -->
+        <a href="/login" class="pill-ghost"
+           th:unless="${username != null}">
+            Login
+        </a>
+
+        <!-- Register (logged out only) -->
+        <a href="/register" class="pill-gold"
+           th:unless="${username != null}">
+            Register
+        </a>
+
+    </div>
+
+</nav>
+
+</body>
+</html>

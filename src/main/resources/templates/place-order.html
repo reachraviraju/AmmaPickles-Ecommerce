@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<title>Place Order — Amma Pickles</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:wght@700;900&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+
+<link th:href="@{/css/style.css}" rel="stylesheet"/>
+
+</head>
+
+
+<body>
+
+<!-- NAVBAR -->
+<div th:replace="fragments/navbar :: navbar"></div>
+
+
+
+<!-- PAGE HEADER -->
+<div class="page-hdr">
+
+<h2>📦 Place Order</h2>
+
+<p>Select a delivery address to confirm your order</p>
+
+</div>
+
+
+
+<div class="cart-main">
+
+<!-- NO ADDRESS -->
+<div th:if="${addresses == null or addresses.empty}">
+
+<div class="empty-box">
+
+<div class="icon">📍</div>
+
+<h3>No saved addresses!</h3>
+
+<p>You need to add a delivery address before placing an order.</p>
+
+<a href="/addresses/add" class="btn-shop">
+
+Add Address →
+
+</a>
+
+</div>
+
+</div>
+
+
+
+<!-- ADDRESS SELECTION -->
+<div th:unless="${addresses == null or addresses.empty}">
+
+<form th:action="@{/orders/place}" method="post">
+
+<input type="hidden"
+       th:name="${_csrf.parameterName}"
+       th:value="${_csrf.token}"/>
+
+
+
+<div class="row g-3 mb-4">
+
+<div class="col-12">
+
+<div style="
+font-family:'Cinzel',serif;
+font-size:0.65rem;
+letter-spacing:3px;
+color:var(--gold-mid);
+text-transform:uppercase;
+margin-bottom:1rem;
+">
+
+Select Delivery Address
+
+</div>
+
+</div>
+
+
+
+<!-- ADDRESS CARD -->
+<div class="col-md-6"
+     th:each="address : ${addresses}">
+
+<label th:for="'addr-' + ${address.id}"
+       class="address-card">
+
+<input type="radio"
+       name="addressId"
+       th:id="'addr-' + ${address.id}"
+       th:value="${address.id}"
+       required/>
+
+<div class="addr-card-body">
+
+<div class="addr-street"
+     th:text="${address.street}">
+</div>
+
+<div class="addr-detail"
+     th:text="${address.city} + ', ' + ${address.district}">
+</div>
+
+<div class="addr-detail"
+     th:text="${address.state} + ' - ' + ${address.pincode}">
+</div>
+
+<div class="addr-distance"
+     th:if="${address.distanceInKm != null}"
+     th:text="'📏 ' + ${address.distanceInKm} + ' km from warehouse">
+</div>
+
+</div>
+
+</label>
+
+</div>
+
+</div>
+
+
+
+<button type="submit"
+        class="btn-order"
+        style="max-width:340px;">
+
+Confirm Order →
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+
+
+<!-- FOOTER -->
+<div th:replace="fragments/footer :: footer"></div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
