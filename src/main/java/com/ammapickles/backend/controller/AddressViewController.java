@@ -9,9 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -20,16 +18,7 @@ public class AddressViewController {
     private final AddressService addressService;
     private final UserRepository userRepository;
 
-    // VIEW ALL ADDRESSES
-    @GetMapping("/addresses")
-    public String addressesPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-        model.addAttribute("addresses", addressService.getAddressesByUser(user.getId()));
-        model.addAttribute("username", user.getUsername());
-        return "addresses";
-    }
-
-    // SHOW ADD ADDRESS FORM
+    //  Show add address form 
     @GetMapping("/addresses/add")
     public String addAddressPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
@@ -37,16 +26,15 @@ public class AddressViewController {
         return "add-address";
     }
 
-    // SUBMIT NEW ADDRESS
+    // Save new address 
     @PostMapping("/addresses/add")
     public String saveAddress(@RequestParam String street,
                               @RequestParam String city,
                               @RequestParam(required = false) String district,
                               @RequestParam String state,
                               @RequestParam String pincode,
-                              @RequestParam Double distanceInKm,
-                              @AuthenticationPrincipal UserDetails userDetails,
-                              Model model) {
+                              @RequestParam(required = false) Double distanceInKm,
+                              @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
 
         AddressRequest request = new AddressRequest();
@@ -58,6 +46,36 @@ public class AddressViewController {
         request.setDistanceInKm(distanceInKm);
 
         addressService.createAddress(user.getId(), request);
+        return "redirect:/orders/place";
+    }
+
+    //  Update existing address (called from modal on place-order page) 
+    @PostMapping("/addresses/edit/{id}")
+    public String updateAddress(@PathVariable Long id,
+                                @RequestParam String street,
+                                @RequestParam String city,
+                                @RequestParam(required = false) String district,
+                                @RequestParam String state,
+                                @RequestParam String pincode,
+                                @RequestParam(required = false) Double distanceInKm) {
+        AddressRequest request = new AddressRequest();
+        request.setStreet(street);
+        request.setCity(city);
+        request.setDistrict(district);
+        request.setState(state);
+        request.setPincode(pincode);
+        request.setDistanceInKm(distanceInKm);
+
+        addressService.updateAddress(id, request);
+        return "redirect:/orders/place";
+    }
+
+    //  Delete address 
+    @PostMapping("/addresses/delete/{id}")
+    public String deleteAddress(@PathVariable Long id,
+                                @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        addressService.deleteAddress(user.getId(), id);
         return "redirect:/orders/place";
     }
 }

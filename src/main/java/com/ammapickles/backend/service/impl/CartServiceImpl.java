@@ -42,19 +42,17 @@ public class CartServiceImpl implements CartService {
         return mapToResponse(cart);
     }
 
-    // ADD TO CART 
+    // ADD TO CART
 
     @Override
     @Transactional
     public CartResponse addToCart(Long userId, Long productId, int quantity) {
         log.info("Adding product {} to cart for user {}", productId, userId);
 
-        // Validate quantity
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be at least 1");
         }
 
-        // Load product and check stock
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
 
@@ -67,22 +65,17 @@ public class CartServiceImpl implements CartService {
                     "Insufficient stock. Available: " + product.getQuantity());
         }
 
-        // Get or create cart
         Cart cart = getOrCreateCart(userId);
 
-        // Check if product already exists in cart
-        // If yes → update quantity, if no -> add new item
         Optional<CartItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
                 .findFirst();
 
         if (existingItem.isPresent()) {
-            // Product already in cart —>  just increase quantity
             CartItem item = existingItem.get();
             item.setQuantity(item.getQuantity() + quantity);
             log.info("Updated quantity for product {} in cart", productId);
         } else {
-            // New product —> add to cart
             CartItem newItem = CartItem.builder()
                     .cart(cart)
                     .product(product)
@@ -96,7 +89,7 @@ public class CartServiceImpl implements CartService {
         return mapToResponse(saved);
     }
 
-    // UPDATE CART ITEM 
+    // UPDATE CART ITEM
 
     @Override
     @Transactional
@@ -110,19 +103,17 @@ public class CartServiceImpl implements CartService {
         CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found: " + cartItemId));
 
-        // Check stock availability
         if (item.getProduct().getQuantity() < quantity) {
             throw new IllegalStateException(
                     "Insufficient stock. Available: " + item.getProduct().getQuantity());
         }
 
         item.setQuantity(quantity);
-        // Dirty checking handles save
 
         return mapToResponse(item.getCart());
     }
 
-    // REMOVE CART ITEM 
+    // REMOVE CART ITEM
 
     @Override
     @Transactional
@@ -151,9 +142,8 @@ public class CartServiceImpl implements CartService {
         log.info("Cart cleared for user: {}", userId);
     }
 
-    // PRIVATE HELPERS 
+    // PRIVATE HELPERS
 
-    // Get existing cart or create new one if not exists
     private Cart getOrCreateCart(Long userId) {
         return cartRepository.findByUserId(userId)
                 .orElseGet(() -> {
@@ -176,6 +166,7 @@ public class CartServiceImpl implements CartService {
                     CartItemResponse itemResponse = new CartItemResponse();
                     itemResponse.setCartItemId(item.getId());
                     itemResponse.setProductId(item.getProduct().getId());
+                    itemResponse.setVariantId(item.getProduct().getId()); // for product detail link
                     itemResponse.setProductName(item.getProduct().getName());
                     itemResponse.setPrice(item.getProduct().getPrice());
                     itemResponse.setQuantity(item.getQuantity());

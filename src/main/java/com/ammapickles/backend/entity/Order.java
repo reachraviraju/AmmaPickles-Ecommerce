@@ -34,6 +34,8 @@ public class Order {
 
     @Column(nullable = false)
     private BigDecimal deliveryCharge;
+    
+    
 
     
                // Avoids calculating this repeatedly in service/controller
@@ -50,7 +52,9 @@ public class Order {
     @Column(nullable = false, updatable = false)
     private LocalDateTime orderDate;
 
-    @OneToOne
+    
+    
+    @ManyToOne
     @JoinColumn(name = "address_id", nullable = false)
     private Address deliveryAddress;
 

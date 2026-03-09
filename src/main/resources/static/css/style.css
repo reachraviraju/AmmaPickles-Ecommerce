@@ -20,7 +20,8 @@
 
     /* Backgrounds */
     --bg-base:           #0D0D0D;
-    --bg-card:           #1A1008;
+
+    --bg-card: #1E1A14;  
     --bg-deeper:         #251508;
     --bg-black:          #080300;
 
@@ -1170,6 +1171,8 @@ body {
 .s-total .tv { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; }
 .del-note   { text-align: center; margin-top: 1rem; font-size: 0.72rem; color: var(--text-label); }
 
+
+
 /* ============================================================
    12. ORDERS PAGE
    ============================================================ */
@@ -1179,30 +1182,41 @@ body {
     margin: 0 auto;
 }
 .order-card {
-    background: var(--bg-card);
+    background: linear-gradient(160deg, #1E1A14 0%, #1A1610 100%);
     border-radius: var(--radius-card);
     overflow: hidden;
-    border: 1px solid var(--border-gold);
+    border: 1px solid rgba(212,160,23,0.25);
     margin-bottom: 1.8rem;
     animation: fadeUp 0.5s ease both;
-    transition: border-color 0.3s;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.45);
 }
-.order-card:hover { border-color: var(--border-gold-hover); }
+.order-card:hover {
+    border-color: var(--gold-mid);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.55), 0 0 20px rgba(212,160,23,0.08);
+}
 .order-card:nth-child(1) { animation-delay: 0.10s; }
 .order-card:nth-child(2) { animation-delay: 0.20s; }
 .order-card:nth-child(3) { animation-delay: 0.30s; }
+
 .order-hdr {
-    background: linear-gradient(135deg, #1A0000, #0D0500);
-    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #252018, #1E1A12);
+    padding: 1.1rem 1.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 0.5rem;
-    border-bottom: 1px solid var(--border-gold);
+    border-bottom: 1px solid rgba(212,160,23,0.18);
 }
-.order-id   { font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: 2px; }
+.order-id {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    color: white;
+    margin-bottom: 2px;
+}
 .order-date { color: var(--text-silver-soft); font-size: 0.75rem; }
+
 .status-badge {
     padding: 0.28rem 1rem;
     border-radius: 20px;
@@ -1212,27 +1226,29 @@ body {
     letter-spacing: 1px;
     text-transform: uppercase;
 }
-.status-PENDING   { background: rgba(255,152,0,  0.12); border: 1px solid rgba(255,152,0,  0.3); color: #FFB74D; }
-.status-CONFIRMED { background: rgba(33, 150,243, 0.12); border: 1px solid rgba(33, 150,243, 0.3); color: #64B5F6; }
-.status-DELIVERED { background: rgba(76, 175,80,  0.12); border: 1px solid rgba(76, 175,80,  0.3); color: #81C784; }
-.status-CANCELLED { background: rgba(139,0,  0,   0.20); border: 1px solid rgba(139,0,  0,   0.4); color: #EF9A9A; }
+.status-PENDING   { background: rgba(255,152,0,  0.15); border: 1px solid rgba(255,152,0,  0.4); color: #FFB74D; }
+.status-CONFIRMED { background: rgba(33,150,243,  0.15); border: 1px solid rgba(33,150,243,  0.4); color: #64B5F6; }
+.status-SHIPPED   { background: rgba(156,39,176,  0.15); border: 1px solid rgba(156,39,176,  0.4); color: #CE93D8; }
+.status-DELIVERED { background: rgba(76,175,80,   0.15); border: 1px solid rgba(76,175,80,   0.4); color: #81C784; }
+.status-CANCELLED { background: rgba(139,0,0,     0.20); border: 1px solid rgba(139,0,0,     0.5); color: #EF9A9A; }
 
 .order-body { padding: 1.4rem 1.5rem; }
+
 .addr-row {
-    background: rgba(212,160,23,0.04);
-    border-left: 2px solid rgba(212,160,23,0.35);
-    padding: 0.6rem 1rem;
+    background: rgba(212,160,23,0.06);
+    border-left: 2px solid rgba(212,160,23,0.45);
+    padding: 0.65rem 1rem;
     border-radius: 0 8px 8px 0;
     font-size: 0.8rem;
-    color: var(--text-silver-soft);
+    color: var(--text-silver);
     margin-bottom: 1.2rem;
 }
 
 .items-tbl { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
-.items-tbl thead tr { border-bottom: 1px solid var(--border-gold); }
+.items-tbl thead tr { border-bottom: 1px solid rgba(212,160,23,0.18); }
 .items-tbl th {
     padding: 0.5rem 0.8rem;
-    color: rgba(212,160,23,0.55);
+    color: rgba(212,160,23,0.65);
     font-size: 0.62rem;
     text-transform: uppercase;
     letter-spacing: 1.5px;
@@ -1242,24 +1258,26 @@ body {
 }
 .items-tbl td {
     padding: 0.75rem 0.8rem;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
     color: var(--text-silver);
 }
 .items-tbl tr:last-child td { border-bottom: none; }
-.items-tbl td.amt { font-weight: 700; color: rgba(212,160,23,0.85); }
+.items-tbl tbody tr:hover td { background: rgba(212,160,23,0.03); }
+.items-tbl td.amt { font-weight: 700; color: rgba(212,160,23,0.9); }
 
 .order-ftr {
-    background: rgba(0,0,0,0.25);
+    background: rgba(212,160,23,0.04);
     padding: 1rem 1.5rem;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     gap: 2.5rem;
     flex-wrap: wrap;
-    border-top: 1px solid var(--border-gold-glow);
+    border-top: 1px solid rgba(212,160,23,0.13);
 }
 .ftr-item .fl {
     font-size: 0.62rem;
-    color: var(--text-label);
+    color: rgba(212,160,23,0.55);
     text-transform: uppercase;
     letter-spacing: 1px;
     font-family: 'Cinzel', serif;
@@ -1270,35 +1288,200 @@ body {
     font-size: 0.9rem;
     margin-top: 2px;
 }
+.ftr-item.grand .fl { color: rgba(212,160,23,0.8); }
 .ftr-item.grand .fv {
     font-family: 'Playfair Display', serif;
     font-size: 1.2rem;
 }
 
-/* Address card */
-.address-card {
-    display: block;
+/* ============================================================
+   ADDRESS CARD — wrapper, actions, edit/delete buttons + MODAL
+   ============================================================ */
+
+/* Wrapper holds the card + action buttons together */
+.address-card-wrapper {
+    position: relative;
+}
+
+/* Extra bottom padding so buttons don't overlap address text */
+.address-card-wrapper .address-card {
+    padding-bottom: 3.2rem;
+}
+
+/* Section header row */
+.addr-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.addr-section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--gold-mid);
+    text-transform: uppercase;
+}
+.addr-add-new {
+    font-size: 0.78rem;
+    color: var(--gold-mid);
+    text-decoration: none;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: var(--transition);
+}
+.addr-add-new:hover {
+    color: var(--gold-lt);
+}
+
+/* Edit / Delete button row */
+.addr-actions {
+    position: absolute;
+    bottom: 0.9rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 3;
+}
+.addr-actions form {
+    margin: 0;
+    padding: 0;
+}
+
+/* Shared button base */
+.addr-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+/* Edit — gold */
+.addr-action-btn.edit {
+    background: rgba(212,160,23,0.12);
+    border: 1px solid rgba(212,160,23,0.35);
+    color: var(--gold-mid);
+}
+.addr-action-btn.edit:hover {
+    background: rgba(212,160,23,0.25);
+    border-color: var(--gold-mid);
+    color: var(--gold-lt);
+    transform: translateY(-2px);
+}
+
+/* Delete — red */
+.addr-action-btn.delete {
+    background: rgba(139,0,0,0.15);
+    border: 1px solid rgba(139,0,0,0.35);
+    color: rgba(255,120,120,0.75);
+}
+.addr-action-btn.delete:hover {
+    background: rgba(139,0,0,0.30);
+    border-color: var(--red);
+    color: #ff6b6b;
+    transform: translateY(-2px);
+}
+
+/* Distance row icon colour */
+.addr-distance .bi-geo-alt-fill {
+    color: var(--gold-mid);
+}
+
+/* Edit Address Modal */
+.ap-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.ap-modal-overlay.open {
+    display: flex;
+}
+.ap-modal {
     background: var(--bg-card);
-    border: 1.5px solid var(--border-gold);
-    border-radius: 14px;
-    padding: 1.2rem;
+    border: 2px solid var(--gold-mid);
+    border-radius: var(--radius-card);
+    padding: 2rem;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: fadeUp 0.3s ease both;
+    box-shadow:
+        0 0 0 1px rgba(212,160,23,0.08),
+        0 30px 80px rgba(0,0,0,0.9);
+}
+.ap-modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: white;
+}
+.ap-modal-close {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    font-size: 1rem;
     cursor: pointer;
     transition: var(--transition);
 }
-.address-card:hover {
-    border-color: var(--border-gold-hover);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+.ap-modal-close:hover {
+    color: var(--gold-mid);
+    
+    
 }
-.address-card input[type="radio"] { accent-color: var(--gold-mid); margin-right: 0.6rem; }
-.address-card:has(input:checked) {
+
+
+/* Back button */
+.pd-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gold-mid);
+    text-decoration: none;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 0.45rem 1rem;
+    border: 1px solid rgba(212,160,23,0.35);
+    border-radius: 8px;
+    background: rgba(212,160,23,0.08);
+    transition: var(--transition);
+}
+.pd-back:hover {
+    color: var(--gold-lt);
+    background: rgba(212,160,23,0.18);
     border-color: var(--gold-mid);
-    box-shadow: 0 0 0 2px rgba(212,160,23,0.2);
-    background: rgba(212,160,23,0.04);
+    transform: translateX(-3px);
 }
-.addr-card-body { display: inline-block; vertical-align: top; }
-.addr-street  { font-family: 'Playfair Display', serif; color: white; font-size: 0.95rem; margin-bottom: 0.3rem; }
-.addr-detail  { color: var(--text-silver-soft); font-size: 0.8rem; margin-bottom: 0.2rem; }
-.addr-distance { color: var(--gold-mid); font-size: 0.75rem; margin-top: 0.5rem; font-weight: 700; }
+
+
+/* Hide scrollbar everywhere but keep scroll working */
+* {
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* IE/Edge */
+}
+*::-webkit-scrollbar {
+    display: none;                /* Chrome/Safari */
+}
+
+
 
 /* ============================================================
    13. AUTH PAGES

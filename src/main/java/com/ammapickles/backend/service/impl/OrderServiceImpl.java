@@ -26,8 +26,9 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
     private final AddressRepository addressRepository;
+    private final ProductRepository productRepository; // ← needed for stock restore
 
-    // Delivery charge constants — easy to change later
+    // Delivery charge constants
     private static final BigDecimal CHARGE_PER_KM = BigDecimal.valueOf(5);
     private static final BigDecimal MIN_DELIVERY_CHARGE = BigDecimal.valueOf(30);
     private static final BigDecimal FREE_DELIVERY_ABOVE = BigDecimal.valueOf(500);
@@ -38,7 +39,6 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public List<OrderResponse> getOrdersByUser(Long userId) {
         log.info("Fetching orders for user: {}", userId);
-
         return orderRepository.findByUserId(userId)
                 .stream()
                 .map(this::mapToResponse)
@@ -49,11 +49,9 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public OrderResponse getOrderByIdForUser(Long orderId, Long userId) {
         log.info("Fetching order {} for user {}", orderId, userId);
-
         Order order = orderRepository.findByIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Order not found with id: " + orderId));
-
         return mapToResponse(order);
     }
 
@@ -66,7 +64,7 @@ public class OrderServiceImpl implements OrderService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 
-        // Step 2: Load delivery address —> verify it belongs to this user
+        // Step 2: Load delivery address — verify it belongs to this user
         Address address = addressRepository.findByIdAndUserId(request.getAddressId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Address not found or doesn't belong to user"));
@@ -84,23 +82,36 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal totalAmount = cart.getCartTotal();
         BigDecimal deliveryCharge = calculateDeliveryCharge(address.getDistanceInKm(), totalAmount);
 
-        // Step 6: Build order
+        // Step 6: Build order — COD so immediately CONFIRMED
         Order order = Order.builder()
                 .user(user)
                 .deliveryAddress(address)
                 .totalAmount(totalAmount)
                 .deliveryCharge(deliveryCharge)
-                .status(OrderStatus.PENDING)
+                .status(OrderStatus.CONFIRMED)
                 .build();
 
-        // Step 7: Convert cart items -> order items
+        // Step 7: Convert cart items -> order items + deduct stock
         List<OrderItem> orderItems = cart.getItems().stream()
-                .map(cartItem -> OrderItem.builder()
-                        .order(order)
-                        .product(cartItem.getProduct())
-                        .quantity(cartItem.getQuantity())
-                        .price(cartItem.getProduct().getPrice()) // capture price at time of order
-                        .build())
+                .map(cartItem -> {
+                    Product product = cartItem.getProduct();
+
+                    // Deduct stock
+                    int newQty = product.getQuantity() - cartItem.getQuantity();
+                    if (newQty < 0) {
+                        throw new IllegalStateException(
+                                "Insufficient stock for: " + product.getName());
+                    }
+                    product.setQuantity(newQty);
+                    productRepository.save(product);
+
+                    return OrderItem.builder()
+                            .order(order)
+                            .product(product)
+                            .quantity(cartItem.getQuantity())
+                            .price(product.getPrice())
+                            .build();
+                })
                 .toList();
 
         order.setOrderItems(orderItems);
@@ -112,7 +123,7 @@ public class OrderServiceImpl implements OrderService {
         cart.getItems().clear();
         cartRepository.save(cart);
 
-        log.info("Order placed successfully with id: {}", saved.getId());
+        log.info("COD order confirmed successfully with id: {}", saved.getId());
         return mapToResponse(saved);
     }
 
@@ -124,15 +135,23 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findByIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
 
-        // Only PENDING orders can be cancelled
-        if (order.getStatus() != OrderStatus.PENDING) {
+        // Only CONFIRMED orders can be cancelled
+        if (order.getStatus() != OrderStatus.CONFIRMED) {
             throw new IllegalStateException(
                     "Cannot cancel order — current status: " + order.getStatus());
         }
 
+        // Restore stock for each item
+        order.getOrderItems().forEach(item -> {
+            Product product = item.getProduct();
+            product.setQuantity(product.getQuantity() + item.getQuantity());
+            productRepository.save(product);
+            log.info("Restored {} units of product {} after cancel",
+                    item.getQuantity(), product.getName());
+        });
+
         order.setStatus(OrderStatus.CANCELLED);
-        // Dirty checking handles save
-        log.info("Order cancelled: {}", orderId);
+        log.info("Order cancelled and stock restored: {}", orderId);
     }
 
     // ADMIN OPERATIONS
@@ -148,10 +167,8 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public OrderResponse getOrderById(Long orderId) {
         log.info("Admin fetching order: {}", orderId);
-
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
-
         return mapToResponse(order);
     }
 
@@ -159,30 +176,24 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId, String status) {
         log.info("Updating order {} status to {}", orderId, status);
-
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
-
         order.setStatus(OrderStatus.valueOf(status.toUpperCase()));
         log.info("Order status updated: {} → {}", orderId, status);
-
         return mapToResponse(order);
     }
 
-    //  DELIVERY CHARGE CALCULATION 
+    // DELIVERY CHARGE CALCULATION
 
     private BigDecimal calculateDeliveryCharge(double distanceInKm, BigDecimal orderTotal) {
-        // Free delivery for orders above ₹500
         if (orderTotal.compareTo(FREE_DELIVERY_ABOVE) >= 0) {
             return BigDecimal.ZERO;
         }
-
-        // ₹5 per km, minimum ₹30
         BigDecimal charge = CHARGE_PER_KM.multiply(BigDecimal.valueOf(distanceInKm));
         return charge.max(MIN_DELIVERY_CHARGE);
     }
 
-    // PRIVATE HELPER 
+    // PRIVATE HELPER
 
     private OrderResponse mapToResponse(Order order) {
         OrderResponse response = new OrderResponse();
@@ -193,7 +204,6 @@ public class OrderServiceImpl implements OrderService {
         response.setGrandTotal(order.getGrandTotal());
         response.setOrderDate(order.getOrderDate());
 
-        // Format delivery address as readable string
         Address addr = order.getDeliveryAddress();
         if (addr != null) {
             response.setDeliveryAddress(
@@ -202,7 +212,6 @@ public class OrderServiceImpl implements OrderService {
             );
         }
 
-        // Map order items
         List<OrderItemResponse> items = order.getOrderItems().stream()
                 .map(item -> {
                     OrderItemResponse itemResponse = new OrderItemResponse();

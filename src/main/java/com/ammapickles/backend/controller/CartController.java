@@ -43,7 +43,9 @@ public class CartController {
             @RequestParam int quantity) {
 
         CartResponse response = cartService.updateCartItem(cartItemId, quantity);
-        return ResponseEntity.ok(ApiResponse.success("Cart item updated", response));
+        return ResponseEntity.ok(ApiResponse.success("Cart item updated", response)); 
+        
+         
     }
 
   
@@ -53,6 +55,7 @@ public class CartController {
 
         cartService.removeCartItem(cartItemId);
         return ResponseEntity.ok(ApiResponse.success("Item removed from cart"));
+        
     }
 
    
@@ -63,4 +66,8 @@ public class CartController {
         cartService.clearCart(userId);
         return ResponseEntity.ok(ApiResponse.success("Cart cleared successfully"));
     }
+    
+    
+    
+    
 }

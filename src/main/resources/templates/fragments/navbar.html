@@ -26,11 +26,11 @@
             <i class="bi bi-cart3"></i> Cart
         </a>
 
-        <!-- My Orders (logged in only) -->
-        <a href="/orders" class="pill-ghost"
-           th:if="${username != null}">
-            My Orders
-        </a>
+        <!-- My Orders shortcut — only shown when logged in -->
+         <div th:if="${username != null}" style="text-align:center; margin: 1rem 0;">
+              <a href="/orders" class="btn-shop">📦 My Orders →</a>
+        </div>
+       
 
         <!-- Logout (logged in only) -->
         <form th:if="${username != null}"

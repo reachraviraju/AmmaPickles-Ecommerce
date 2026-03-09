@@ -37,6 +37,7 @@ public class Product {
     private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
+    
     private Size size;
 
     
@@ -48,6 +49,7 @@ public class Product {
     // This avoids writing quantity checks again and again in service layer
     public boolean isInStock() {
         return quantity != null && quantity > 0;
+        
     }
 
     @ManyToOne
