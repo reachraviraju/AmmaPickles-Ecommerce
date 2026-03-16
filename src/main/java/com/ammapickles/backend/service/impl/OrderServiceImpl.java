@@ -31,7 +31,7 @@ public class OrderServiceImpl implements OrderService {
     // Delivery charge constants
     private static final BigDecimal CHARGE_PER_KM = BigDecimal.valueOf(5);
     private static final BigDecimal MIN_DELIVERY_CHARGE = BigDecimal.valueOf(30);
-    private static final BigDecimal FREE_DELIVERY_ABOVE = BigDecimal.valueOf(500);
+    private static final BigDecimal FREE_DELIVERY_ABOVE = BigDecimal.valueOf(1000);
 
     // CUSTOMER OPERATIONS
 

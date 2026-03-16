@@ -9,100 +9,314 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
     <link th:href="@{/css/style.css}" rel="stylesheet"/>
 </head>
-<body class="auth-body">
+<body>
 
-<div class="auth-wrap">
+<div class="auth-page">
+  <div class="auth-box">
 
-    <div class="logo-badge-wrap">
-        <div class="logo-opt4">
-            <span class="amma shine-gold">AMMA</span>
-            <div class="divline"></div>
-            <span class="pickles">Pickles</span>
-        </div>
-        <div class="logo-tagline">Join Our Pickle Family</div>
+    <!-- Gold scroll ribbon -->
+    <div class="auth-scroll">
+      <div class="auth-scroll-track">
+        <span class="auth-scroll-item">✦ JOIN OUR PICKLE FAMILY</span>
+        <span class="auth-scroll-sep">◆</span>
+        <span class="auth-scroll-item">CREATE YOUR ACCOUNT</span>
+        <span class="auth-scroll-sep">◆</span>
+        <span class="auth-scroll-item">✦ JOIN OUR PICKLE FAMILY</span>
+        <span class="auth-scroll-sep">◆</span>
+        <span class="auth-scroll-item">CREATE YOUR ACCOUNT</span>
+        <span class="auth-scroll-sep">◆</span>
+        <span class="auth-scroll-item">✦ JOIN OUR PICKLE FAMILY</span>
+        <span class="auth-scroll-sep">◆</span>
+        <span class="auth-scroll-item">CREATE YOUR ACCOUNT</span>
+        <span class="auth-scroll-sep">◆</span>
+      </div>
     </div>
 
+    <!-- AMMA Logo -->
+    <div class="auth-logo">
+      <div class="auth-logo-inner">
+        <span class="amma shine-gold">AMMA</span>
+        <div class="gold-line"></div>
+        <span class="pickles">Pickles</span>
+      </div>
+    </div>
+
+    <!-- Card -->
     <div class="auth-card">
-        <h4>Create Account</h4>
-        <div class="sub">Start your pickle journey today!</div>
 
-        <div class="alert-ap" th:if="${error}" th:text="${error}"></div>
+      <div class="auth-sub">Start your pickle journey today</div>
 
-        <form th:action="@{/register}" method="post">
+      <div class="alert-ap" th:if="${error}" th:text="${error}"></div>
 
-            <label class="ap-label">Full Name</label>
-            <input class="ap-input" type="text" name="name"
-                   placeholder="Enter your full name" required/>
+      <form th:action="@{/register}" method="post" id="registerForm">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-            <label class="ap-label">Email Address</label>
-            <input class="ap-input" type="email" name="email"
-                   placeholder="your@email.com" required/>
+        <!-- Full Name -->
+        <label class="ap-label">Full Name</label>
+        <input class="ap-input" type="text" id="nameInput" name="name"
+               placeholder="Enter your full name" required/>
+        <div id="nameStatus" class="field-status" style="display:none;margin-top:-0.7rem;margin-bottom:0.8rem;"></div>
 
-            <label class="ap-label" for="password">Password</label>
-            <div style="position:relative;">
-                <input class="ap-input" type="password" id="password" name="password"
-                       placeholder="Create a password"
-                       style="padding-right:3rem; margin-bottom:0;" required/>
-                <button type="button" onclick="togglePassword()" id="eyeBtn"
-                        style="position:absolute; right:1rem; top:50%; transform:translateY(-50%);
-                               background:transparent; border:none; cursor:pointer;
-                               color:rgba(212,160,23,0.6); font-size:1.1rem; padding:0;
-                               transition:color 0.2s;">
-                    <i class="bi bi-eye" id="eyeIcon"></i>
-                </button>
+        <!-- Phone -->
+        <label class="ap-label">
+          Phone Number
+          <span style="color:var(--text-label);font-size:0.5rem;margin-left:0.3rem;">OPTIONAL</span>
+        </label>
+        <input class="ap-input" type="tel" id="phoneInput" name="phone"
+               maxlength="10" placeholder="10-digit mobile number"
+               />
+        <div id="phoneStatus" class="field-status" style="display:none;margin-bottom:0.8rem;"></div>
+
+        <!-- Email -->
+        <label class="ap-label">Email Address</label>
+        <div style="position:relative;">
+          <input class="ap-input" type="email" id="emailInput" name="email"
+                 placeholder="your@email.com" required
+                 style="padding-right:2.5rem;"
+                 autocomplete="off"/>
+        </div>
+        <div id="emailStatus" class="field-status" style="display:none;margin-bottom:0.8rem;"></div>
+
+        <!-- Password -->
+        <label class="ap-label" for="password">Password</label>
+        <div style="position:relative;">
+          <input class="ap-input" type="password" id="password" name="password"
+                 required placeholder="Min 8 chars, 1 number, 1 special char"
+                 style="padding-right:3rem;"/>
+          <button type="button" onclick="togglePassword()" id="eyeBtn"
+                  style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);
+                         background:transparent;border:none;cursor:pointer;
+                         color:rgba(212,160,23,0.6);font-size:1.1rem;padding:0;">
+            <i class="bi bi-eye" id="eyeIcon"></i>
+          </button>
+        </div>
+        <div id="passwordStatus" class="field-status" style="display:none;margin-bottom:0.8rem;"></div>
+
+        <!-- OTP Section -->
+        <div id="otpSection" class="otp-section" style="display:none;">
+          <div class="otp-title"><i class="bi bi-shield-lock"></i> Verify Your Email</div>
+          <div class="otp-sub">Click below to receive a 6-digit code on your email.</div>
+          <button type="button" id="sendOtpBtn" class="otp-send-btn" onclick="sendOtp()">
+            <i class="bi bi-send"></i> Send OTP to Email
+          </button>
+          <div id="otpInputArea" style="display:none;">
+            <div style="font-size:0.72rem;color:rgba(130,200,130,0.85);margin-bottom:0.6rem;">
+              <i class="bi bi-check-circle"></i> OTP sent! Check your inbox (also spam).
             </div>
-            <div style="margin-bottom:1.2rem;"></div>
+            <div class="otp-input-row">
+              <input type="text" id="otpInput" class="otp-input"
+                     maxlength="6" placeholder="6-digit OTP"/>
+              <button type="button" class="otp-verify-btn" onclick="verifyOtp()">Verify</button>
+            </div>
+            <div id="otpStatus" class="field-status" style="display:none;"></div>
+            <button type="button" class="otp-resend-btn" onclick="sendOtp()">Resend OTP</button>
+          </div>
+        </div>
 
-            <button type="submit" class="btn-ap">Create Account →</button>
-        </form>
+        <button type="submit" id="submitBtn" class="btn-ap" disabled>
+          Create Account →
+        </button>
 
-        <div class="auth-divider"><span>or</span></div>
-        <div class="auth-footer">Already have an account? <a href="/login">Login here</a></div>
+      </form>
+
+      <div class="auth-divider"><span>or</span></div>
+      <div class="auth-footer">Already have an account? <a href="/login">Login here</a></div>
+
     </div>
+
+    <div class="auth-watermark">AMMA PICKLES</div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 
-    /* ── 1. Password visibility toggle ── */
-    function togglePassword() {
-        const input   = document.getElementById('password');
-        const icon    = document.getElementById('eyeIcon');
-        const btn     = document.getElementById('eyeBtn');
-        const visible = input.type === 'text';
+function togglePassword() {
+    const input   = document.getElementById('password');
+    const icon    = document.getElementById('eyeIcon');
+    const btn     = document.getElementById('eyeBtn');
+    const visible = input.type === 'text';
+    input.type      = visible ? 'password' : 'text';
+    icon.className  = visible ? 'bi bi-eye' : 'bi bi-eye-slash';
+    btn.style.color = visible ? 'rgba(212,160,23,0.6)' : 'rgba(212,160,23,1)';
+}
 
-        input.type      = visible ? 'password' : 'text';
-        icon.className  = visible ? 'bi bi-eye' : 'bi bi-eye-slash';
-        btn.style.color = visible ? 'rgba(212,160,23,0.6)' : 'rgba(212,160,23,1)';
+const nameInput      = document.getElementById('nameInput');
+const nameStatus     = document.getElementById('nameStatus');
+const phoneInput     = document.getElementById('phoneInput');
+const phoneStatus    = document.getElementById('phoneStatus');
+const emailInput     = document.getElementById('emailInput');
+const emailStatus    = document.getElementById('emailStatus');
+const passwordInput  = document.getElementById('password');
+const passwordStatus = document.getElementById('passwordStatus');
+const submitBtn      = document.getElementById('submitBtn');
+const otpSection     = document.getElementById('otpSection');
+const otpStatus      = document.getElementById('otpStatus');
+
+const formState = { name:false, email:false, phone:true, password:false, otp:false };
+let emailTimer = null, lastEmailChecked = '';
+
+function updateSubmitState() {
+    const fieldsOk = formState.name && formState.email && formState.phone && formState.password;
+    otpSection.style.display = fieldsOk ? 'block' : 'none';
+    const allOk = fieldsOk && formState.otp;
+    submitBtn.disabled = !allOk;
+    submitBtn.style.opacity = allOk ? '1' : '0.4';
+    submitBtn.style.cursor  = allOk ? 'pointer' : 'not-allowed';
+}
+
+function setField(input, valid) {
+    input.classList.remove('valid','invalid');
+    input.classList.add(valid ? 'valid' : 'invalid');
+}
+
+function showStatus(el, type, html) {
+    el.className = 'field-status ' + type;
+    el.innerHTML = html;
+    el.style.display = 'flex';
+}
+
+function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+async function checkEmail(email) {
+    try {
+        const r = await fetch('/api/auth/check-email?email=' + encodeURIComponent(email));
+        return (await r.json()).data;
+    } catch { return null; }
+}
+
+// NAME
+nameInput.addEventListener('input', function() {
+    const v = this.value.trim();
+    if (!v) { nameStatus.style.display='none'; nameInput.classList.remove('valid','invalid'); formState.name=false; }
+    else if (v.length < 2) { setField(nameInput,false); showStatus(nameStatus,'error',"<i class='bi bi-x-circle'></i> Name too short"); formState.name=false; }
+    else { setField(nameInput,true); nameStatus.style.display='none'; formState.name=true; }
+    formState.otp = false;
+    updateSubmitState();
+});
+
+// PHONE
+phoneInput.addEventListener('input', function() {
+    const v = this.value.trim();
+    phoneInput.classList.remove('valid','invalid');
+    if (!v) { phoneStatus.style.display='none'; formState.phone=true; updateSubmitState(); return; }
+    const ok = /^[6-9][0-9]{9}$/.test(v);
+    setField(phoneInput, ok);
+    showStatus(phoneStatus, ok ? 'success' : 'error',
+        ok ? "<i class='bi bi-check-circle'></i> Valid phone number"
+           : v.length < 10 ? "<i class='bi bi-info-circle'></i> Must be 10 digits"
+                           : "<i class='bi bi-x-circle'></i> Must start with 6-9");
+    formState.phone = ok;
+    updateSubmitState();
+});
+phoneInput.addEventListener('keypress', e => { if (!/[0-9]/.test(e.key)) e.preventDefault(); });
+
+// EMAIL
+emailInput.addEventListener('input', function() {
+    const v = this.value.trim();
+    clearTimeout(emailTimer);
+    formState.email = false; formState.otp = false;
+    emailInput.classList.remove('valid','invalid');
+    updateSubmitState();
+    if (!v) { emailStatus.style.display='none'; return; }
+    if (!isValidEmail(v)) { setField(emailInput,false); showStatus(emailStatus,'error',"<i class='bi bi-x-circle'></i> Invalid email format"); return; }
+    showStatus(emailStatus,'checking',"<i class='bi bi-arrow-repeat'></i> Checking...");
+    emailTimer = setTimeout(async () => {
+        if (v === lastEmailChecked) return;
+        lastEmailChecked = v;
+        const avail = await checkEmail(v);
+        if (avail === null || avail) { setField(emailInput,true); emailStatus.style.display='none'; formState.email=true; }
+        else { setField(emailInput,false); showStatus(emailStatus,'error',"<i class='bi bi-x-circle-fill'></i> Already registered — <a href='/login' style='color:#EF9A9A;text-decoration:underline;'>Login instead?</a>"); }
+        updateSubmitState();
+    }, 600);
+});
+
+// PASSWORD
+passwordInput.addEventListener('input', function() {
+    const pw = this.value;
+    if (!pw) { passwordStatus.style.display='none'; passwordInput.classList.remove('valid','invalid'); formState.password=false; updateSubmitState(); return; }
+    const len = pw.length >= 8, num = /[0-9]/.test(pw), sp = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw);
+    const ok = len && num && sp;
+    setField(passwordInput, ok);
+    if (ok) { passwordStatus.style.display='none'; }
+    else { showStatus(passwordStatus,'error', !len ? "<i class='bi bi-x-circle'></i> At least 8 characters" : !num ? "<i class='bi bi-x-circle'></i> Add at least 1 number" : "<i class='bi bi-x-circle'></i> Add 1 special character (!@#$...)"); }
+    formState.password = ok;
+    updateSubmitState();
+});
+
+// SEND OTP
+async function sendOtp() {
+    const btn = document.getElementById('sendOtpBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Sending...';
+    try {
+        const fd = new FormData();
+        fd.append('email', emailInput.value.trim());
+        fd.append('name',  nameInput.value.trim());
+        const res  = await fetch('/register/send-otp', { method:'POST', body:fd });
+        const data = await res.json();
+        if (res.ok) {
+            document.getElementById('otpInputArea').style.display = 'block';
+            document.getElementById('otpInput').value = '';
+            otpStatus.style.display = 'none';
+            btn.innerHTML = '<i class="bi bi-send"></i> Resend OTP';
+        } else {
+            showStatus(otpStatus,'error',"<i class='bi bi-x-circle'></i> " + data.message);
+        }
+    } catch {
+        showStatus(otpStatus,'error',"<i class='bi bi-x-circle'></i> Failed to send. Check connection.");
     }
+    btn.disabled = false;
+}
 
-    /* ── 2. Auto-scroll & Enter-to-next  ──
-       These run on page load, NOT inside togglePassword            */
-    document.addEventListener('DOMContentLoaded', () => {
+// VERIFY OTP
+async function verifyOtp() {
+    const otp = document.getElementById('otpInput').value.trim();
+    if (otp.length !== 6) { showStatus(otpStatus,'error',"<i class='bi bi-x-circle'></i> Enter the 6-digit OTP"); return; }
+    showStatus(otpStatus,'checking',"<i class='bi bi-arrow-repeat'></i> Verifying...");
+    try {
+        const fd = new FormData();
+        fd.append('email', emailInput.value.trim());
+        fd.append('otp', otp);
+        const res  = await fetch('/register/verify-otp', { method:'POST', body:fd });
+        const data = await res.json();
+        if (res.ok) {
+            showStatus(otpStatus,'success',"<i class='bi bi-check-circle-fill'></i> Email verified! You can now create your account.");
+            document.getElementById('otpInput').disabled = true;
+            formState.otp = true;
+            updateSubmitState();
+        } else {
+            showStatus(otpStatus,'error',"<i class='bi bi-x-circle'></i> " + data.message);
+            formState.otp = false;
+            updateSubmitState();
+        }
+    } catch {
+        showStatus(otpStatus,'error',"<i class='bi bi-x-circle'></i> Verification failed. Try again.");
+    }
+}
 
-        const inputs = Array.from(document.querySelectorAll('.ap-input'));
+document.getElementById('otpInput').addEventListener('keypress', e => { if (!/[0-9]/.test(e.key)) e.preventDefault(); });
 
-        // Scroll focused field to centre of screen
-        inputs.forEach(el => {
-            el.addEventListener('focus', () => {
-                setTimeout(() => {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 150);   // wait for mobile keyboard to finish opening
-            });
-        });
+// SUBMIT guard
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    if (!formState.otp) {
+        e.preventDefault();
+        showStatus(otpStatus,'error',"<i class='bi bi-x-circle'></i> Please verify your email with OTP first");
+        otpSection.scrollIntoView({ behavior:'smooth', block:'center' });
+    } else {
+        submitBtn.innerHTML = 'Creating Account...';
+        submitBtn.disabled  = true;
+    }
+});
 
-        // Enter key moves to next field instead of submitting mid-form
-        inputs.forEach((input, index) => {
-            input.addEventListener('keydown', e => {
-                if (e.key === 'Enter' && index < inputs.length - 1) {
-                    e.preventDefault();
-                    inputs[index + 1].focus();   // triggers scroll above
-                }
-            });
-        });
-
+// Init
+updateSubmitState();
+window.addEventListener('load', () => window.scrollTo({ top:0, behavior:'instant' }));
+document.querySelectorAll('.ap-input').forEach(input => {
+    input.addEventListener('focus', () => {
+        setTimeout(() => input.scrollIntoView({ behavior:'smooth', block:'center' }), 350);
     });
-
+});
 </script>
 </body>
 </html>

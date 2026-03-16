@@ -1,10 +1,12 @@
 package com.ammapickles.backend.controller;
 
 import com.ammapickles.backend.dto.auth.AuthResponse;
+import com.ammapickles.backend.dto.auth.ForgotPasswordRequest;
 import com.ammapickles.backend.dto.auth.LoginRequest;
 import com.ammapickles.backend.dto.auth.RegisterRequest;
 import com.ammapickles.backend.dto.auth.ResetPasswordRequest;
 import com.ammapickles.backend.dto.common.ApiResponse;
+import com.ammapickles.backend.repository.UserRepository;
 import com.ammapickles.backend.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,45 +22,49 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserRepository userRepository;
 
-    
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(
             @Valid @RequestBody RegisterRequest request) {
-
         log.info("Register request for email: {}", request.getEmail());
         AuthResponse response = authService.register(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Registered successfully", response));
+                .body(ApiResponse.success("Registered successfully.", response));
     }
 
-   
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(
             @Valid @RequestBody LoginRequest request) {
-
-        log.info("Login request for email: {}", request.getEmail());
+        log.info("Login request for: {}", request.getIdentifier());
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(ApiResponse.success("Login successful", response));
     }
 
-   
-    @PutMapping("/reset-password/{email}")
-    public ResponseEntity<ApiResponse<Void>> resetPassword(
-            @PathVariable String email,
-            @Valid @RequestBody ResetPasswordRequest request) {
-
-        authService.resetPassword(email, request);
-        return ResponseEntity.ok(ApiResponse.success("Password reset successfully"));
+    // Used by register form for live email availability check
+    @GetMapping("/check-email")
+    public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String email) {
+        log.info("Checking email availability: {}", email);
+        boolean available = !userRepository.existsByEmail(email);
+        String message = available ? "Email is available" : "Email already registered";
+        return ResponseEntity.ok(ApiResponse.success(message, available));
     }
 
-   
-    @GetMapping("/verify/{token}")
-    public ResponseEntity<ApiResponse<Void>> verifyEmail(
-            @PathVariable String token) {
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+        log.info("Forgot password request for: {}", request.getEmail());
+        authService.forgotPassword(request.getEmail());
+        return ResponseEntity.ok(ApiResponse.success(
+                "If this email is registered, a reset link has been sent."));
+    }
 
-        authService.verifyEmail(token);
-        return ResponseEntity.ok(ApiResponse.success("Email verified successfully"));
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPasswordWithToken(
+            @RequestParam String token,
+            @Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPasswordWithToken(token, request);
+        return ResponseEntity.ok(ApiResponse.success("Password reset successfully"));
     }
 }

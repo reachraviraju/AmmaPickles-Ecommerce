@@ -4,22 +4,29 @@ import com.ammapickles.backend.dto.auth.AuthResponse;
 import com.ammapickles.backend.dto.auth.LoginRequest;
 import com.ammapickles.backend.dto.auth.RegisterRequest;
 import com.ammapickles.backend.dto.auth.ResetPasswordRequest;
+import com.ammapickles.backend.entity.PasswordResetToken;
 import com.ammapickles.backend.entity.Role;
 import com.ammapickles.backend.entity.User;
 import com.ammapickles.backend.exception.ResourceNotFoundException;
+import com.ammapickles.backend.repository.PasswordResetTokenRepository;
 import com.ammapickles.backend.repository.RoleRepository;
 import com.ammapickles.backend.repository.UserRepository;
 import com.ammapickles.backend.security.JwtUtil;
 import com.ammapickles.backend.service.AuthService;
+import com.ammapickles.backend.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -31,24 +38,26 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
 
-    // REGISTER 
+    @Value("${app.base-url:http://localhost:8080}")
+    private String baseUrl;
+
+    // REGISTER — enabled = true, OTP verified before this is called via web form
 
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         log.info("Registering new user: {}", request.getEmail());
 
-        // Check duplicate email
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already registered: " + request.getEmail());
         }
 
-        // Fetch ROLE_CUSTOMER from DB
         Role customerRole = roleRepository.findByName("ROLE_CUSTOMER")
                 .orElseThrow(() -> new ResourceNotFoundException("Role ROLE_CUSTOMER not found in DB"));
 
-        // Build and save user
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
@@ -61,31 +70,39 @@ public class AuthServiceImpl implements AuthService {
         User saved = userRepository.save(user);
         log.info("User registered with id: {}", saved.getId());
 
-        // Generate JWT and return
-        String token = jwtUtil.generateToken(saved.getEmail());
-        return new AuthResponse(token, saved.getEmail(), saved.getUsername(),
-                "ROLE_CUSTOMER", "Registered successfully");
+        emailService.sendWelcomeEmail(saved.getEmail(), saved.getUsername());
+
+        return new AuthResponse(null, saved.getEmail(), saved.getUsername(),
+                "ROLE_CUSTOMER", "Registered successfully.");
     }
 
-    // LOGIN 
+    // LOGIN
 
     @Override
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
-        log.info("Login attempt: {}", request.getEmail());
+        log.info("Login attempt with: {}", request.getIdentifier());
 
-        // AuthenticationManager validates email + password using BCrypt
-        // Throws BadCredentialsException automatically if wrong
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getIdentifier(),
+                            request.getPassword()
+                    )
+            );
+        } catch (DisabledException e) {
+            throw new IllegalStateException(
+                "Your account is disabled. Please contact support.");
+        }
 
-        // Load user for response data
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user;
+        if (request.getIdentifier().contains("@")) {
+            user = userRepository.findByEmail(request.getIdentifier())
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        } else {
+            user = userRepository.findByPhoneNumber(request.getIdentifier())
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        }
 
         String role = user.getRoles().stream()
                 .findFirst()
@@ -93,31 +110,62 @@ public class AuthServiceImpl implements AuthService {
                 .orElse("ROLE_CUSTOMER");
 
         String token = jwtUtil.generateToken(user.getEmail());
-        log.info("Login successful: {}", request.getEmail());
+        log.info("Login successful for: {}", request.getIdentifier());
 
         return new AuthResponse(token, user.getEmail(), user.getUsername(), role, "Login successful");
     }
 
-    // RESET PASSWORD 
+    // FORGOT PASSWORD
 
     @Override
     @Transactional
-    public void resetPassword(String email, ResetPasswordRequest request) {
-        log.info("Password reset for: {}", email);
+    public void forgotPassword(String email) {
+        log.info("Forgot password request for email: {}", email);
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + email));
+        userRepository.findByEmail(email).ifPresent(user -> {
 
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        // Dirty checking handles save automatically
-        log.info("Password reset successful: {}", email);
+            passwordResetTokenRepository.deleteByUserId(user.getId());
+
+            String token = UUID.randomUUID().toString();
+
+            PasswordResetToken resetToken = PasswordResetToken.builder()
+                    .token(token)
+                    .user(user)
+                    .expiresAt(LocalDateTime.now().plusHours(1))
+                    .build();
+
+            passwordResetTokenRepository.save(resetToken);
+
+            String resetLink = baseUrl + "/reset-password?token=" + token;
+            emailService.sendPasswordResetEmail(user.getEmail(), user.getUsername(), resetLink);
+
+            log.info("Password reset email sent for: {}", email);
+        });
     }
 
-    //  VERIFY EMAIL 
+    // RESET PASSWORD
 
     @Override
-    public void verifyEmail(String token) {
-        // Future implementation
-        log.info("Email verification token received: {}", token);
+    @Transactional
+    public void resetPasswordWithToken(String token, ResetPasswordRequest request) {
+        log.info("Resetting password with token");
+
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Invalid or expired reset link. Please request a new one."));
+
+        if (resetToken.isExpired()) {
+            passwordResetTokenRepository.delete(resetToken);
+            throw new IllegalArgumentException(
+                    "This reset link has expired. Please request a new one.");
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        passwordResetTokenRepository.delete(resetToken);
+
+        log.info("Password reset successfully for user: {}", user.getEmail());
     }
 }

@@ -20,16 +20,14 @@ public class CartViewController {
     private final CartService cartService;
     private final UserRepository userRepository;
 
-   
     @GetMapping("/cart")
     public String cartPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         model.addAttribute("cart", cartService.getUserCart(user.getId()));
-        model.addAttribute("username", user.getUsername()); // show name not email
+        model.addAttribute("username", user.getUsername());
         return "cart";
     }
 
-    
     @PostMapping("/cart/add/{productId}")
     public String addToCart(@PathVariable Long productId,
                             @RequestParam(defaultValue = "1") int quantity,
@@ -39,21 +37,23 @@ public class CartViewController {
         return "redirect:/cart";
     }
 
-    
     @PostMapping("/cart/remove/{cartItemId}")
-    public String removeItem(@PathVariable Long cartItemId) {
-        cartService.removeCartItem(cartItemId);
+    public String removeItem(@PathVariable Long cartItemId,
+                             @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        cartService.removeCartItem(cartItemId, user.getId());
         return "redirect:/cart";
     }
 
-  
     @PostMapping("/cart/update/{cartItemId}")
     public String updateItem(@PathVariable Long cartItemId,
-                             @RequestParam int quantity) {
+                             @RequestParam int quantity,
+                             @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         if (quantity <= 0) {
-            cartService.removeCartItem(cartItemId);
+            cartService.removeCartItem(cartItemId, user.getId());
         } else {
-            cartService.updateCartItem(cartItemId, quantity);
+            cartService.updateCartItem(cartItemId, quantity, user.getId());
         }
         return "redirect:/cart";
     }

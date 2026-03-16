@@ -9,11 +9,22 @@ public interface AddressService {
 
     List<AddressResponse> getAddressesByUser(Long userId);
 
-    AddressResponse getAddressById(Long addressId);
+    
+    
+    AddressResponse getAddressById(Long addressId, Long requestingUserId);
+    
+    AddressResponse updateAddress(Long addressId, AddressRequest request, Long requestingUserId);
 
     AddressResponse createAddress(Long userId, AddressRequest request);
 
-    AddressResponse updateAddress(Long addressId, AddressRequest request);
+   
 
     void deleteAddress(Long userId, Long addressId);
+    
+    
+    
+   
+
+  
+
 }

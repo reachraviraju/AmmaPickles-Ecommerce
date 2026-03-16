@@ -18,7 +18,6 @@ public class AddressViewController {
     private final AddressService addressService;
     private final UserRepository userRepository;
 
-    //  Show add address form 
     @GetMapping("/addresses/add")
     public String addAddressPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
@@ -26,14 +25,12 @@ public class AddressViewController {
         return "add-address";
     }
 
-    // Save new address 
     @PostMapping("/addresses/add")
     public String saveAddress(@RequestParam String street,
                               @RequestParam String city,
                               @RequestParam(required = false) String district,
                               @RequestParam String state,
                               @RequestParam String pincode,
-                              @RequestParam(required = false) Double distanceInKm,
                               @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
 
@@ -43,13 +40,11 @@ public class AddressViewController {
         request.setDistrict(district);
         request.setState(state);
         request.setPincode(pincode);
-        request.setDistanceInKm(distanceInKm);
 
         addressService.createAddress(user.getId(), request);
         return "redirect:/orders/place";
     }
 
-    //  Update existing address (called from modal on place-order page) 
     @PostMapping("/addresses/edit/{id}")
     public String updateAddress(@PathVariable Long id,
                                 @RequestParam String street,
@@ -57,20 +52,20 @@ public class AddressViewController {
                                 @RequestParam(required = false) String district,
                                 @RequestParam String state,
                                 @RequestParam String pincode,
-                                @RequestParam(required = false) Double distanceInKm) {
+                                @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+
         AddressRequest request = new AddressRequest();
         request.setStreet(street);
         request.setCity(city);
         request.setDistrict(district);
         request.setState(state);
         request.setPincode(pincode);
-        request.setDistanceInKm(distanceInKm);
 
-        addressService.updateAddress(id, request);
+        addressService.updateAddress(id, request, user.getId());
         return "redirect:/orders/place";
     }
 
-    //  Delete address 
     @PostMapping("/addresses/delete/{id}")
     public String deleteAddress(@PathVariable Long id,
                                 @AuthenticationPrincipal UserDetails userDetails) {

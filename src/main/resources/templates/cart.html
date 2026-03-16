@@ -105,7 +105,7 @@
 
                     <div class="summary-title">Order Summary</div>
 
-                    <div class="free-del" th:if="${cart.cartTotal >= 500}">
+                    <div class="free-del" th:if="${cart.cartTotal >= 1000}">
                         🎉 You qualify for FREE delivery!
                     </div>
 
@@ -117,7 +117,7 @@
                     <div class="s-row">
                         <span class="lbl">Delivery</span>
                         <span class="val"
-                              th:text="${cart.cartTotal >= 500} ? 'FREE' : 'Calculated at checkout'"></span>
+                              th:text="${cart.cartTotal >= 1000} ? 'FREE' : 'Calculated at checkout'"></span>
                     </div>
 
                     <div class="s-row">
@@ -137,7 +137,7 @@
                         Proceed to Order →
                     </a>
 
-                    <div class="del-note">🚚 Free delivery on orders above ₹500</div>
+                    <div class="del-note">🚚 Free delivery on orders above ₹1000</div>
 
                 </div>
             </div>

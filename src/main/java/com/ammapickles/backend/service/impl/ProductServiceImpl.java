@@ -191,7 +191,9 @@ public class ProductServiceImpl implements ProductService {
         group.setDescription(first.getDescription());
         group.setCategoryName(first.getCategory().getName());
         group.setCategoryId(first.getCategory().getId());
-
+        
+        
+        
         List<ProductGroupResponse.ProductVariant> variantList = variants.stream()
                 .map(p -> {
                     ProductGroupResponse.ProductVariant v = new ProductGroupResponse.ProductVariant();
@@ -203,7 +205,15 @@ public class ProductServiceImpl implements ProductService {
                     v.setQuantity(p.getQuantity());
                     return v;
                 })
-                .toList();
+                .collect(Collectors.collectingAndThen(
+                    Collectors.toMap(
+                        v -> v.getSize() != null ? v.getSize().name() : "STANDARD",
+                        v -> v,
+                        (existing, duplicate) -> existing
+                    ),
+                    map -> new java.util.ArrayList<>(map.values())
+                ));
+       
 
         group.setVariants(variantList);
         return group;

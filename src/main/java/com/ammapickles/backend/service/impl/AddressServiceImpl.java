@@ -41,14 +41,41 @@ public class AddressServiceImpl implements AddressService {
                 .toList();
     }
 
+   
     @Override
     @Transactional(readOnly = true)
-    public AddressResponse getAddressById(Long addressId) {
+    public AddressResponse getAddressById(Long addressId, Long requestingUserId) {
         log.info("Fetching address: {}", addressId);
-
         Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new ResourceNotFoundException("Address not found: " + addressId));
 
+        // Ownership check
+        if (!address.getUser().getId().equals(requestingUserId)) {
+            throw new SecurityException("Access denied to address: " + addressId);
+        }
+        return mapToResponse(address);
+    }
+
+    @Override
+    @Transactional
+    public AddressResponse updateAddress(Long addressId, AddressRequest request, Long requestingUserId) {
+        log.info("Updating address: {}", addressId);
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found: " + addressId));
+
+        // Ownership check
+        if (!address.getUser().getId().equals(requestingUserId)) {
+            throw new SecurityException("Access denied to address: " + addressId);
+        }
+
+        if (request.getStreet() != null) address.setStreet(request.getStreet());
+        if (request.getCity() != null) address.setCity(request.getCity());
+        if (request.getDistrict() != null) address.setDistrict(request.getDistrict());
+        if (request.getState() != null) address.setState(request.getState());
+        if (request.getPincode() != null) address.setPincode(request.getPincode());
+        if (request.getDistanceInKm() != null) address.setDistanceInKm(request.getDistanceInKm());
+
+        log.info("Address updated: {}", addressId);
         return mapToResponse(address);
     }
 
@@ -80,26 +107,7 @@ public class AddressServiceImpl implements AddressService {
 
     
 
-    @Override
-    @Transactional
-    public AddressResponse updateAddress(Long addressId, AddressRequest request) {
-        log.info("Updating address: {}", addressId);
-
-        Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResourceNotFoundException("Address not found: " + addressId));
-
-        // Update only non-null fields
-        if (request.getStreet() != null) address.setStreet(request.getStreet());
-        if (request.getCity() != null) address.setCity(request.getCity());
-        if (request.getDistrict() != null) address.setDistrict(request.getDistrict());
-        if (request.getState() != null) address.setState(request.getState());
-        if (request.getPincode() != null) address.setPincode(request.getPincode());
-        if (request.getDistanceInKm() != null) address.setDistanceInKm(request.getDistanceInKm());
-
-        // Dirty checking handles save
-        log.info("Address updated: {}", addressId);
-        return mapToResponse(address);
-    }
+   
 
     
 

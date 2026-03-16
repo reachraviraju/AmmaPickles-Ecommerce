@@ -30,11 +30,18 @@ public class OrderController {
     // CUSTOMER ENDPOINTS 
 
     
+
+    
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrdersByUser(
-            @PathVariable Long userId) {
+            @PathVariable Long userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
+        if (!userDetails.getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Access denied"));
+        }
         List<OrderResponse> response = orderService.getOrdersByUser(userId);
         return ResponseEntity.ok(ApiResponse.success("Orders fetched successfully", response));
     }

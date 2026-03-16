@@ -16,21 +16,34 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
+    // Spring Security calls this with whatever was typed in the login form.
+    // If it contains "@" ->  treat as email
+    // Otherwise          - > treat as phone number
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
 
-        // Load user from DB by email
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> {
-                    log.warn("User not found with email: {}", email);
-                    return new UsernameNotFoundException("User not found with email: " + email);
-                });
+        User user;
 
-        log.info("User loaded successfully: {}", email);
+        if (identifier.contains("@")) {
+            // Login by email
+            log.info("Loading user by email: {}", identifier);
+            user = userRepository.findByEmail(identifier)
+                    .orElseThrow(() -> {
+                        log.warn("No user found with email: {}", identifier);
+                        return new UsernameNotFoundException("Invalid email or password");
+                    });
+        } else {
+            // Login by phone number
+            log.info("Loading user by phone: {}", identifier);
+            user = userRepository.findByPhoneNumber(identifier)
+                    .orElseThrow(() -> {
+                        log.warn("No user found with phone: {}", identifier);
+                        return new UsernameNotFoundException("Invalid phone number or password");
+                    });
+        }
 
-        
-        //  can access user.getId(), user.getPhoneNumber() etc. anywhere
-      
+        log.info("User loaded successfully: {}", identifier);
+        // can access user.getId(), user.getPhoneNumber()  anywhere
         return new CustomUserDetails(user);
     }
 }

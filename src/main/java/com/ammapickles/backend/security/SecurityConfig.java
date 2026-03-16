@@ -24,16 +24,19 @@ public class SecurityConfig {
    
     // 1  WEB / THYMELEAF  (Session based)
     
-    //  /home and /products → PUBLIC 
-    //  /cart and /orders   → LOGIN 
+    //  /home and /products -> PUBLIC 
+    //  /cart and /orders   - > LOGIN 
   
     @Bean
     public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher("/", "/home", "/login", "/register",
             		         "/logout",
+            		         "/forgot-password",    
+                             "/reset-password", 
                              "/cart/**", "/orders/**",
                              "/addresses/**",
+                             "/profile/**",
                              "/products/**",
                              "/css/**", "/images/**", "/js/**",
                              "/favicon.ico")
@@ -52,6 +55,8 @@ public class SecurityConfig {
                 	    "/home",
                 	    "/login",
                 	    "/register",
+                	    "/forgot-password",    
+                	    "/reset-password", 
                 	    "/css/**",
                 	    "/images/**",
                 	    "/js/**",
@@ -63,6 +68,7 @@ public class SecurityConfig {
                 //  PROTECTED 
                 .requestMatchers("/cart/**").authenticated()
                 .requestMatchers("/orders/**").authenticated()
+                .requestMatchers("/profile/**").authenticated()
 
                 .anyRequest().authenticated()
             )

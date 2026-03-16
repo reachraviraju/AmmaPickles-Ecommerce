@@ -90,10 +90,11 @@ public class CartServiceImpl implements CartService {
     }
 
     // UPDATE CART ITEM
-
+    
+    
     @Override
     @Transactional
-    public CartResponse updateCartItem(Long cartItemId, int quantity) {
+    public CartResponse updateCartItem(Long cartItemId, int quantity, Long requestingUserId) {
         log.info("Updating cart item {} to quantity {}", cartItemId, quantity);
 
         if (quantity <= 0) {
@@ -103,29 +104,42 @@ public class CartServiceImpl implements CartService {
         CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found: " + cartItemId));
 
+        // Ownership check
+        if (!item.getCart().getUser().getId().equals(requestingUserId)) {
+            throw new SecurityException("Access denied to cart item: " + cartItemId);
+        }
+
         if (item.getProduct().getQuantity() < quantity) {
             throw new IllegalStateException(
                     "Insufficient stock. Available: " + item.getProduct().getQuantity());
         }
 
         item.setQuantity(quantity);
-
         return mapToResponse(item.getCart());
     }
 
+   
+    
     // REMOVE CART ITEM
 
+   
     @Override
     @Transactional
-    public void removeCartItem(Long cartItemId) {
+    public void removeCartItem(Long cartItemId, Long requestingUserId) {
         log.info("Removing cart item: {}", cartItemId);
 
         CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found: " + cartItemId));
 
+        // Ownership check
+        if (!item.getCart().getUser().getId().equals(requestingUserId)) {
+            throw new SecurityException("Access denied to cart item: " + cartItemId);
+        }
+
         cartItemRepository.delete(item);
         log.info("Cart item removed: {}", cartItemId);
     }
+
 
     // CLEAR CART
 

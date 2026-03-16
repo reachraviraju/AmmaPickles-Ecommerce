@@ -1,7 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<body>
+
 <footer th:fragment="footer" class="ap-footer">
 
-Made with ❤️ by
-<span class="shine-gold">Amma Pickles</span>
-· Authentic Taste, Every Time
+    <div class="footer-inner">
+
+        <!-- Brand column -->
+        <div class="footer-col footer-brand">
+            <div class="footer-logo">
+                <span class="amma shine-gold">AMMA</span>
+                <div class="gold-line" style="width:100%;height:1px;background:linear-gradient(to right,var(--gold-mid),transparent);margin:4px 0;"></div>
+                <span class="pickles" style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:6px;color:rgba(255,255,255,0.3);text-transform:uppercase;">Pickles</span>
+            </div>
+            <p class="footer-tagline">Traditional recipes since 1985. Made with love, premium spices, and the wisdom of generations.</p>
+            <div class="footer-socials">
+                <a href="#" class="social-icon" title="Instagram"><i class="bi bi-instagram"></i></a>
+                <a href="#" class="social-icon" title="Facebook"><i class="bi bi-facebook"></i></a>
+                <a href="#" class="social-icon" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                <a href="#" class="social-icon" title="YouTube"><i class="bi bi-youtube"></i></a>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="footer-col">
+            <div class="footer-col-title">Quick Links</div>
+            <ul class="footer-links">
+                <li><a href="/home">🏠 Home</a></li>
+                <li><a href="/home#products">🫙 All Pickles</a></li>
+                <li><a href="/cart">🛒 Cart</a></li>
+                <li><a href="/orders">📦 My Orders</a></li>
+                <li><a href="/profile">👤 Profile</a></li>
+            </ul>
+        </div>
+
+        <!-- Categories -->
+        <div class="footer-col">
+            <div class="footer-col-title">Popular</div>
+            <ul class="footer-links">
+                <li><a href="/home?category=1">🌶️ Mango Pickle</a></li>
+                <li><a href="/home?category=2">🍋 Lemon Pickle</a></li>
+                <li><a href="/home?category=3">🧄 Garlic Pickle</a></li>
+                <li><a href="/home?category=4">🌿 Gongura Pickle</a></li>
+                <li><a href="/home?category=5">🍅 Tomato Pickle</a></li>
+            </ul>
+        </div>
+
+        <!-- Contact -->
+        <div class="footer-col">
+            <div class="footer-col-title">Contact Us</div>
+            <ul class="footer-links footer-contact">
+                <li><i class="bi bi-geo-alt"></i> East Godavari, Andhra Pradesh</li>
+                <li><i class="bi bi-telephone"></i> +91 99999 99999 </li>
+                <li><i class="bi bi-envelope"></i>  ammapickles.official@gmail.com </li>
+                <li><i class="bi bi-clock"></i> Everyday , 9am – 6pm</li>
+            </ul>
+            <div class="footer-badges">
+                <span class="fbadge">🌿 100% Natural</span>
+                <span class="fbadge">🚚 Free Delivery ₹1000 + </span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        <div class="footer-bottom-left">
+            © 2025 Amma Pickles · Authentic Taste, Every Time
+        </div>
+        <div class="footer-bottom-right">
+            Made with <span style="color:#e74c3c;">❤️</span> in Andhra Pradesh
+        </div>
+    </div>
 
 </footer>
+
+</body>
+</html>
