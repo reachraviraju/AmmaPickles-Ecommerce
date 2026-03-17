@@ -15,4 +15,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // Get specific order AND verify it belongs to user
     Optional<Order> findByIdAndUserId(Long orderId, Long userId);
+    
+    long countByUserId(Long userId);
 }

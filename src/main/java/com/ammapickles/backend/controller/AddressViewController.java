@@ -31,6 +31,7 @@ public class AddressViewController {
                               @RequestParam(required = false) String district,
                               @RequestParam String state,
                               @RequestParam String pincode,
+                              @RequestParam String mobileNumber,
                               @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
 
@@ -40,6 +41,7 @@ public class AddressViewController {
         request.setDistrict(district);
         request.setState(state);
         request.setPincode(pincode);
+        request.setMobileNumber(mobileNumber);
 
         addressService.createAddress(user.getId(), request);
         return "redirect:/orders/place";
@@ -52,6 +54,7 @@ public class AddressViewController {
                                 @RequestParam(required = false) String district,
                                 @RequestParam String state,
                                 @RequestParam String pincode,
+                                @RequestParam String mobileNumber,
                                 @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
 
@@ -61,6 +64,7 @@ public class AddressViewController {
         request.setDistrict(district);
         request.setState(state);
         request.setPincode(pincode);
+        request.setMobileNumber(mobileNumber);
 
         addressService.updateAddress(id, request, user.getId());
         return "redirect:/orders/place";

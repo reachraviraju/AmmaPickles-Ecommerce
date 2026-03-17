@@ -15,4 +15,6 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
 
     // Get address AND verify it belongs to user it prevents one user accessing another's address
     Optional<Address> findByIdAndUserId(Long addressId, Long userId);
+    
+    long countByUserId(Long userId);
 }

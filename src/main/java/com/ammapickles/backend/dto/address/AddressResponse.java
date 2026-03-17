@@ -11,6 +11,6 @@ public class AddressResponse {
     private String district;
     private String state;
     private String pincode;
-    private Double distanceInKm;
-    private String formattedAddress;  // "street, city, district - pincode"
+    private String mobileNumber;
+    private String formattedAddress;
 }

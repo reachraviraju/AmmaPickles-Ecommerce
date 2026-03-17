@@ -115,6 +115,7 @@ public class CartServiceImpl implements CartService {
         }
 
         item.setQuantity(quantity);
+        cartItemRepository.save(item); 
         return mapToResponse(item.getCart());
     }
 
@@ -184,6 +185,7 @@ public class CartServiceImpl implements CartService {
                     itemResponse.setProductName(item.getProduct().getName());
                     itemResponse.setPrice(item.getProduct().getPrice());
                     itemResponse.setQuantity(item.getQuantity());
+                    
                     itemResponse.setItemTotal(
                             item.getProduct().getPrice()
                                     .multiply(BigDecimal.valueOf(item.getQuantity()))

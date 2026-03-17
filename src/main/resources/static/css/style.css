@@ -72,9 +72,15 @@ body {
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-.page-hdr { background:linear-gradient(135deg,#1A0000,#0D0800); padding:2rem 2.5rem; border-bottom:1px solid var(--border-gold); }
-.page-hdr h2 { font-family:'Playfair Display',serif; font-size:1.8rem; color:white; margin-bottom:0.2rem; }
-.page-hdr p { color:var(--text-muted); font-size:0.85rem; }
+
+.page-hdr {
+    background: linear-gradient(135deg,#1A0000,#0D0800);
+    padding: 0.75rem 2.5rem;
+    border-bottom: 1px solid var(--border-gold);
+}
+.page-hdr h2 { font-size: 1.2rem; margin-bottom: 0; }
+.page-hdr p  { font-size: 0.75rem; margin: 0; }
+
 
 /* ============================================================
    4. NAVBAR
@@ -246,7 +252,7 @@ body {
 /* ============================================================
    11. CART PAGE
    ============================================================ */
-.cart-main { padding:2.5rem 2rem; max-width:1100px; margin:0 auto; }
+.cart-main { padding: 1rem 2rem;  max-width:1100px; margin:0 auto; }
 .empty-box { text-align:center; padding:5rem 2rem; background:var(--bg-card); border-radius:20px; border:1px solid var(--border-gold); }
 .empty-box .icon { font-size:5rem; margin-bottom:1rem; opacity:0.35; }
 .empty-box h3 { font-family:'Playfair Display',serif; color:white; margin-bottom:0.5rem; }
@@ -280,32 +286,34 @@ body {
 /* ============================================================
    12. ORDERS PAGE
    ============================================================ */
-.orders-main { padding:2.5rem 2rem; max-width:900px; margin:0 auto; }
-.order-card { background:linear-gradient(160deg,#1E1A14 0%,#1A1610 100%); border-radius:var(--radius-card); overflow:hidden; border:1px solid rgba(212,160,23,0.22); margin-bottom:1.8rem; animation:fadeUp 0.5s var(--ease) both; box-shadow:0 4px 24px rgba(0,0,0,0.45); }
-.order-card:hover { border-color:var(--gold-mid); box-shadow:0 8px 40px rgba(0,0,0,0.55),0 0 22px rgba(212,160,23,0.08); }
-.order-hdr { background:linear-gradient(135deg,#252018,#1E1A12); padding:1.1rem 1.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; border-bottom:1px solid rgba(212,160,23,0.16); }
-.order-id { font-family:'Playfair Display',serif; font-size:1.05rem; color:white; margin-bottom:2px; }
-.order-date { color:var(--text-silver-soft); font-size:0.75rem; }
-.status-badge { padding:0.28rem 1rem; border-radius:20px; font-size:0.68rem; font-weight:700; font-family:'Cinzel',serif; letter-spacing:1px; text-transform:uppercase; }
+.orders-main { padding: 1rem 2rem; max-width:900px; margin:0 auto; }
+
+.order-card { background:linear-gradient(160deg,#1E1A14 0%,#1A1610 100%); border-radius:10px; overflow:hidden; border:1px solid rgba(212,160,23,0.22); margin-bottom:1rem; animation:fadeUp 0.5s var(--ease) both; box-shadow:0 4px 24px rgba(0,0,0,0.45); }
+.order-card:hover { border-color:var(--gold-mid); box-shadow:0 6px 28px rgba(0,0,0,0.55),0 0 16px rgba(212,160,23,0.08); }
+.order-hdr { background:linear-gradient(135deg,#252018,#1E1A12); padding:0.6rem 1rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.4rem; border-bottom:1px solid rgba(212,160,23,0.16); }
+.order-id { font-family:'Playfair Display',serif; font-size:0.9rem; color:white; margin-bottom:1px; }
+.order-date { color:var(--text-silver-soft); font-size:0.68rem; }
+.status-badge { padding:0.18rem 0.7rem; border-radius:20px; font-size:0.6rem; font-weight:700; font-family:'Cinzel',serif; letter-spacing:1px; text-transform:uppercase; }
+.order-body { padding:0.75rem 1rem; }
+.addr-row { background:rgba(212,160,23,0.06); border-left:2px solid rgba(212,160,23,0.45); padding:0.4rem 0.75rem; border-radius:0 6px 6px 0; font-size:0.75rem; color:var(--text-silver); margin-bottom:0.75rem; }
+.items-tbl { width:100%; border-collapse:collapse; font-size:0.78rem; }
+.items-tbl thead tr { border-bottom:1px solid rgba(212,160,23,0.16); }
+.items-tbl th { padding:0.3rem 0.6rem; color:rgba(212,160,23,0.62); font-size:0.58rem; text-transform:uppercase; letter-spacing:1.5px; font-family:'Cinzel',serif; font-weight:400; text-align:left; }
+.items-tbl td { padding:0.45rem 0.6rem; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--text-silver); }
+.items-tbl tr:last-child td { border-bottom:none; }
+.items-tbl tbody tr:hover td { background:rgba(212,160,23,0.03); }
+.items-tbl td.amt { font-weight:700; color:rgba(212,160,23,0.9); }
+.order-ftr { background:rgba(212,160,23,0.04); padding:0.6rem 1rem; display:flex; justify-content:flex-end; align-items:center; gap:1.5rem; flex-wrap:wrap; border-top:1px solid rgba(212,160,23,0.12); }
+.ftr-item .fl { font-size:0.58rem; color:rgba(212,160,23,0.55); text-transform:uppercase; letter-spacing:1px; font-family:'Cinzel',serif; }
+.ftr-item .fv { font-weight:700; color:var(--text-silver); font-size:0.82rem; margin-top:1px; }
+.ftr-item.grand .fl { color:rgba(212,160,23,0.8); }
+.ftr-item.grand .fv { font-family:'Playfair Display',serif; font-size:1rem; }
+
 .status-PENDING   { background:rgba(255,152,0,0.15);  border:1px solid rgba(255,152,0,0.4);  color:#FFB74D; }
 .status-CONFIRMED { background:rgba(33,150,243,0.15); border:1px solid rgba(33,150,243,0.4); color:#64B5F6; }
 .status-SHIPPED   { background:rgba(156,39,176,0.15); border:1px solid rgba(156,39,176,0.4); color:#CE93D8; }
 .status-DELIVERED { background:rgba(76,175,80,0.15);  border:1px solid rgba(76,175,80,0.4);  color:#81C784; }
 .status-CANCELLED { background:rgba(139,0,0,0.20);    border:1px solid rgba(139,0,0,0.5);    color:#EF9A9A; }
-.order-body { padding:1.4rem 1.5rem; }
-.addr-row { background:rgba(212,160,23,0.06); border-left:2px solid rgba(212,160,23,0.45); padding:0.65rem 1rem; border-radius:0 8px 8px 0; font-size:0.8rem; color:var(--text-silver); margin-bottom:1.2rem; }
-.items-tbl { width:100%; border-collapse:collapse; font-size:0.83rem; }
-.items-tbl thead tr { border-bottom:1px solid rgba(212,160,23,0.16); }
-.items-tbl th { padding:0.5rem 0.8rem; color:rgba(212,160,23,0.62); font-size:0.62rem; text-transform:uppercase; letter-spacing:1.5px; font-family:'Cinzel',serif; font-weight:400; text-align:left; }
-.items-tbl td { padding:0.75rem 0.8rem; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--text-silver); }
-.items-tbl tr:last-child td { border-bottom:none; }
-.items-tbl tbody tr:hover td { background:rgba(212,160,23,0.03); }
-.items-tbl td.amt { font-weight:700; color:rgba(212,160,23,0.9); }
-.order-ftr { background:rgba(212,160,23,0.04); padding:1rem 1.5rem; display:flex; justify-content:flex-end; align-items:center; gap:2.5rem; flex-wrap:wrap; border-top:1px solid rgba(212,160,23,0.12); }
-.ftr-item .fl { font-size:0.62rem; color:rgba(212,160,23,0.55); text-transform:uppercase; letter-spacing:1px; font-family:'Cinzel',serif; }
-.ftr-item .fv { font-weight:700; color:var(--text-silver); font-size:0.9rem; margin-top:2px; }
-.ftr-item.grand .fl { color:rgba(212,160,23,0.8); }
-.ftr-item.grand .fv { font-family:'Playfair Display',serif; font-size:1.2rem; }
 
 /* ============================================================
    13. ADDRESS + MODAL

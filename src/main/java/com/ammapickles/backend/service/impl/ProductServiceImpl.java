@@ -26,6 +26,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    
 
     // READ METHODS
 
@@ -147,9 +148,19 @@ public class ProductServiceImpl implements ProductService {
         existing.setQuantity(request.getQuantity());
         existing.setSize(request.getSize());
         existing.setCategory(category);
+        productRepository.save(existing); 
         log.info("Product updated successfully: {}", id);
         return mapToResponse(existing);
     }
+    
+    @Transactional(readOnly = true)
+    public ProductGroupResponse getProductGroupByVariantId(Long variantId) {
+        Product product = productRepository.findById(variantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + variantId));
+        List<Product> variants = productRepository.findByNameOrderBySizeAsc(product.getName());
+        return mapToGroupResponse(variants);
+    }
+
 
     @Override
     @Transactional

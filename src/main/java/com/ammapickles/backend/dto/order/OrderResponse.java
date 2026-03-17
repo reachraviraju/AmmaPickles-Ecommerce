@@ -2,7 +2,6 @@ package com.ammapickles.backend.dto.order;
 
 import com.ammapickles.backend.entity.OrderStatus;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,8 +13,8 @@ public class OrderResponse {
     private OrderStatus status;
     private BigDecimal totalAmount;
     private BigDecimal deliveryCharge;
-    private BigDecimal grandTotal;              // totalAmount + deliveryCharge
+    private BigDecimal grandTotal;
     private LocalDateTime orderDate;
-    private String deliveryAddress;             // formatted: "street, city, district - pincode"
+    private String deliveryAddress;
     private List<OrderItemResponse> items;
 }

@@ -29,16 +29,14 @@ public class Address {
     @NotBlank(message = "State is required")
     private String state;
 
-              //  must be exactly 6 digits
     @Pattern(regexp = "^[1-9][0-9]{5}$", message = "Invalid pincode")
     @Column(length = 6)
     private String pincode;
 
-    
-    @Column(nullable = false)
-    private double distanceInKm;
+    @Pattern(regexp = "^[6-9][0-9]{9}$", message = "Invalid mobile number")
+    @Column(length = 10, nullable = false)
+    private String mobileNumber;
 
- 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

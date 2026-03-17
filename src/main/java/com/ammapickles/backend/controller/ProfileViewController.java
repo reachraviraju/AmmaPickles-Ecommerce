@@ -29,7 +29,7 @@ public class ProfileViewController {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         model.addAttribute("user", userService.getUserById(user.getId()));
         model.addAttribute("addresses", addressService.getAddressesByUser(user.getId()));
-        model.addAttribute("orderCount", orderRepository.findByUserId(user.getId()).size());
+        model.addAttribute("orderCount", orderRepository.countByUserId(user.getId()));
         model.addAttribute("addressCount", addressService.getAddressesByUser(user.getId()).size());
         model.addAttribute("username", user.getUsername());
         return "profile";

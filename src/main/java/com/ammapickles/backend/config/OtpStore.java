@@ -1,58 +1,61 @@
 package com.ammapickles.backend.config;
 
+import com.ammapickles.backend.entity.OtpVerification;
+import com.ammapickles.backend.repository.OtpVerificationRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * In-memory OTP store. No new DB table needed.
- * Stores email ->  {otp, expiresAt, verified}
- */
 @Component
+@RequiredArgsConstructor
 public class OtpStore {
 
+    private final OtpVerificationRepository otpRepository;
+    private final Random random = new Random();
     private static final int OTP_VALID_MINUTES = 10;
 
-    private record OtpEntry(String otp, LocalDateTime expiresAt, boolean verified) {}
-
-    private final Map<String, OtpEntry> store = new ConcurrentHashMap<>();
-    private final Random random = new Random();
-
-    /** Generate a new 6-digit OTP for the email and return it. */
+    @Transactional
     public String generateOtp(String email) {
         String otp = String.format("%06d", random.nextInt(1_000_000));
-        store.put(email.toLowerCase(), new OtpEntry(otp, LocalDateTime.now().plusMinutes(OTP_VALID_MINUTES), false));
+        // delete old if exists
+        otpRepository.deleteByEmail(email.toLowerCase());
+        OtpVerification entry = OtpVerification.builder()
+                .email(email.toLowerCase())
+                .otp(otp)
+                .expiresAt(LocalDateTime.now().plusMinutes(OTP_VALID_MINUTES))
+                .verified(false)
+                .build();
+        otpRepository.save(entry);
         return otp;
     }
 
-    /**
-     * Validate OTP for email.
-     * Returns: "ok" | "invalid" | "expired"
-     */
+    @Transactional
     public String validate(String email, String otp) {
-        OtpEntry entry = store.get(email.toLowerCase());
+        OtpVerification entry = otpRepository.findByEmail(email.toLowerCase())
+                .orElse(null);
         if (entry == null) return "invalid";
-        if (LocalDateTime.now().isAfter(entry.expiresAt())) {
-            store.remove(email.toLowerCase());
+        if (entry.isExpired()) {
+            otpRepository.deleteByEmail(email.toLowerCase());
             return "expired";
         }
-        if (!entry.otp().equals(otp.trim())) return "invalid";
-        // Mark as verified
-        store.put(email.toLowerCase(), new OtpEntry(entry.otp(), entry.expiresAt(), true));
+        if (!entry.getOtp().equals(otp.trim())) return "invalid";
+        entry.setVerified(true);
+        otpRepository.save(entry);
         return "ok";
     }
 
-    /** Check if OTP was already verified for this email (before final register submit). */
+    @Transactional(readOnly = true)
     public boolean isVerified(String email) {
-        OtpEntry entry = store.get(email.toLowerCase());
-        return entry != null && entry.verified() && LocalDateTime.now().isBefore(entry.expiresAt());
+        return otpRepository.findByEmail(email.toLowerCase())
+                .map(e -> e.isVerified() && !e.isExpired())
+                .orElse(false);
     }
 
-    /** Remove after successful registration. */
+    @Transactional
     public void clear(String email) {
-        store.remove(email.toLowerCase());
+        otpRepository.deleteByEmail(email.toLowerCase());
     }
 }

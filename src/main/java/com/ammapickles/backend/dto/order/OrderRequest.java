@@ -7,5 +7,5 @@ import lombok.Data;
 public class OrderRequest {
 
     @NotNull(message = "Delivery address ID is required")
-    private Long addressId;   // Customer picks which saved address to deliver to
+    private Long addressId;
 }

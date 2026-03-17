@@ -20,23 +20,19 @@ public class ProductViewController {
 
     private final ProductService productService;
     private final UserRepository userRepository;
-
+    
     @GetMapping("/products/{id}")
     public String productDetail(@PathVariable Long id,
                                 Model model,
                                 @AuthenticationPrincipal UserDetails userDetails) {
 
-        List<ProductGroupResponse> allProducts = productService.getAllProductsGrouped();
-
-        ProductGroupResponse product = allProducts.stream()
+       
+        ProductGroupResponse product = productService.getAllProductsGrouped().stream()
                 .filter(p -> p.getVariants() != null &&
-                        p.getVariants().stream()
-                         .anyMatch(v -> v.getId().equals(id)))
+                        p.getVariants().stream().anyMatch(v -> v.getId().equals(id)))
                 .findFirst()
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Product not found: " + id));
-
-        // find selected variant
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
+     // find selected variant
         ProductGroupResponse.ProductVariant selected = product.getVariants().stream()
                 .filter(v -> v.getId().equals(id))
                 .findFirst()
@@ -49,7 +45,8 @@ public class ProductViewController {
             User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
             model.addAttribute("username", user.getUsername());
         }
-
         return "product-detail";
     }
+
+   
 }

@@ -1,7 +1,6 @@
 package com.ammapickles.backend.dto.address;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
@@ -22,6 +21,7 @@ public class AddressRequest {
     @Pattern(regexp = "^[1-9][0-9]{5}$", message = "Invalid pincode")
     private String pincode;
 
-    @NotNull(message = "Distance is required for delivery charge calculation")
-    private Double distanceInKm;    
+    @NotBlank(message = "Mobile number is required")
+    @Pattern(regexp = "^[6-9][0-9]{9}$", message = "Invalid Indian mobile number")
+    private String mobileNumber;
 }
