@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Oops — Amma Pickles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:wght@700;900&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div style="min-height:80vh;display:flex;align-items:center;justify-content:center;padding:2rem;">
+        <div style="text-align:center;max-width:500px;">
+
+            <!-- Icon -->
+            <div style="font-size:5rem;margin-bottom:1rem;opacity:0.35;">🫙</div>
+
+            <!-- Status code -->
+            <div th:if="${status != null}"
+                 style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:4px;color:var(--gold-mid);text-transform:uppercase;margin-bottom:0.5rem;"
+                 th:text="'Error ' + ${status}">
+            </div>
+
+            <!-- Title -->
+            <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;color:white;margin-bottom:0.75rem;">
+                Something went wrong
+            </h2>
+
+            <!-- Message -->
+            <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.8;margin-bottom:2rem;"
+               th:text="${message != null} ? ${message} : 'We hit an unexpected error. Please try again or go back home.'">
+            </p>
+
+            <!-- Actions -->
+            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                <a href="/home" class="btn-order" style="width:auto;padding:0.8rem 2rem;">
+                    <i class="bi bi-house"></i> Back to Home
+                </a>
+                <a href="javascript:history.back()" class="btn-cancel"
+                   style="padding:0.8rem 2rem;border-radius:12px;text-decoration:none;">
+                    <i class="bi bi-arrow-left"></i> Go Back
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
