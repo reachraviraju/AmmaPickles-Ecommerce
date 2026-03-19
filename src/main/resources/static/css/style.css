@@ -809,3 +809,166 @@ body {
     .auth-page { padding: 2rem 1rem; justify-content: flex-start; }
     .auth-card { padding: 2rem 1.6rem; }
 }
+
+/* ============================================================
+   21. ADMIN
+   ============================================================ */
+.admin-stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-gold);
+    border-radius: var(--radius-card);
+    padding: 1.2rem;
+    text-align: center;
+}
+.admin-stat-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.58rem;
+    letter-spacing: 2px;
+    color: var(--gold-mid);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+}
+.admin-stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+}
+.admin-status-card {
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+}
+.admin-status-label {
+    font-size: 0.7rem;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 1px;
+    margin-bottom: 0.3rem;
+}
+.admin-status-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.admin-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-gold);
+    border-radius: var(--radius-card);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.admin-section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--gold-mid);
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+}
+.admin-table-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border-gold);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+}
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.admin-table thead tr {
+    background: linear-gradient(135deg, #252018, #1E1A12);
+    border-bottom: 1px solid rgba(212,160,23,0.2);
+}
+.admin-table th {
+    padding: 0.75rem 1rem;
+    color: rgba(212,160,23,0.7);
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 400;
+    text-align: left;
+}
+.admin-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text-silver);
+}
+.admin-table tbody tr:hover td {
+    background: rgba(212,160,23,0.03);
+}
+.admin-table td.td-id {
+    color: white;
+    font-family: 'Playfair Display', serif;
+}
+.admin-table td.td-muted {
+    color: var(--text-silver-soft);
+    font-size: 0.78rem;
+}
+.admin-table td.td-gold {
+    color: rgba(212,160,23,0.9);
+    font-weight: 700;
+}
+.admin-view-btn {
+    color: var(--gold-mid);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border: 1px solid rgba(212,160,23,0.3);
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+}
+.admin-view-btn:hover {
+    background: rgba(212,160,23,0.1);
+    color: var(--gold-lt);
+    border-color: var(--gold-mid);
+}
+.admin-select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: rgba(255,255,255,0.03);
+    border: 1.5px solid rgba(212,160,23,0.2);
+    border-radius: 10px;
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.88rem;
+    outline: none;
+    margin-bottom: 1rem;
+    cursor: pointer;
+}
+.admin-select:focus {
+    border-color: rgba(212,160,23,0.45);
+    box-shadow: 0 0 0 3px rgba(212,160,23,0.07);
+}
+.admin-select option { background: #1A1206; color: white; }
+.flash-success {
+    background: rgba(76,175,80,0.10);
+    border: 1px solid rgba(76,175,80,0.35);
+    border-left: 3px solid rgba(76,175,80,0.7);
+    border-radius: 10px;
+    padding: 0.75rem 1.2rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #a8e6b0;
+    font-size: 0.85rem;
+}
+.admin-status-flow {
+    font-size: 0.78rem;
+    color: var(--text-silver-soft);
+    line-height: 2;
+}
+.admin-hr {
+    border-color: rgba(212,160,23,0.1);
+    margin: 1.2rem 0;
+}
+.admin-cod-badge {
+    padding: 0.18rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.6rem;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 1px;
+    background: rgba(212,160,23,0.1);
+    border: 1px solid rgba(212,160,23,0.3);
+    color: var(--gold-mid);
+}

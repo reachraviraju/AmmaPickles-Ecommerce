@@ -2,6 +2,8 @@ package com.ammapickles.backend.service;
 
 import com.ammapickles.backend.dto.order.OrderRequest;
 import com.ammapickles.backend.dto.order.OrderResponse;
+import com.ammapickles.backend.entity.OrderStatus;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -35,4 +37,6 @@ public interface OrderService {
 
     // Admin (PENDING -> SHIPPED ->  DELIVERED)
     OrderResponse updateOrderStatus(Long orderId, String status);
+    
+    Page<OrderResponse> getOrdersByStatus(OrderStatus status, Pageable pageable);
 }

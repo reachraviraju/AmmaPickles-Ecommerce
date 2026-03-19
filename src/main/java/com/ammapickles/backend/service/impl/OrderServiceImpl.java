@@ -211,4 +211,12 @@ public class OrderServiceImpl implements OrderService {
         response.setItems(items);
         return response;
     }
+    
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Page<OrderResponse> getOrdersByStatus(OrderStatus status, Pageable pageable) {
+        log.info("Admin fetching orders by status: {}", status);
+        return orderRepository.findByStatus(status, pageable).map(this::mapToResponse);
+    }
 }

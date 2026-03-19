@@ -12,4 +12,6 @@ public interface EmailService {
     void sendOtpEmail(String toEmail, String username, String otp);
     
     void sendOrderConfirmationEmail(String toEmail, String username, Long orderId, BigDecimal grandTotal);
+    
+    
 }

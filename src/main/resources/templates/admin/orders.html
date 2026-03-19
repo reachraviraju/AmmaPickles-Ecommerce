@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Orders — Amma Pickles Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:wght@700;900&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+
+    <div th:replace="~{fragments/admin-navbar :: adminNavbar}"></div>
+
+    <div class="page-hdr">
+        <h2>📦 All Orders</h2>
+        <p>Manage and update order statuses</p>
+    </div>
+
+    <div class="cart-main">
+
+        <div th:if="${success}" class="flash-success">
+            <i class="bi bi-check-circle-fill"></i>
+            <span th:text="${success}"></span>
+        </div>
+
+        <!-- STATUS FILTER -->
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+            <a href="/admin/orders" class="filter-btn"
+               th:classappend="${status == null} ? ' active' : ''">All</a>
+            <a th:each="s : ${statuses}"
+               th:href="@{/admin/orders(status=${s})}"
+               th:text="${s}"
+               class="filter-btn"
+               th:classappend="${status == s.name()} ? ' active' : ''">
+            </a>
+        </div>
+
+        <!-- EMPTY -->
+        <div th:if="${orders == null or orders.empty}" class="empty-box">
+            <div class="icon">📦</div>
+            <h3>No orders found</h3>
+            <p>No orders match the selected filter.</p>
+        </div>
+
+        <!-- TABLE -->
+        <div th:unless="${orders == null or orders.empty}" class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Date</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="order : ${orders}">
+                        <td class="td-id" th:text="'#' + ${order.id}"></td>
+                        <td class="td-muted"
+                            th:text="${#temporals.format(order.orderDate, 'dd MMM yyyy')}"></td>
+                        <td class="td-muted"
+                            th:text="${order.items.size()} + ' item(s)'"></td>
+                        <td class="td-gold" th:text="'₹' + ${order.grandTotal}"></td>
+                        <td>
+                            <span class="status-badge"
+                                  th:classappend="' status-' + ${order.status}"
+                                  th:text="${order.status}"></span>
+                        </td>
+                        <td>
+                            <a th:href="@{/admin/orders/{id}(id=${order.id})}"
+                               class="admin-view-btn">View →</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div th:if="${orders != null and orders.totalPages > 1}"
+             style="display:flex;justify-content:center;gap:0.5rem;margin-top:1.5rem;flex-wrap:wrap;">
+            <a th:if="${!orders.first}"
+               th:href="@{/admin/orders(page=${orders.number - 1}, status=${status})}"
+               class="filter-btn">← Prev</a>
+            <span th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}">
+                <a th:href="@{/admin/orders(page=${i}, status=${status})}"
+                   th:text="${i + 1}"
+                   class="filter-btn"
+                   th:classappend="${orders.number == i} ? ' active' : ''"></a>
+            </span>
+            <a th:if="${!orders.last}"
+               th:href="@{/admin/orders(page=${orders.number + 1}, status=${status})}"
+               class="filter-btn">Next →</a>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

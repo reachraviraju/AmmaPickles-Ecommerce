@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head></head>
+<body>
+<nav th:fragment="adminNavbar" class="ap-navbar">
+
+    <!-- Logo -->
+    <a href="/admin/dashboard" class="logo-opt1">
+        <span class="amma shine-gold">AMMA</span>
+        <div class="gold-line"></div>
+        <span class="pickles">Admin Panel</span>
+    </a>
+
+    <!-- Desktop nav -->
+    <div class="nav-pills nav-pills-desktop">
+        <a th:href="@{/admin/dashboard}"
+           th:classappend="${activePage == 'dashboard'} ? ' pill-gold' : ' pill-ghost'">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        <a th:href="@{/admin/orders}"
+           th:classappend="${activePage == 'orders'} ? ' pill-gold' : ' pill-ghost'">
+            <i class="bi bi-bag-check"></i> Orders
+        </a>
+        <a th:href="@{/admin/products}"
+           th:classappend="${activePage == 'products'} ? ' pill-gold' : ' pill-ghost'">
+            <i class="bi bi-box-seam"></i> Products
+        </a>
+        <a href="/home" class="pill-ghost">
+            <i class="bi bi-shop"></i> View Store
+        </a>
+        
+        <form th:action="@{/logout}" method="post" style="display:inline;">
+            <button type="submit"
+                    class="pill-ghost"
+                    style="color:rgba(255,120,120,0.8)!important; background:none; border:none;">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </button>
+        </form>
+        
+       
+    </div>
+
+</nav>
+</body>
+</html>
