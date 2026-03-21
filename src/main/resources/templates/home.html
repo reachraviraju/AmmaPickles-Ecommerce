@@ -88,6 +88,21 @@
            th:classappend="${activeCategory == cat.id} ? ' active' : ''">
         </a>
     </div>
+    
+    
+    <div class="mobile-search-bar">
+    <form th:action="@{/home}" method="get">
+        <div class="msb-inner">
+            <input type="text"
+                   name="search"
+                   placeholder="Search for pickles..."
+                   th:value="${activeSearch}"/>
+            <button type="submit">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </form>
+</div>
 
     <!-- Products -->
     <section class="ap-products" id="products">

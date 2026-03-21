@@ -430,9 +430,7 @@ body {
 .ap-hero p { display: none; }
 
 .hero-search {
-    width: 100%;
-    max-width: 100%;
-    margin: 0 0 0.5rem;
+     display: none;
 }
 
 .hero-search input {
@@ -782,4 +780,46 @@ body {
     .card-body-ap p { display: none; }
     .card-footer-ap { flex-direction: column; align-items: flex-start; }
     .btn-add { width: 100%; text-align: center; font-size: 0.62rem; }
+}
+
+
+
+/* ============================================================
+   24. MOBILE SEARCH BAR
+   ============================================================ */
+.mobile-search-bar { display: none; }
+
+@media (max-width: 768px) {
+    .mobile-search-bar {
+        display: block;
+        background: var(--bg-card);
+        padding: 0.7rem 1rem;
+        border-bottom: 1px solid var(--border-gold-glow);
+    }
+    .msb-inner {
+        display: flex;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(212,160,23,0.22);
+        border-radius: 50px;
+        overflow: hidden;
+    }
+    .msb-inner input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        padding: 0.6rem 1rem;
+        color: white;
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.82rem;
+    }
+    .msb-inner input::placeholder { color: var(--text-label); }
+    .msb-inner button {
+        background: var(--grad-gold);
+        border: none;
+        padding: 0 1.2rem;
+        color: #1a0800;
+        font-weight: 700;
+        cursor: pointer;
+    }
 }
