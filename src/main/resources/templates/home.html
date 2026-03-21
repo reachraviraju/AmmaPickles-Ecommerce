@@ -5,15 +5,11 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Amma Pickles</title>
-
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F9AB;</text></svg>">
-
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
     <link th:href="@{/css/style.css}" rel="stylesheet"/>
-
-   
 </head>
 
 <body>
@@ -40,6 +36,7 @@
                 </button>
             </form>
 
+            <!-- Desktop stats -->
             <div class="hero-stats">
                 <div class="stat">
                     <div class="num shine-gold">30+</div>
@@ -55,18 +52,35 @@
                 </div>
             </div>
         </div>
+
+        <!-- Mobile stats panel -->
+        <div class="hero-stats-panel">
+            <div class="hsp-item">
+                <span class="hsp-num shine-gold">30+</span>
+                <span class="hsp-lbl">Varieties</span>
+            </div>
+            <div class="hsp-divider"></div>
+            <div class="hsp-item">
+                <span class="hsp-num shine-gold">10K+</span>
+                <span class="hsp-lbl">Customers</span>
+            </div>
+            <div class="hsp-divider"></div>
+            <div class="hsp-item">
+                <span class="hsp-num shine-gold">100%</span>
+                <span class="hsp-lbl">Natural</span>
+            </div>
+        </div>
+
     </section>
 
     <!-- Category Filters -->
     <div class="category-filters">
         <span class="filter-label">Filter:</span>
-
         <a th:href="@{/home}"
            class="filter-btn"
            th:classappend="${activeCategory == null} ? ' active' : ''">
             All
         </a>
-
         <a th:each="cat : ${categories}"
            th:href="@{/home(category=${cat.id})}"
            th:text="${cat.name}"
@@ -126,11 +140,9 @@
 
                         <!-- Footer -->
                         <div class="card-footer-ap" onclick="event.stopPropagation()">
-
                             <span class="card-price shine-gold"
                                   th:text="'&#8377;' + ${product.price}">
                             </span>
-
                             <!-- Logged in + in stock -->
                             <form th:if="${product.inStock and username != null}"
                                   th:action="@{/cart/add/{id}(id=${product.variants[0].id})}"
@@ -142,21 +154,18 @@
                                     <i class="bi bi-cart-plus"></i> Add
                                 </button>
                             </form>
-
                             <!-- Not logged in + in stock -->
                             <button th:if="${product.inStock and username == null}"
                                     class="btn-add"
                                     onclick="window.location.href='/login'">
                                 <i class="bi bi-cart-plus"></i> Add
                             </button>
-
                             <!-- Out of stock -->
                             <button th:unless="${product.inStock}"
                                     class="btn-cancel"
                                     disabled>
                                 Out of Stock
                             </button>
-
                         </div>
                     </div>
                 </div>
@@ -165,8 +174,6 @@
 
             <!-- Pagination -->
             <div th:if="${totalPages > 1}">
-
-                <!-- Info -->
                 <div class="pagination-info">
                     Showing page
                     <span th:text="${currentPage + 1}"></span>
@@ -175,51 +182,36 @@
                     &nbsp;•&nbsp;
                     <span th:text="${totalProducts}"></span> products
                 </div>
-
                 <div class="ap-pagination">
-
-                    <!-- Previous -->
                     <a th:if="${currentPage > 0}"
                        th:href="@{/home(page=${currentPage - 1}, category=${activeCategory}, search=${activeSearch})}"
                        class="prev-next">
                         <i class="bi bi-chevron-left"></i> Prev
                     </a>
-
-                    <!-- Page numbers -->
                     <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-
-                        <!-- Show first, last, current and neighbours -->
                         <a th:if="${i == 0 or i == totalPages - 1 or (i >= currentPage - 1 and i <= currentPage + 1)}"
                            th:href="@{/home(page=${i}, category=${activeCategory}, search=${activeSearch})}"
                            th:text="${i + 1}"
                            th:classappend="${i == currentPage} ? ' active' : ''">
                         </a>
-
-                        <!-- Dots -->
                         <span th:if="${i == 1 and currentPage > 2}" class="dots">...</span>
                         <span th:if="${i == totalPages - 2 and currentPage < totalPages - 3}" class="dots">...</span>
-
                     </th:block>
-
-                    <!-- Next -->
                     <a th:if="${currentPage < totalPages - 1}"
                        th:href="@{/home(page=${currentPage + 1}, category=${activeCategory}, search=${activeSearch})}"
                        class="prev-next">
                         Next <i class="bi bi-chevron-right"></i>
                     </a>
-
                 </div>
             </div>
 
         </div>
-
     </section>
 
     <!-- Footer -->
     <div th:replace="~{fragments/footer :: footer}"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const cameFromHome = document.referrer.includes('/home');
