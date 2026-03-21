@@ -407,22 +407,24 @@ body {
         overflow: hidden;
     }
 
-    /* Show image on right side */
+    
+    
     .ap-hero::after {
-        content: '';
-        position: absolute;
-        right: -20px;
-        top: 0;
-        bottom: 0;
-        width: 45%;
-        background:
-            linear-gradient(to right, #0D0800 0%, transparent 30%),
-            url('/images/amma_hero.png');
-        background-size: cover;
-        background-position: center top;
-        opacity: 0.85;
-        pointer-events: none;
-    }
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 55%; /* ← wider */
+    background:
+        linear-gradient(to right, #0D0800 0%, transparent 35%),
+        url('/images/amma_hero.png');
+    background-size: auto 100%; /*  fit full height */
+    background-position: right center; /* show right side of image */
+    background-repeat: no-repeat;
+    opacity: 0.9;
+    pointer-events: none;
+}
 
     .ap-hero::before { display: none; }
 
