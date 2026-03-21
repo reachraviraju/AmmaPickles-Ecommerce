@@ -371,21 +371,143 @@ body {
 /* ============================================================
    16. RESPONSIVE
    ============================================================ */
-@media (max-width:768px) {
-    .ap-navbar { padding:0 1rem; }
-    .welcome-txt { display:none; }
-    .ap-hero h1 { font-size:2rem; }
-    .hero-stats { gap:1.5rem; }
-    .order-ftr { gap:1.5rem; }
-    .cart-main, .orders-main { padding:1.5rem 1rem; }
-    .pd-name { font-size:1.8rem; }
-    .pd-info-grid { grid-template-columns:repeat(2,1fr); }
-    .pd-buy-row { gap:1rem; }
-    .pd-breadcrumb { padding:0.75rem 1rem; }
-    .footer-inner { grid-template-columns:1fr 1fr; gap:2rem; padding:2.5rem 1.5rem 2rem; }
-    .footer-bottom { flex-direction:column; gap:0.5rem; text-align:center; }
+
+
+/* ── TABLET (max 992px) ── */
+@media (max-width: 992px) {
+    .ap-hero { padding: 3rem 2rem 3rem 3rem; }
+    .ap-hero h1 { font-size: 2.2rem; }
+    .footer-inner { grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .pd-info-grid { grid-template-columns: repeat(2,1fr); }
+    .summary-card { position: static; }
 }
-@media (max-width:540px) { .footer-inner { grid-template-columns:1fr; gap:2rem; } }
+
+/* ── MOBILE (max 768px) ── */
+@media (max-width: 768px) {
+
+    /* Navbar */
+    .ap-navbar { padding: 0 1rem; }
+    .nav-pills-desktop { display: none; }
+    .nav-hamburger { display: flex; }
+    .welcome-txt { display: none; }
+
+    /* Page headers */
+    .page-hdr { padding: 0.75rem 1rem; }
+    .pd-breadcrumb { padding: 0.75rem 1rem; }
+
+    /* Hero */
+    .ap-hero {
+        background-size: auto 40%;
+        background-position: right bottom;
+        padding: 3rem 1.5rem;
+        text-align: center;
+        align-items: flex-start;
+        min-height: unset;
+        height: auto;
+    }
+    .hero-content { max-width: 100%; margin: auto; }
+    .hero-badge { font-size: 0.55rem; letter-spacing: 2px; }
+    .ap-hero h1 { font-size: 1.8rem; }
+    .ap-hero p { font-size: 0.85rem; margin: 0 auto 1.5rem; }
+    .hero-search { margin: 0 auto 2rem; max-width: 100%; }
+    .hero-stats { justify-content: center; gap: 1.5rem; }
+    .stat .num { font-size: 1.3rem; }
+
+    /* Category filters */
+    .category-filters { padding: 0.8rem 1rem; gap: 0.5rem; }
+    .filter-btn { padding: 0.3rem 0.9rem; font-size: 0.75rem; }
+
+    /* Products */
+    .ap-products { padding: 2rem 1rem; }
+    .section-head h2 { font-size: 1.5rem; }
+
+    /* Cart page */
+    .cart-main { padding: 1rem; }
+    .cart-item { flex-wrap: wrap; gap: 0.8rem; padding: 0.9rem 1rem; }
+    .ci-icon { width: 48px; height: 48px; font-size: 1.5rem; }
+    .ci-info { min-width: 0; }
+    .ci-name { font-size: 0.9rem; }
+    .ci-total { font-size: 1rem; }
+    .summary-card { position: static; padding: 1.2rem; }
+
+    /* Orders page */
+    .orders-main { padding: 1rem; }
+    .order-hdr { padding: 0.5rem 0.8rem; }
+    .order-body { padding: 0.6rem 0.8rem; }
+    .order-ftr { padding: 0.5rem 0.8rem; gap: 1rem; }
+    .items-tbl { font-size: 0.72rem; }
+    .items-tbl th, .items-tbl td { padding: 0.35rem 0.4rem; }
+
+    /* Place order page — stack columns */
+    .col-lg-8, .col-lg-4 { width: 100% !important; }
+
+    /* Product detail */
+    .pd-wrapper { padding: 1.5rem 0 2rem; }
+    .pd-name { font-size: 1.6rem; }
+    .pd-desc { font-size: 0.85rem; }
+    .pd-info-grid { grid-template-columns: repeat(2,1fr); gap: 0.6rem; }
+    .pd-buy-row { gap: 1rem; flex-direction: column; align-items: flex-start; }
+    .pd-price { font-size: 1.6rem; }
+    .pd-back { margin-top: 1rem; }
+    .size-options { gap: 0.5rem; }
+
+    /* Profile page */
+    .profile-avatar-card { position: static; margin-bottom: 1.5rem; }
+
+    /* Footer */
+    .footer-inner { grid-template-columns: 1fr 1fr; gap: 1.5rem; padding: 2rem 1rem 1.5rem; }
+    .footer-bottom { flex-direction: column; gap: 0.5rem; text-align: center; padding: 1rem; }
+
+    /* Admin tables — horizontal scroll */
+    .admin-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .admin-table { min-width: 600px; }
+    .admin-table th, .admin-table td { padding: 0.5rem 0.6rem; white-space: nowrap; }
+
+    /* Admin forms */
+    .admin-section { padding: 1rem; }
+    .cart-main .row { --bs-gutter-x: 0.75rem; }
+}
+
+/* ── SMALL MOBILE (max 480px) ── */
+@media (max-width: 480px) {
+
+    /* Hero */
+    .ap-hero { padding: 2rem 1rem; }
+    .ap-hero h1 { font-size: 1.5rem; }
+    .hero-search input { font-size: 0.8rem; padding: 0.7rem 1rem; }
+    .hero-stats { gap: 1rem; }
+    .stat .num { font-size: 1.1rem; }
+    .stat .lbl { font-size: 0.55rem; }
+
+    /* Product cards — full width on tiny screens */
+    .col-sm-6 { width: 100% !important; }
+
+    /* Cart items */
+    .cart-item { padding: 0.8rem; }
+    .ci-icon { display: none; }
+
+    /* Order table — scroll */
+    .order-body { overflow-x: auto; padding: 0.5rem; }
+    .items-tbl { min-width: 400px; }
+
+    /* Product detail */
+    .pd-info-grid { grid-template-columns: 1fr 1fr; }
+    .pd-name { font-size: 1.4rem; }
+
+    /* Auth pages */
+    .auth-card { padding: 1.5rem 1.2rem; }
+    .auth-row { grid-template-columns: 1fr; }
+
+    /* Footer */
+    .footer-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+    .footer-logo .amma { font-size: 1.3rem; }
+
+    /* Admin */
+    .admin-stat-value { font-size: 1.5rem; }
+    .page-hdr h2 { font-size: 1rem; }
+}   
+   
+   
 
 /* ============================================================
    17. HIDE SCROLLBAR
