@@ -368,7 +368,6 @@ body {
 @keyframes floatGlow { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
 @keyframes marquee  { from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
-
 /* ============================================================
    16. RESPONSIVE
    ============================================================ */
@@ -396,29 +395,87 @@ body {
     .page-hdr { padding: 0.75rem 1rem; }
     .pd-breadcrumb { padding: 0.75rem 1rem; }
 
-    /* Hero — Fix overlapping image + text */
+    /* Hero — Side by Side */
     .ap-hero {
         background: linear-gradient(160deg, #1A0000 0%, #0D0800 55%, #000 100%) !important;
         height: auto;
         min-height: unset;
-        padding: 3rem 1.5rem;
-        text-align: center;
+        padding: 2rem 1.2rem;
         align-items: center;
+        display: flex;
+        position: relative;
+        overflow: hidden;
     }
+
+    /* Show image on right side */
+    .ap-hero::after {
+        content: '';
+        position: absolute;
+        right: -20px;
+        top: 0;
+        bottom: 0;
+        width: 45%;
+        background:
+            linear-gradient(to right, #0D0800 0%, transparent 30%),
+            url('/images/amma_hero.png');
+        background-size: cover;
+        background-position: center top;
+        opacity: 0.85;
+        pointer-events: none;
+    }
+
     .ap-hero::before { display: none; }
+
+    /* Text on left side */
     .hero-content {
-        max-width: 100%;
-        margin: auto;
+        max-width: 58%;
+        margin: 0;
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
+        position: relative;
+        z-index: 2;
     }
-    .hero-badge { font-size: 0.55rem; letter-spacing: 2px; }
-    .ap-hero h1 { font-size: 1.8rem; text-align: center; }
-    .ap-hero p { font-size: 0.85rem; text-align: center; margin: 0 auto 1.5rem; }
-    .hero-search { width: 100%; max-width: 100%; margin: 0 auto 2rem; }
-    .hero-stats { justify-content: center; gap: 1.5rem; width: 100%; }
-    .stat .num { font-size: 1.3rem; }
+
+    .hero-badge {
+        font-size: 0.48rem;
+        letter-spacing: 1.5px;
+        padding: 0.25rem 0.8rem;
+    }
+
+    .ap-hero h1 {
+        font-size: 1.3rem;
+        text-align: left;
+        line-height: 1.3;
+    }
+
+    .ap-hero p {
+        font-size: 0.72rem;
+        text-align: left;
+        margin: 0 0 1rem;
+        line-height: 1.6;
+    }
+
+    .hero-search {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 0 1rem;
+    }
+
+    .hero-search input {
+        font-size: 0.75rem;
+        padding: 0.6rem 0.8rem;
+    }
+
+    .hero-stats {
+        justify-content: flex-start;
+        gap: 1rem;
+        width: 100%;
+        padding-top: 0.8rem;
+    }
+
+    .stat .num { font-size: 1rem; }
+    .stat .lbl { font-size: 0.5rem; }
 
     /* Category filters */
     .category-filters { padding: 0.8rem 1rem; gap: 0.5rem; }
@@ -491,11 +548,12 @@ body {
 @media (max-width: 480px) {
 
     /* Hero */
-    .ap-hero { padding: 2rem 1rem; }
-    .ap-hero h1 { font-size: 1.5rem; }
-    .hero-search input { font-size: 0.8rem; padding: 0.7rem 1rem; }
-    .hero-stats { gap: 1rem; }
-    .stat .num { font-size: 1.1rem; }
+    .ap-hero { padding: 1.5rem 1rem; }
+    .hero-content { max-width: 60%; }
+    .ap-hero h1 { font-size: 1.1rem; }
+    .ap-hero p { display: none; }
+    .hero-search input { font-size: 0.72rem; }
+    .stat .num { font-size: 0.9rem; }
     .stat .lbl { font-size: 0.55rem; }
 
     /* Products — KEEP 2 columns */

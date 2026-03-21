@@ -2,7 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <body>
 
-<nav th:fragment="navbar" class="ap-navbar">
+<th:block th:fragment="navbar">
+
+<nav class="ap-navbar">
 
     <!-- Logo -->
     <a href="/home" class="logo-opt1">
@@ -14,31 +16,28 @@
     <!-- Welcome message (desktop only) -->
     <span class="welcome-txt"
           th:if="${username != null}"
-          th:text="'Hello !! 👋 ' + ${username}"  style="font-weight:800;font-size:1rem;font-family:'Cinzel',serif;letter-spacing:1px;background:linear-gradient(105deg,#C9920A 0%,#E8B84B 30%,#FFF0A0 50%,#E8B84B 70%,#C9920A 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+          th:text="'Hello !! 👋 ' + ${username}"
+          style="font-weight:800;font-size:1rem;font-family:'Cinzel',serif;letter-spacing:1px;background:linear-gradient(105deg,#C9920A 0%,#E8B84B 30%,#FFF0A0 50%,#E8B84B 70%,#C9920A 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
     </span>
 
     <!-- Nav Pills (desktop) -->
     <div class="nav-pills nav-pills-desktop">
 
-        <!-- Cart (logged in only) -->
         <a href="/cart" class="pill-gold"
            th:if="${username != null}">
             <i class="bi bi-cart3"></i> Cart
         </a>
 
-        <!-- My Orders (logged in only) -->
         <a href="/orders" class="pill-ghost"
            th:if="${username != null}">
             <i class="bi bi-box-seam"></i> My Orders
         </a>
 
-        <!-- Profile (logged in only) -->
         <a href="/profile" class="pill-ghost"
            th:if="${username != null}">
             <i class="bi bi-person-circle"></i>
         </a>
 
-        <!-- Logout (logged in only) -->
         <form th:if="${username != null}"
               th:action="@{/logout}"
               method="post"
@@ -52,13 +51,11 @@
             </button>
         </form>
 
-        <!-- Login (logged out only) -->
         <a href="/login" class="pill-ghost"
            th:unless="${username != null}">
             Login
         </a>
 
-        <!-- Register (logged out only) -->
         <a href="/register" class="pill-gold"
            th:unless="${username != null}">
             Register
@@ -73,42 +70,65 @@
 
 </nav>
 
-<!-- Mobile drawer overlay -->
+<!-- Mobile overlay -->
 <div class="mobile-overlay" id="mobileOverlay"></div>
 
 <!-- Mobile drawer -->
 <div class="mobile-drawer" id="mobileDrawer">
 
     <div class="drawer-header">
-        <span class="amma shine-gold" style="font-family:'Cinzel',serif;font-size:1.2rem;font-weight:900;letter-spacing:5px;">AMMA</span>
-        <button class="drawer-close" id="drawerClose"><i class="bi bi-x-lg"></i></button>
+        <span class="amma shine-gold"
+              style="font-family:'Cinzel',serif;font-size:1.2rem;font-weight:900;letter-spacing:5px;">
+            AMMA
+        </span>
+        <button class="drawer-close" id="drawerClose">
+            <i class="bi bi-x-lg"></i>
+        </button>
     </div>
 
     <div th:if="${username != null}" class="drawer-user">
         <div class="drawer-avatar"><i class="bi bi-person-circle"></i></div>
-        <div th:text="'Hello, ' + ${username}" style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:900;letter-spacing:2px;background:linear-gradient(105deg,#C9920A 0%,#E8B84B 30%,#FFF0A0 50%,#E8B84B 70%,#C9920A 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;"></div>
+        <div th:text="'Hello, ' + ${username}"
+             style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:900;letter-spacing:2px;background:linear-gradient(105deg,#C9920A 0%,#E8B84B 30%,#FFF0A0 50%,#E8B84B 70%,#C9920A 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+        </div>
     </div>
 
     <div class="drawer-links">
 
-        <a href="/home" class="drawer-link"><i class="bi bi-house"></i> Home</a>
+        <a href="/home" class="drawer-link">
+            <i class="bi bi-house"></i> Home
+        </a>
 
         <div th:if="${username != null}">
-            <a href="/cart" class="drawer-link"><i class="bi bi-cart3"></i> My Cart</a>
-            <a href="/orders" class="drawer-link"><i class="bi bi-box-seam"></i> My Orders</a>
-            <a href="/profile" class="drawer-link"><i class="bi bi-person-circle"></i> Profile</a>
+            <a href="/cart" class="drawer-link">
+                <i class="bi bi-cart3"></i> My Cart
+            </a>
+            <a href="/orders" class="drawer-link">
+                <i class="bi bi-box-seam"></i> My Orders
+            </a>
+            <a href="/profile" class="drawer-link">
+                <i class="bi bi-person-circle"></i> Profile
+            </a>
             <hr class="drawer-divider"/>
             <form th:action="@{/logout}" method="post" style="margin:0;">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                <button type="submit" class="drawer-link drawer-logout" style="width:100%;text-align:left;">
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}"/>
+                <button type="submit"
+                        class="drawer-link drawer-logout"
+                        style="width:100%;text-align:left;">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </button>
             </form>
         </div>
 
         <div th:unless="${username != null}">
-            <a href="/login" class="drawer-link"><i class="bi bi-person"></i> Login</a>
-            <a href="/register" class="drawer-link drawer-register"><i class="bi bi-person-plus"></i> Register</a>
+            <a href="/login" class="drawer-link">
+                <i class="bi bi-person"></i> Login
+            </a>
+            <a href="/register" class="drawer-link drawer-register">
+                <i class="bi bi-person-plus"></i> Register
+            </a>
         </div>
 
     </div>
@@ -121,13 +141,23 @@
     const drawer = document.getElementById('mobileDrawer');
     const overlay = document.getElementById('mobileOverlay');
     const closeBtn = document.getElementById('drawerClose');
-    function openDrawer(){ drawer.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow='hidden'; }
-    function closeDrawer(){ drawer.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow=''; }
+    function openDrawer(){
+        drawer.classList.add('open');
+        overlay.classList.add('open');
+        document.body.style.overflow='hidden';
+    }
+    function closeDrawer(){
+        drawer.classList.remove('open');
+        overlay.classList.remove('open');
+        document.body.style.overflow='';
+    }
     if(ham) ham.addEventListener('click', openDrawer);
     if(closeBtn) closeBtn.addEventListener('click', closeDrawer);
     if(overlay) overlay.addEventListener('click', closeDrawer);
 })();
 </script>
+
+</th:block>
 
 </body>
 </html>
