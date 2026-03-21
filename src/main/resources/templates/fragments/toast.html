@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="toast">
+    <div th:if="${successMsg}" class="ap-toast ap-toast-success">
+        <i class="bi bi-check-circle-fill"></i>
+        <span th:text="${successMsg}"></span>
+    </div>
+    <div th:if="${errorMsg}" class="ap-toast ap-toast-error">
+        <i class="bi bi-x-circle-fill"></i>
+        <span th:text="${errorMsg}"></span>
+    </div>
+</th:block>
+</body>
+</html>

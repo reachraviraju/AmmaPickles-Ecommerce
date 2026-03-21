@@ -14,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -38,12 +39,14 @@ public class ProfileViewController {
     @PostMapping("/profile/update")
     public String updateProfile(@AuthenticationPrincipal UserDetails userDetails,
                                 @RequestParam String fullName,
-                                @RequestParam(required = false) String phone) {
+                                @RequestParam(required = false) String phone,
+                                RedirectAttributes flash) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         UpdateUserRequest request = new UpdateUserRequest();
         request.setUsername(fullName);
         request.setPhoneNumber(phone);
         userService.updateUser(user.getId(), request);
-        return "redirect:/profile?updated";
+        flash.addFlashAttribute("successMsg", "Profile updated successfully!");
+        return "redirect:/profile";
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -23,7 +24,6 @@ public class OrderViewController {
     private final AddressService addressService;
     private final UserRepository userRepository;
 
-    // VIEW ALL ORDERS
     @GetMapping("/orders")
     public String ordersPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
@@ -32,7 +32,6 @@ public class OrderViewController {
         return "orders";
     }
 
-    // SHOW PLACE ORDER FORM
     @GetMapping("/orders/place")
     public String placeOrderPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
@@ -41,23 +40,25 @@ public class OrderViewController {
         return "place-order";
     }
 
-    // SUBMIT ORDER
     @PostMapping("/orders/place")
     public String submitOrder(@RequestParam Long addressId,
-                              @AuthenticationPrincipal UserDetails userDetails) {
+                              @AuthenticationPrincipal UserDetails userDetails,
+                              RedirectAttributes flash) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         OrderRequest request = new OrderRequest();
         request.setAddressId(addressId);
         orderService.placeOrder(user.getId(), request);
-        return "redirect:/orders?placed=true";
+        flash.addFlashAttribute("successMsg", "Order placed successfully! 🎉");
+        return "redirect:/orders";
     }
-    
- // CANCEL ORDER
+
     @PostMapping("/orders/cancel/{id}")
     public String cancelOrder(@PathVariable Long id,
-                              @AuthenticationPrincipal UserDetails userDetails) {
+                              @AuthenticationPrincipal UserDetails userDetails,
+                              RedirectAttributes flash) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         orderService.cancelOrder(id, user.getId());
+        flash.addFlashAttribute("successMsg", "Order cancelled successfully!");
         return "redirect:/orders";
     }
 }
