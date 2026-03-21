@@ -12,98 +12,76 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
     <link th:href="@{/css/style.css}" rel="stylesheet"/>
+
+   
 </head>
 
 <body>
 
-    <!-- ── Navbar ── -->
+    <!-- Navbar -->
     <div th:replace="~{fragments/navbar :: navbar}"></div>
     <div th:replace="~{fragments/toast :: toast}"></div>
 
-    
-
-    <!-- ── Hero ── -->
-    
+    <!-- Hero -->
     <section class="ap-hero">
+        <div class="hero-content">
+            <span class="hero-badge">Traditional Recipes Since 1997</span>
+            <h1>The Taste of <em>Tradition</em><br>in Every Jar</h1>
+            <p>Hand-crafted pickles made with love, premium spices and age-old
+               family recipes passed down through generations.</p>
 
-    <div class="hero-content">
+            <form th:action="@{/home}" method="get" class="hero-search">
+                <input type="text"
+                       name="search"
+                       placeholder="Search for pickles..."
+                       th:value="${activeSearch}">
+                <button type="submit">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
 
-        <span class="hero-badge">Traditional Recipes Since 1997 </span>
-
-        <h1>
-            The Taste of <em>Tradition</em><br>
-            in Every Jar
-        </h1>
-
-        <p>
-            Hand-crafted pickles made with love, premium spices and age-old
-            family recipes passed down through generations.
-        </p>
-
-        <form th:action="@{/home}" method="get" class="hero-search">
-            <input type="text"
-                   name="search"
-                   placeholder="Search for pickles..."
-                   th:value="${activeSearch}">
-            <button type="submit">
-                <i class="bi bi-search"></i>
-            </button>
-        </form>
-
-        <div class="hero-stats">
-            <div class="stat">
-                <div class="num shine-gold">30+</div>
-                <div class="lbl">Varieties</div>
-            </div>
-
-            <div class="stat">
-                <div class="num shine-gold">10K+</div>
-                <div class="lbl">Happy Customers</div>
-            </div>
-
-            <div class="stat">
-                <div class="num shine-gold">100%</div>
-                <div class="lbl">Natural</div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="num shine-gold">30+</div>
+                    <div class="lbl">Varieties</div>
+                </div>
+                <div class="stat">
+                    <div class="num shine-gold">10K+</div>
+                    <div class="lbl">Happy Customers</div>
+                </div>
+                <div class="stat">
+                    <div class="num shine-gold">100%</div>
+                    <div class="lbl">Natural</div>
+                </div>
             </div>
         </div>
+    </section>
 
-    </div>
-
-</section>
-    
-    
-   
-
-    <!-- ── Category Filters ── -->
+    <!-- Category Filters -->
     <div class="category-filters">
-
         <span class="filter-label">Filter:</span>
 
-        <!-- All -->
         <a th:href="@{/home}"
            class="filter-btn"
            th:classappend="${activeCategory == null} ? ' active' : ''">
             All
         </a>
 
-        <!-- Dynamic categories -->
         <a th:each="cat : ${categories}"
            th:href="@{/home(category=${cat.id})}"
            th:text="${cat.name}"
            class="filter-btn"
            th:classappend="${activeCategory == cat.id} ? ' active' : ''">
         </a>
-
     </div>
 
-    <!-- ── Products ── -->
+    <!-- Products -->
     <section class="ap-products" id="products">
 
         <div class="section-head">
             <span class="tag">✦ Our Collection ✦</span>
             <h2 th:if="${activeSearch != null}"
-                th:text="'Results for: ' + ${activeSearch}">
-            </h2>
+                th:text="'Results for: ' + ${activeSearch}"></h2>
             <h2 th:unless="${activeSearch != null}">Freshly Made Pickles</h2>
             <div class="divider-line"></div>
         </div>
@@ -117,15 +95,15 @@
 
         <!-- Product grid -->
         <div class="container" th:unless="${products == null or products.empty}">
-            <div class="row g-4">
+            <div class="row g-3">
 
-                <div class="col-xl-3 col-md-4 col-sm-6"
+                <div class="col-xl-3 col-md-4 col-sm-6 col-6"
                      th:each="product : ${products}">
 
                     <div class="product-card"
                          th:onclick="|window.location.href='/products/${product.variants[0].id}'|">
 
-                        <!-- Image area -->
+                        <!-- Image -->
                         <div class="card-img-area">
                             <img th:src="@{/images/default-product.png}"
                                  th:alt="${product.name}"/>
@@ -137,7 +115,7 @@
                         <!-- Body -->
                         <div class="card-body-ap">
                             <h5 th:text="${product.name}"></h5>
-                            <p  th:text="${product.description}"></p>
+                            <p th:text="${product.description}"></p>
                             <div class="card-sizes">
                                 <span th:each="v : ${product.variants}"
                                       class="card-size-tag"
@@ -153,7 +131,7 @@
                                   th:text="'&#8377;' + ${product.price}">
                             </span>
 
-                            <!-- Add to cart — logged in + in stock -->
+                            <!-- Logged in + in stock -->
                             <form th:if="${product.inStock and username != null}"
                                   th:action="@{/cart/add/{id}(id=${product.variants[0].id})}"
                                   method="post">
@@ -165,7 +143,7 @@
                                 </button>
                             </form>
 
-                            <!-- Add to cart — not logged in + in stock -->
+                            <!-- Not logged in + in stock -->
                             <button th:if="${product.inStock and username == null}"
                                     class="btn-add"
                                     onclick="window.location.href='/login'">
@@ -180,28 +158,72 @@
                             </button>
 
                         </div>
-
                     </div>
                 </div>
 
             </div>
+
+            <!-- Pagination -->
+            <div th:if="${totalPages > 1}">
+
+                <!-- Info -->
+                <div class="pagination-info">
+                    Showing page
+                    <span th:text="${currentPage + 1}"></span>
+                    of
+                    <span th:text="${totalPages}"></span>
+                    &nbsp;•&nbsp;
+                    <span th:text="${totalProducts}"></span> products
+                </div>
+
+                <div class="ap-pagination">
+
+                    <!-- Previous -->
+                    <a th:if="${currentPage > 0}"
+                       th:href="@{/home(page=${currentPage - 1}, category=${activeCategory}, search=${activeSearch})}"
+                       class="prev-next">
+                        <i class="bi bi-chevron-left"></i> Prev
+                    </a>
+
+                    <!-- Page numbers -->
+                    <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+
+                        <!-- Show first, last, current and neighbours -->
+                        <a th:if="${i == 0 or i == totalPages - 1 or (i >= currentPage - 1 and i <= currentPage + 1)}"
+                           th:href="@{/home(page=${i}, category=${activeCategory}, search=${activeSearch})}"
+                           th:text="${i + 1}"
+                           th:classappend="${i == currentPage} ? ' active' : ''">
+                        </a>
+
+                        <!-- Dots -->
+                        <span th:if="${i == 1 and currentPage > 2}" class="dots">...</span>
+                        <span th:if="${i == totalPages - 2 and currentPage < totalPages - 3}" class="dots">...</span>
+
+                    </th:block>
+
+                    <!-- Next -->
+                    <a th:if="${currentPage < totalPages - 1}"
+                       th:href="@{/home(page=${currentPage + 1}, category=${activeCategory}, search=${activeSearch})}"
+                       class="prev-next">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </a>
+
+                </div>
+            </div>
+
         </div>
 
     </section>
 
-    <!-- ── Footer ── -->
+    <!-- Footer -->
     <div th:replace="~{fragments/footer :: footer}"></div>
-    
-    
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Smooth-scroll to products when search/filter is active
-        const urlParams    = new URLSearchParams(window.location.search);
+        const urlParams = new URLSearchParams(window.location.search);
         const cameFromHome = document.referrer.includes('/home');
-
-        if (urlParams.has('search') || urlParams.has('category') || cameFromHome) {
+        if (urlParams.has('search') || urlParams.has('category') || urlParams.has('page') || cameFromHome) {
             document.querySelector('.ap-products')
                     .scrollIntoView({ behavior: 'smooth', block: 'start' });
         }

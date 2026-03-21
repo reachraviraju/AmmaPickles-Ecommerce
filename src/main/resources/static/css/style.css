@@ -368,10 +368,10 @@ body {
 @keyframes floatGlow { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
 @keyframes marquee  { from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
+
 /* ============================================================
    16. RESPONSIVE
    ============================================================ */
-
 
 /* ── TABLET (max 992px) ── */
 @media (max-width: 992px) {
@@ -380,6 +380,7 @@ body {
     .footer-inner { grid-template-columns: 1fr 1fr; gap: 2rem; }
     .pd-info-grid { grid-template-columns: repeat(2,1fr); }
     .summary-card { position: static; }
+    .row .col-sm-6 { width: 33.333% !important; }
 }
 
 /* ── MOBILE (max 768px) ── */
@@ -395,31 +396,51 @@ body {
     .page-hdr { padding: 0.75rem 1rem; }
     .pd-breadcrumb { padding: 0.75rem 1rem; }
 
-    /* Hero */
+    /* Hero — Fix overlapping image + text */
     .ap-hero {
-        background-size: auto 40%;
-        background-position: right bottom;
+        background: linear-gradient(160deg, #1A0000 0%, #0D0800 55%, #000 100%) !important;
+        height: auto;
+        min-height: unset;
         padding: 3rem 1.5rem;
         text-align: center;
-        align-items: flex-start;
-        min-height: unset;
-        height: auto;
+        align-items: center;
     }
-    .hero-content { max-width: 100%; margin: auto; }
+    .ap-hero::before { display: none; }
+    .hero-content {
+        max-width: 100%;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
     .hero-badge { font-size: 0.55rem; letter-spacing: 2px; }
-    .ap-hero h1 { font-size: 1.8rem; }
-    .ap-hero p { font-size: 0.85rem; margin: 0 auto 1.5rem; }
-    .hero-search { margin: 0 auto 2rem; max-width: 100%; }
-    .hero-stats { justify-content: center; gap: 1.5rem; }
+    .ap-hero h1 { font-size: 1.8rem; text-align: center; }
+    .ap-hero p { font-size: 0.85rem; text-align: center; margin: 0 auto 1.5rem; }
+    .hero-search { width: 100%; max-width: 100%; margin: 0 auto 2rem; }
+    .hero-stats { justify-content: center; gap: 1.5rem; width: 100%; }
     .stat .num { font-size: 1.3rem; }
 
     /* Category filters */
     .category-filters { padding: 0.8rem 1rem; gap: 0.5rem; }
     .filter-btn { padding: 0.3rem 0.9rem; font-size: 0.75rem; }
 
-    /* Products */
-    .ap-products { padding: 2rem 1rem; }
+    /* Products — 2 COLUMNS */
+    .ap-products { padding: 2rem 0.5rem; }
     .section-head h2 { font-size: 1.5rem; }
+    .row .col-sm-6 { width: 50% !important; }
+    .card-img-area { height: 120px; }
+    .card-body-ap { padding: 0.8rem 0.9rem; }
+    .card-body-ap h5 { font-size: 0.85rem; }
+    .card-body-ap p { font-size: 0.70rem; -webkit-line-clamp: 2; }
+    .card-sizes { gap: 0.25rem; }
+    .card-size-tag { font-size: 0.55rem; padding: 0.12rem 0.45rem; }
+    .card-footer-ap { padding: 0.6rem 0.9rem; }
+    .card-price { font-size: 1rem; }
+    .btn-add { font-size: 0.68rem; padding: 0.35rem 0.7rem; }
+
+    /* Pagination */
+    .pagination { gap: 0.4rem; flex-wrap: wrap; }
+    .pagination a { padding: 0.5rem 0.9rem; font-size: 0.78rem; }
 
     /* Cart page */
     .cart-main { padding: 1rem; }
@@ -438,7 +459,7 @@ body {
     .items-tbl { font-size: 0.72rem; }
     .items-tbl th, .items-tbl td { padding: 0.35rem 0.4rem; }
 
-    /* Place order page — stack columns */
+    /* Place order page */
     .col-lg-8, .col-lg-4 { width: 100% !important; }
 
     /* Product detail */
@@ -451,19 +472,17 @@ body {
     .pd-back { margin-top: 1rem; }
     .size-options { gap: 0.5rem; }
 
-    /* Profile page */
+    /* Profile */
     .profile-avatar-card { position: static; margin-bottom: 1.5rem; }
 
     /* Footer */
     .footer-inner { grid-template-columns: 1fr 1fr; gap: 1.5rem; padding: 2rem 1rem 1.5rem; }
     .footer-bottom { flex-direction: column; gap: 0.5rem; text-align: center; padding: 1rem; }
 
-    /* Admin tables — horizontal scroll */
+    /* Admin */
     .admin-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .admin-table { min-width: 600px; }
     .admin-table th, .admin-table td { padding: 0.5rem 0.6rem; white-space: nowrap; }
-
-    /* Admin forms */
     .admin-section { padding: 1rem; }
     .cart-main .row { --bs-gutter-x: 0.75rem; }
 }
@@ -479,14 +498,18 @@ body {
     .stat .num { font-size: 1.1rem; }
     .stat .lbl { font-size: 0.55rem; }
 
-    /* Product cards — full width on tiny screens */
-    .col-sm-6 { width: 100% !important; }
+    /* Products — KEEP 2 columns */
+    .row .col-sm-6 { width: 50% !important; }
+    .card-img-area { height: 100px; }
+    .card-body-ap h5 { font-size: 0.78rem; }
+    .card-footer-ap { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .btn-add { width: 100%; text-align: center; }
 
-    /* Cart items */
+    /* Cart */
     .cart-item { padding: 0.8rem; }
     .ci-icon { display: none; }
 
-    /* Order table — scroll */
+    /* Orders */
     .order-body { overflow-x: auto; padding: 0.5rem; }
     .items-tbl { min-width: 400px; }
 
@@ -494,7 +517,7 @@ body {
     .pd-info-grid { grid-template-columns: 1fr 1fr; }
     .pd-name { font-size: 1.4rem; }
 
-    /* Auth pages */
+    /* Auth */
     .auth-card { padding: 1.5rem 1.2rem; }
     .auth-row { grid-template-columns: 1fr; }
 
@@ -505,9 +528,8 @@ body {
     /* Admin */
     .admin-stat-value { font-size: 1.5rem; }
     .page-hdr h2 { font-size: 1rem; }
-}   
-   
-   
+}
+
 
 /* ============================================================
    17. HIDE SCROLLBAR
@@ -1093,4 +1115,160 @@ body {
     background: rgba(212,160,23,0.1);
     border: 1px solid rgba(212,160,23,0.3);
     color: var(--gold-mid);
+}
+
+
+
+/* ============================================================
+   22. PAGINATION
+   ============================================================ */
+.ap-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2.5rem 1rem 1rem;
+    flex-wrap: wrap;
+}
+
+.ap-pagination a,
+.ap-pagination span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 0.75rem;
+    border-radius: 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 1px;
+    border: 1.5px solid rgba(212,160,23,0.28);
+    color: var(--text-silver);
+    background: rgba(212,160,23,0.05);
+    transition: all 0.25s ease;
+}
+
+.ap-pagination a:hover {
+    background: rgba(212,160,23,0.15);
+    border-color: var(--gold-mid);
+    color: var(--gold-lt);
+    transform: translateY(-2px);
+}
+
+.ap-pagination a.active,
+.ap-pagination span.active {
+    background: linear-gradient(135deg, #ECC050, #C9920A);
+    color: #1a0800;
+    border-color: transparent;
+    box-shadow: 0 4px 18px rgba(212,160,23,0.45);
+}
+
+.ap-pagination span.dots {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 1rem;
+    letter-spacing: 2px;
+}
+
+.ap-pagination a.prev-next {
+    font-size: 0.7rem;
+    gap: 0.3rem;
+    padding: 0 1rem;
+}
+
+.pagination-info {
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-family: 'Cinzel', serif;
+    letter-spacing: 1px;
+    padding-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .ap-pagination a,
+    .ap-pagination span {
+        min-width: 34px;
+        height: 34px;
+        font-size: 0.68rem;
+        padding: 0 0.6rem;
+    }
+    .ap-pagination {
+        gap: 0.35rem;
+        padding: 2rem 0.5rem 0.5rem;
+    }
+}
+
+
+/* ============================================================
+   23. MOBILE CARD FIX
+   ============================================================ */
+
+
+
+@media (max-width: 768px) {
+    .card-img-area {
+        height: 120px;
+    }
+    .card-img-area img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+    .card-body-ap {
+        padding: 0.7rem 0.8rem;
+    }
+    .card-body-ap h5 {
+        font-size: 0.82rem;
+        margin-bottom: 0.2rem;
+    }
+    .card-body-ap p {
+        font-size: 0.68rem;
+        -webkit-line-clamp: 2;
+    }
+    .card-footer-ap {
+        padding: 0.6rem 0.8rem;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+    .card-price {
+        font-size: 0.95rem;
+    }
+    .btn-add {
+        font-size: 0.65rem;
+        padding: 0.3rem 0.6rem;
+    }
+    .card-sizes {
+        gap: 0.2rem;
+    }
+    .card-size-tag {
+        font-size: 0.52rem;
+        padding: 0.1rem 0.4rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-img-area {
+        height: 100px;
+    }
+    .card-body-ap h5 {
+        font-size: 0.75rem;
+    }
+    .card-body-ap p {
+        display: none;
+    }
+    .card-footer-ap {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .btn-add {
+        width: 100%;
+        text-align: center;
+        font-size: 0.62rem;
+    }
 }
