@@ -4,52 +4,324 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Place Order — Amma Pickles</title>
-
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:wght@700;900&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
     <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <style>
+        .address-card {
+            display: block;
+            background: var(--bg-card);
+            border: 1.5px solid var(--border-gold);
+            border-radius: var(--radius-card);
+            padding: 1.2rem 1.4rem 1.2rem 1rem;
+            cursor: pointer;
+            transition: all var(--t) var(--ease);
+            position: relative;
+        }
+        .address-card:hover {
+            border-color: var(--gold-mid);
+            box-shadow: 0 0 20px rgba(212,160,23,0.15);
+            transform: translateY(-2px);
+        }
+        .address-card input[type="radio"] {
+            position: absolute;
+            top: 1.1rem; right: 1.1rem;
+            accent-color: var(--gold-mid);
+            width: 17px; height: 17px;
+        }
+        .address-card:has(input:checked) {
+            border-color: var(--gold-mid);
+            background: linear-gradient(135deg, #1A1206, #2A1E0A);
+            box-shadow: 0 0 28px rgba(212,160,23,0.2);
+        }
+        .addr-name {
+            font-family: 'Cinzel', serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--gold-lt);
+            letter-spacing: 1px;
+            margin-bottom: 0.4rem;
+            padding-right: 1.5rem;
+        }
+        .addr-street {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.95rem; color: white;
+            margin-bottom: 0.3rem;
+        }
+        .addr-detail {
+            font-size: 0.78rem; color: var(--text-silver-soft);
+            margin-bottom: 0.2rem;
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .addr-detail i { color: var(--gold-mid); font-size: 0.75rem; }
+        .cod-info {
+            background: linear-gradient(135deg, #1A1206, #2A1E0A);
+            border: 1px solid rgba(212,160,23,0.3);
+            border-radius: var(--radius-card);
+            padding: 1.4rem; margin-bottom: 1.5rem;
+        }
+        .cod-info-title {
+            font-family: 'Cinzel', serif; font-size: 0.65rem;
+            letter-spacing: 3px; color: var(--gold-mid);
+            text-transform: uppercase; margin-bottom: 1rem;
+        }
+        .cod-row {
+            display: flex; align-items: center;
+            gap: 0.75rem; font-size: 0.82rem;
+            color: var(--text-silver-soft); margin-bottom: 0.6rem;
+        }
+        .cod-row i { color: var(--gold-mid); font-size: 1rem; flex-shrink: 0; }
+        .cod-row:last-child { margin-bottom: 0; }
+    </style>
 </head>
-
 <body id="place-order-page">
 
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<div class="page-hdr">
-    <h2>📦 Place Order</h2>
-    <p>Select a delivery address to confirm your order</p>
-</div>
-
-<div class="cart-main">
-
-    <a href="/cart" class="pd-back">
-        ← Back to Cart
-    </a>
-
-    <!-- NO ADDRESS -->
-    <div th:if="${addresses == null or addresses.empty}">
-        <div class="empty-box">
-            <h3>No saved addresses!</h3>
-            <a href="/addresses/add" class="btn-shop">Add Address →</a>
+    <!-- Scroll ribbon -->
+    <div class="auth-scroll" style="max-width:100%;border-radius:0;border-left:none;border-right:none;margin-bottom:0;">
+        <div class="auth-scroll-track">
+            <span class="auth-scroll-item">✦ FREE DELIVERY ON ORDERS ABOVE ₹1000</span>
+            <span class="auth-scroll-sep">◆</span>
+            <span class="auth-scroll-item">CASH ON DELIVERY AVAILABLE</span>
+            <span class="auth-scroll-sep">◆</span>
+            <span class="auth-scroll-item">🎁 FIRST ORDER FREE ABOVE ₹500</span>
+            <span class="auth-scroll-sep">◆</span>
+            <span class="auth-scroll-item">✦ FREE DELIVERY ON ORDERS ABOVE ₹1000</span>
+            <span class="auth-scroll-sep">◆</span>
+            <span class="auth-scroll-item">CASH ON DELIVERY AVAILABLE</span>
+            <span class="auth-scroll-sep">◆</span>
+            <span class="auth-scroll-item">🎁 FIRST ORDER FREE ABOVE ₹500</span>
+            <span class="auth-scroll-sep">◆</span>
         </div>
     </div>
 
-    <!-- ADDRESS LIST -->
-    <div th:unless="${addresses == null or addresses.empty}">
+    <div class="page-hdr">
+        <h2>📦 Place Order</h2>
+        <p>Select a delivery address to confirm your order</p>
+    </div>
 
-        <form th:action="@{/orders/place}" method="post">
+    <div class="cart-main">
 
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <a href="/cart" class="pd-back" style="display:inline-flex;margin-bottom:1.5rem;">
+            <i class="bi bi-arrow-left"></i> Back to Cart
+        </a>
 
-            <div th:each="address : ${addresses}" class="address-card">
+        <!-- NO ADDRESS -->
+        <div th:if="${addresses == null or addresses.empty}">
+            <div class="empty-box">
+                <div class="icon">📍</div>
+                <h3>No saved addresses!</h3>
+                <p>You need to add a delivery address before placing an order.</p>
+                <a href="/addresses/add" class="btn-shop">Add Address →</a>
+            </div>
+        </div>
 
-                <label>
-                    <input type="radio" name="addressId" th:value="${address.id}" required/>
+        <!-- ADDRESS SELECTION -->
+        <div th:unless="${addresses == null or addresses.empty}">
 
-                    <div><b th:text="${address.name}"></b></div>
+            <div class="row g-4">
 
-                    <div th:text="${address.street}"></div>
-                    <div th:text="${address.city} + ', ' + ${address.district}"></div>
-                    <div th:text="${address.state} + ' - ' + ${address.pincode}"></div>
+                <!-- LEFT: Addresses + form -->
+                <div class="col-lg-8">
 
-                    <div th:if="${address.mobileNumber != null}">
-                        📞 <span th:text="${address.mobileNumber}"></span>
+                    <form th:action="@{/orders/place}" method="post" id="orderForm">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <div class="row g-3 mb-4">
+
+                            <div class="col-12 addr-section-head">
+                                <span class="addr-section-label">Select Delivery Address</span>
+                                <a href="/addresses/add" class="addr-add-new">
+                                    <i class="bi bi-plus-circle"></i> Add New
+                                </a>
+                            </div>
+
+                            <div class="col-md-6" th:each="address : ${addresses}">
+                                <div class="address-card-wrapper">
+                                    <label th:for="'addr-' + ${address.id}" class="address-card">
+                                        <input type="radio"
+                                               name="addressId"
+                                               th:id="'addr-' + ${address.id}"
+                                               th:value="${address.id}"
+                                               required/>
+                                        <div class="addr-card-body">
+                                            <div class="addr-name" th:if="${address.name != null}"
+                                                 th:text="${address.name}"></div>
+                                            <div class="addr-street" th:text="${address.street}"></div>
+                                            <div class="addr-detail">
+                                                <i class="bi bi-geo-alt"></i>
+                                                <span th:text="${address.city} + ', ' + ${address.district}"></span>
+                                            </div>
+                                            <div class="addr-detail">
+                                                <i class="bi bi-map"></i>
+                                                <span th:text="${address.state} + ' — ' + ${address.pincode}"></span>
+                                            </div>
+                                            <div class="addr-detail" th:if="${address.mobileNumber != null}">
+                                                <i class="bi bi-telephone"></i>
+                                                <span th:text="${address.mobileNumber}"></span>
+                                            </div>
+                                        </div>
+                                    </label>
+
+                                    <div class="addr-actions">
+                                        <button type="button"
+                                                class="addr-action-btn edit"
+                                                title="Edit address"
+                                                th:data-id="${address.id}"
+                                                th:data-name="${address.name}"
+                                                th:data-street="${address.street}"
+                                                th:data-city="${address.city}"
+                                                th:data-district="${address.district}"
+                                                th:data-state="${address.state}"
+                                                th:data-pincode="${address.pincode}"
+                                                th:data-mobile="${address.mobileNumber}"
+                                                onclick="openEditModal(this)">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button type="button"
+                                                class="addr-action-btn delete"
+                                                title="Delete address"
+                                                th:data-id="${address.id}"
+                                                onclick="deleteAddress(this)">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <button type="submit" class="btn-order" style="max-width:340px;">
+                            <i class="bi bi-bag-check"></i> Confirm Order →
+                        </button>
+
+                    </form>
+
+                    <!-- DELETE FORMS — outside order form -->
+                    <div th:each="address : ${addresses}">
+                        <form th:id="'delete-form-' + ${address.id}"
+                              th:action="@{/addresses/delete/{id}(id=${address.id})}"
+                              method="post" style="display:none;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        </form>
                     </div>
-                </label>
+
+                </div>
+
+                <!-- RIGHT: Order info -->
+                <div class="col-lg-4">
+                    <div class="summary-card">
+                        <div class="summary-title">Order Details</div>
+
+                        <div class="cod-info" style="margin-bottom:1.2rem;padding:1rem;">
+                            <div class="cod-info-title">Payment &amp; Delivery</div>
+                            <div class="cod-row">
+                                <i class="bi bi-gift"></i>
+                                <span>FREE delivery on your first order above ₹500</span>
+                            </div>
+                            <div class="cod-row">
+                                <i class="bi bi-gift"></i>
+                                <span>FREE delivery above ₹1000</span>
+                            </div>
+                            <div class="cod-row">
+                                <i class="bi bi-cash-coin"></i>
+                                <span>Cash on Delivery</span>
+                            </div>
+                            <div class="cod-row">
+                                <i class="bi bi-truck"></i>
+                                <span>AP ₹70 · Telangana ₹120 · Others ₹150</span>
+                            </div>
+                            <div class="cod-row">
+                                <i class="bi bi-clock-history"></i>
+                                <span>Delivered in 5–7 days</span>
+                            </div>
+                        </div>
+
+                        <div style="background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.25);border-radius:10px;padding:0.9rem 1rem;">
+                            <div style="font-size:0.72rem;font-family:'Cinzel',serif;letter-spacing:2px;color:rgba(129,199,132,0.8);margin-bottom:0.4rem;">YOUR ORDER</div>
+                            <div style="font-size:0.82rem;color:var(--text-silver-soft);">
+                                Pay when your pickles arrive at your doorstep. No advance payment required.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT ADDRESS MODAL -->
+    <div id="editModal" class="ap-modal-overlay" onclick="closeEditModal()">
+        <div class="ap-modal" onclick="event.stopPropagation()">
+            <div class="ap-modal-head">
+                <span>Edit Address</span>
+                <button type="button" onclick="closeEditModal()" class="ap-modal-close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <form id="editForm" method="post">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                <label class="ap-label">Full Name</label>
+                <input class="ap-input" type="text" id="edit-name" name="name" required/>
+                <label class="ap-label">Street</label>
+                <input class="ap-input" type="text" id="edit-street" name="street" required/>
+                <label class="ap-label">City</label>
+                <input class="ap-input" type="text" id="edit-city" name="city" required/>
+                <label class="ap-label">District</label>
+                <input class="ap-input" type="text" id="edit-district" name="district"/>
+                <label class="ap-label">State</label>
+                <input class="ap-input" type="text" id="edit-state" name="state" required/>
+                <label class="ap-label">Pincode</label>
+                <input class="ap-input" type="text" id="edit-pincode" name="pincode" required/>
+                <label class="ap-label">Mobile Number</label>
+                <input class="ap-input" type="tel" id="edit-mobile" name="mobileNumber"
+                       maxlength="10" pattern="^[6-9][0-9]{9}$" required/>
+                <button type="submit" class="btn-ap">Save Changes →</button>
+            </form>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function openEditModal(btn) {
+            document.getElementById('edit-name').value     = btn.dataset.name     || '';
+            document.getElementById('edit-street').value   = btn.dataset.street   || '';
+            document.getElementById('edit-city').value     = btn.dataset.city     || '';
+            document.getElementById('edit-district').value = btn.dataset.district || '';
+            document.getElementById('edit-state').value    = btn.dataset.state    || '';
+            document.getElementById('edit-pincode').value  = btn.dataset.pincode  || '';
+            document.getElementById('edit-mobile').value   = btn.dataset.mobile   || '';
+            document.getElementById('editForm').action     = '/addresses/edit/' + btn.dataset.id;
+            document.getElementById('editModal').classList.add('open');
+            setTimeout(() => document.getElementById('edit-name').focus(), 100);
+        }
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('open');
+        }
+        function deleteAddress(btn) {
+            if (confirm('Delete this address?')) {
+                document.getElementById('delete-form-' + btn.dataset.id).submit();
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = Array.from(document.querySelectorAll('#editForm .ap-input'));
+            inputs.forEach((input, i) => {
+                input.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' && i < inputs.length - 1) { e.preventDefault(); inputs[i+1].focus(); }
+                });
+                input.addEventListener('focus', () => {
+                    setTimeout(() => input.scrollIntoView({ behavior:'smooth', block:'center' }), 150);
+                });
+            });
+            document.getElementById('edit-mobile').addEventListener('keypress', e => {
+                if (!/[0-9]/.test(e.key)) e.preventDefault();
+            });
+        });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeEditModal(); });
+    </script>
+</body>
+</html>

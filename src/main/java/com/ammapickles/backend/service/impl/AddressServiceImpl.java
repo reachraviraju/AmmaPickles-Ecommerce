@@ -1,6 +1,7 @@
 package com.ammapickles.backend.service.impl;
 
 import com.ammapickles.backend.dto.address.AddressRequest;
+
 import com.ammapickles.backend.dto.address.AddressResponse;
 import com.ammapickles.backend.entity.Address;
 import com.ammapickles.backend.entity.User;
@@ -16,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import javax.management.RuntimeErrorException;
+
 
 @Slf4j
 @Service
@@ -112,7 +113,7 @@ public class AddressServiceImpl implements AddressService {
         
         if(orderRepository.existsByDeliveryAddressId(addressId))
         {
-        	throw new RuntimeException("cannot delete address used in orders");
+        	throw new RuntimeException("Cannot delete this address as it is linked to an existing order.");
         }
         addressRepository.delete(address);
         log.info("Address deleted: {}", addressId);

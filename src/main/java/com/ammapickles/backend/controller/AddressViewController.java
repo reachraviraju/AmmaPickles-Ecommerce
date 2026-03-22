@@ -26,8 +26,8 @@ public class AddressViewController {
     }
 
     @PostMapping("/addresses/add")
-    public String saveAddress(@RequestParam String name ,
-    		                  @RequestParam String street,
+    public String saveAddress(@RequestParam String name,
+                              @RequestParam String street,
                               @RequestParam String city,
                               @RequestParam(required = false) String district,
                               @RequestParam String state,
@@ -35,7 +35,6 @@ public class AddressViewController {
                               @RequestParam String mobileNumber,
                               @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-
         AddressRequest request = new AddressRequest();
         request.setName(name);
         request.setStreet(street);
@@ -44,14 +43,13 @@ public class AddressViewController {
         request.setState(state);
         request.setPincode(pincode);
         request.setMobileNumber(mobileNumber);
-
         addressService.createAddress(user.getId(), request);
-        return "redirect:/place-order";
+        return "redirect:/orders/place";
     }
 
     @PostMapping("/addresses/edit/{id}")
     public String updateAddress(@PathVariable Long id,
-    		                    @RequestParam String name,
+                                @RequestParam String name,
                                 @RequestParam String street,
                                 @RequestParam String city,
                                 @RequestParam(required = false) String district,
@@ -60,7 +58,6 @@ public class AddressViewController {
                                 @RequestParam String mobileNumber,
                                 @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-
         AddressRequest request = new AddressRequest();
         request.setName(name);
         request.setStreet(street);
@@ -69,7 +66,6 @@ public class AddressViewController {
         request.setState(state);
         request.setPincode(pincode);
         request.setMobileNumber(mobileNumber);
-
         addressService.updateAddress(id, request, user.getId());
         return "redirect:/orders/place";
     }
