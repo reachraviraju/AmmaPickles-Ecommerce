@@ -383,8 +383,8 @@ body {
         linear-gradient(to right,
             rgba(0,0,0,0.92) 0%,
             rgba(0,0,0,0.85) 20%,
-            rgba(0,0,0,0.55) 45%,
-            rgba(0,0,0,0.15) 65%,
+            rgba(0,0,0,0.55) 40%,
+            rgba(0,0,0,0.15) 60%,
             rgba(0,0,0,0.05) 100%),
         url('/images/amma_hero.png') !important;
     background-size: cover !important;
