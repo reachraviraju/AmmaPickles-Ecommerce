@@ -10,52 +10,89 @@
     <link th:href="@{/css/style.css}" rel="stylesheet"/>
 </head>
 <body>
+
 <div th:replace="~{fragments/navbar :: navbar}"></div>
+
 <div class="page-hdr">
     <h2>📍 Add Delivery Address</h2>
     <p>Add a new address for delivery</p>
 </div>
+
 <div class="cart-main">
     <div style="max-width:560px;margin:0 auto;">
-        <div style="background:rgba(212,160,23,0.06);border:1px solid rgba(212,160,23,0.2);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.5rem;font-size:0.82rem;font-family:'Nunito',sans-serif;">
-            <div style="color:var(--gold-lt);font-weight:700;margin-bottom:0.5rem;">🚚 Delivery Charges</div>
+
+        <!-- Delivery charge info -->
+        <div style="background:rgba(212,160,23,0.06);border:1px solid rgba(212,160,23,0.2);
+                    border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.5rem;
+                    font-size:0.82rem;font-family:'Nunito',sans-serif;">
+            <div style="color:var(--gold-lt);font-weight:700;margin-bottom:0.5rem;">
+                🚚 Delivery Charges
+            </div>
             <div style="color:var(--text-muted);line-height:1.9;">
-                Andhra Pradesh &nbsp;→&nbsp; <span style="color:white;font-weight:600;">₹70</span><br>
-                Telangana &nbsp;→&nbsp; <span style="color:white;font-weight:600;">₹120</span><br>
-                Other States &nbsp;→&nbsp; <span style="color:white;font-weight:600;">₹150</span><br>
+                Standard Delivery &nbsp;→&nbsp; <span style="color:white;font-weight:600;">₹70</span><br>
                 <span style="color:rgba(130,200,130,0.9);">✓ FREE delivery on orders above ₹1000</span><br>
                 <span style="color:rgba(130,200,130,0.9);">🎁 FREE on your first order above ₹500</span>
             </div>
         </div>
+
         <div class="auth-card">
             <form th:action="@{/addresses/add}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
                 <label class="ap-label">Full Name</label>
-                <input class="ap-input" type="text" name="name" placeholder="e.g. Ravi Kumar" required/>
+                <input class="ap-input" type="text" name="name"
+                       placeholder="e.g. Ravi Kumar" required/>
+
                 <label class="ap-label">Street / House No.</label>
-                <input class="ap-input" type="text" name="street" placeholder="e.g. 12-3, MG Road" required/>
+                <input class="ap-input" type="text" name="street"
+                       placeholder="e.g. 12-3, MG Road" required/>
+
                 <label class="ap-label">City</label>
-                <input class="ap-input" type="text" name="city" placeholder="e.g. Vijayawada" required/>
-                <label class="ap-label">District <span style="color:rgba(255,255,255,0.2);font-size:0.7rem;">(optional)</span></label>
-                <input class="ap-input" type="text" name="district" placeholder="e.g. Krishna"/>
+                <input class="ap-input" type="text" name="city"
+                       placeholder="e.g. Vijayawada" required/>
+
+                <label class="ap-label">District
+                    <span style="color:rgba(255,255,255,0.2);font-size:0.7rem;">(optional)</span>
+                </label>
+                <input class="ap-input" type="text" name="district"
+                       placeholder="e.g. Krishna"/>
+
                 <label class="ap-label">State</label>
-                <input class="ap-input" type="text" name="state" placeholder="e.g. Andhra Pradesh" required/>
+                <input class="ap-input" type="text" name="state"
+                       placeholder="e.g. Andhra Pradesh" required/>
+
                 <label class="ap-label">Pincode</label>
-                <input class="ap-input" type="text" name="pincode" placeholder="e.g. 520001" pattern="^[1-9][0-9]{5}$" title="Enter a valid 6-digit pincode" required/>
+                <input class="ap-input" type="text" name="pincode"
+                       placeholder="e.g. 520001"
+                       pattern="^[1-9][0-9]{5}$"
+                       title="Enter a valid 6-digit pincode" required/>
+
                 <label class="ap-label">Mobile Number</label>
-                <input class="ap-input" type="tel" name="mobileNumber" id="mobileInput" placeholder="e.g. 9876543210" maxlength="10" pattern="^[6-9][0-9]{9}$" title="Enter a valid 10-digit mobile number" required/>
+                <input class="ap-input" type="tel" name="mobileNumber"
+                       id="mobileInput"
+                       placeholder="e.g. 9876543210"
+                       maxlength="10"
+                       pattern="^[6-9][0-9]{9}$"
+                       title="Enter a valid 10-digit mobile number" required/>
+
                 <button type="submit" class="btn-ap">Save Address →</button>
             </form>
         </div>
     </div>
 </div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.querySelectorAll('.ap-input').forEach(input => {
-    input.addEventListener('focus', () => { setTimeout(() => input.scrollIntoView({ behavior:'smooth', block:'center' }), 350); });
+    input.addEventListener('focus', () => {
+        setTimeout(() => input.scrollIntoView({ behavior:'smooth', block:'center' }), 350);
+    });
 });
-document.getElementById('mobileInput').addEventListener('keypress', e => { if (!/[0-9]/.test(e.key)) e.preventDefault(); });
+document.getElementById('mobileInput').addEventListener('keypress', e => {
+    if (!/[0-9]/.test(e.key)) e.preventDefault();
+});
 </script>
 </body>
 </html>
