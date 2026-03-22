@@ -269,5 +269,21 @@ document.getElementById('priceDisplay').textContent = '₹' + price;
 
 </script>
 
+<script>
+    /* Toast auto dismiss */
+    (function() {
+        const toast = document.getElementById("toast");
+        if (toast && toast.classList.contains("show")) {
+            setTimeout(function() {
+                toast.classList.add("hide");
+                toast.classList.remove("show");
+                setTimeout(function() {
+                    toast.style.display = "none";
+                }, 400);
+            }, 2500);
+        }
+    })();
+</script>
+
 </body>
 </html>

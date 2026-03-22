@@ -143,5 +143,21 @@
 
     <div th:replace="~{fragments/footer :: footer}"></div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    /* Toast auto dismiss */
+    (function() {
+        const toast = document.getElementById("toast");
+        if (toast && toast.classList.contains("show")) {
+            setTimeout(function() {
+                toast.classList.add("hide");
+                toast.classList.remove("show");
+                setTimeout(function() {
+                    toast.style.display = "none";
+                }, 400);
+            }, 2500);
+        }
+    })();
+</script>
 </body>
 </html>
