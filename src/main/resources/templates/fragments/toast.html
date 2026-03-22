@@ -1,15 +1,43 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-<th:block th:fragment="toast">
-    <div th:if="${successMsg}" class="ap-toast ap-toast-success">
-        <i class="bi bi-check-circle-fill"></i>
-        <span th:text="${successMsg}"></span>
+
+   <div th:fragment="toast">
+
+    <div id="toast"
+         th:if="${successMsg != null or errorMsg != null}"
+         class="ap-toast"
+         th:classappend="${successMsg} ? 'ap-toast-success show' : 'ap-toast-error show'">
+
+        <i th:if="${successMsg}" class="bi bi-check-circle-fill"></i>
+        <i th:if="${errorMsg}" class="bi bi-x-circle-fill"></i>
+
+        <span th:text="${successMsg != null ? successMsg : errorMsg}"></span>
+
     </div>
-    <div th:if="${errorMsg}" class="ap-toast ap-toast-error">
-        <i class="bi bi-x-circle-fill"></i>
-        <span th:text="${errorMsg}"></span>
-    </div>
-</th:block>
+
+</div>
+   
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const toast = document.getElementById("toast");
+
+    if (toast && toast.classList.contains("show")) {
+        setTimeout(() => {
+            toast.classList.remove("show");
+
+            // fully hide after animation
+            setTimeout(() => {
+                toast.style.display = "none";
+            }, 400);
+
+        }, 2500);
+    }
+});
+</script> 
+   
+   
+   
 </body>
 </html>
+

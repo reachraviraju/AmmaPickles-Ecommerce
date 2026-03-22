@@ -3,15 +3,17 @@ package com.ammapickles.backend.service;
 import java.math.BigDecimal;
 
 public interface EmailService {
+	
+	
+	 boolean sendOtpEmail(String toEmail, String username, String otp);
 
-    void sendPasswordResetEmail(String toEmail, String username, String resetLink);
+	    boolean sendWelcomeEmail(String toEmail, String username);
 
-    void sendWelcomeEmail(String toEmail, String username);
+	    boolean sendPasswordResetEmail(String toEmail, String username, String resetLink);
 
-    // Send 6-digit OTP for inline register verification
-    void sendOtpEmail(String toEmail, String username, String otp);
-    
-    void sendOrderConfirmationEmail(String toEmail, String username, Long orderId, BigDecimal grandTotal);
+	    boolean sendOrderConfirmationEmail(String toEmail, String username,  Long orderId, BigDecimal grandTotal);
+
+   
     
     
 }

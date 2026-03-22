@@ -129,7 +129,10 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+     
 <script>
+
+let otpCooldown = 0;
 
 function togglePassword() {
     const input   = document.getElementById('password');
@@ -161,8 +164,6 @@ function updateSubmitState() {
     otpSection.style.display = fieldsOk ? 'block' : 'none';
     const allOk = fieldsOk && formState.otp;
     submitBtn.disabled = !allOk;
-    submitBtn.style.opacity = allOk ? '1' : '0.4';
-    submitBtn.style.cursor  = allOk ? 'pointer' : 'not-allowed';
 }
 
 function setField(input, valid) {
@@ -176,7 +177,9 @@ function showStatus(el, type, html) {
     el.style.display = 'flex';
 }
 
-function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+function isValidEmail(e) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+}
 
 async function checkEmail(email) {
     try {
@@ -185,138 +188,143 @@ async function checkEmail(email) {
     } catch { return null; }
 }
 
-// NAME
+/* ========================
+   FIELD VALIDATIONS
+======================== */
+
 nameInput.addEventListener('input', function() {
     const v = this.value.trim();
-    if (!v) { nameStatus.style.display='none'; nameInput.classList.remove('valid','invalid'); formState.name=false; }
-    else if (v.length < 2) { setField(nameInput,false); showStatus(nameStatus,'error',"<i class='bi bi-x-circle'></i> Name too short"); formState.name=false; }
-    else { setField(nameInput,true); nameStatus.style.display='none'; formState.name=true; }
+    formState.name = v.length >= 2;
+    setField(nameInput, formState.name);
     formState.otp = false;
     updateSubmitState();
 });
 
-// PHONE
 phoneInput.addEventListener('input', function() {
     const v = this.value.trim();
-    phoneInput.classList.remove('valid','invalid');
-    if (!v) { phoneStatus.style.display='none'; formState.phone=true; updateSubmitState(); return; }
-    const ok = /^[6-9][0-9]{9}$/.test(v);
-    setField(phoneInput, ok);
-    showStatus(phoneStatus, ok ? 'success' : 'error',
-        ok ? "<i class='bi bi-check-circle'></i> Valid phone number"
-           : v.length < 10 ? "<i class='bi bi-info-circle'></i> Must be 10 digits"
-                           : "<i class='bi bi-x-circle'></i> Must start with 6-9");
-    formState.phone = ok;
+    if (!v) { formState.phone = true; updateSubmitState(); return; }
+    formState.phone = /^[6-9][0-9]{9}$/.test(v);
+    setField(phoneInput, formState.phone);
     updateSubmitState();
 });
-phoneInput.addEventListener('keypress', e => { if (!/[0-9]/.test(e.key)) e.preventDefault(); });
 
-// EMAIL
 emailInput.addEventListener('input', function() {
     const v = this.value.trim();
     clearTimeout(emailTimer);
-    formState.email = false; formState.otp = false;
-    emailInput.classList.remove('valid','invalid');
+    formState.email = false;
+    formState.otp = false;
     updateSubmitState();
-    if (!v) { emailStatus.style.display='none'; return; }
-    if (!isValidEmail(v)) { setField(emailInput,false); showStatus(emailStatus,'error',"<i class='bi bi-x-circle'></i> Invalid email format"); return; }
-    showStatus(emailStatus,'checking',"<i class='bi bi-arrow-repeat'></i> Checking...");
+
+    if (!isValidEmail(v)) return;
+
     emailTimer = setTimeout(async () => {
-        if (v === lastEmailChecked) return;
-        lastEmailChecked = v;
         const avail = await checkEmail(v);
-        if (avail === null || avail) { setField(emailInput,true); emailStatus.style.display='none'; formState.email=true; }
-        else { setField(emailInput,false); showStatus(emailStatus,'error',"<i class='bi bi-x-circle-fill'></i> Already registered — <a href='/login' style='color:#EF9A9A;text-decoration:underline;'>Login instead?</a>"); }
+        formState.email = avail !== false;
+        setField(emailInput, formState.email);
         updateSubmitState();
-    }, 600);
+    }, 500);
 });
 
-// PASSWORD
 passwordInput.addEventListener('input', function() {
     const pw = this.value;
-    if (!pw) { passwordStatus.style.display='none'; passwordInput.classList.remove('valid','invalid'); formState.password=false; updateSubmitState(); return; }
-    const len = pw.length >= 8, num = /[0-9]/.test(pw), sp = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw);
-    const ok = len && num && sp;
-    setField(passwordInput, ok);
-    if (ok) { passwordStatus.style.display='none'; }
-    else { showStatus(passwordStatus,'error', !len ? "<i class='bi bi-x-circle'></i> At least 8 characters" : !num ? "<i class='bi bi-x-circle'></i> Add at least 1 number" : "<i class='bi bi-x-circle'></i> Add 1 special character (!@#$...)"); }
-    formState.password = ok;
+    formState.password = pw.length >= 8 && /[0-9]/.test(pw) && /[!@#$%^&*]/.test(pw);
+    setField(passwordInput, formState.password);
     updateSubmitState();
 });
 
-// SEND OTP
+/* ========================
+   SEND OTP (FIXED)
+======================== */
+
 async function sendOtp() {
+
+    if (otpCooldown > 0) return;
+
     const btn = document.getElementById('sendOtpBtn');
+
     btn.disabled = true;
     btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Sending...';
+
     try {
         const fd = new FormData();
         fd.append('email', emailInput.value.trim());
-        fd.append('name',  nameInput.value.trim());
+        fd.append('name', nameInput.value.trim());
+
         const res  = await fetch('/register/send-otp', { method:'POST', body:fd });
         const data = await res.json();
-        if (res.ok) {
+
+        if (res.ok && data.success) {
+
             document.getElementById('otpInputArea').style.display = 'block';
-            document.getElementById('otpInput').value = '';
             otpStatus.style.display = 'none';
-            btn.innerHTML = '<i class="bi bi-send"></i> Resend OTP';
+
+            showToast("✔ OTP sent");
+
+            /* 🔥 COOLDOWN START */
+            otpCooldown = 60;
+
+            const interval = setInterval(() => {
+                otpCooldown--;
+                btn.innerHTML = `<i class="bi bi-clock"></i> ${otpCooldown}s`;
+
+                if (otpCooldown <= 0) {
+                    clearInterval(interval);
+                    btn.innerHTML = '<i class="bi bi-send"></i> Resend OTP';
+                }
+            }, 1000);
+
         } else {
-            showStatus(otpStatus,'error',"<i class='bi bi-x-circle'></i> " + data.message);
+            showStatus(otpStatus,'error',data.message);
+            showToast("❌ OTP failed");
         }
+
     } catch {
-        showStatus(otpStatus,'error',"<i class='bi bi-x-circle'></i> Failed to send. Check connection.");
+        showStatus(otpStatus,'error',"Network error");
+        showToast("❌ Network error");
     }
+
     btn.disabled = false;
 }
 
-// VERIFY OTP
+/* ========================
+   VERIFY OTP
+======================== */
+
 async function verifyOtp() {
     const otp = document.getElementById('otpInput').value.trim();
-    if (otp.length !== 6) { showStatus(otpStatus,'error',"<i class='bi bi-x-circle'></i> Enter the 6-digit OTP"); return; }
-    showStatus(otpStatus,'checking',"<i class='bi bi-arrow-repeat'></i> Verifying...");
+
+    if (otp.length !== 6) {
+        showStatus(otpStatus,'error',"Enter 6-digit OTP");
+        return;
+    }
+
     try {
         const fd = new FormData();
         fd.append('email', emailInput.value.trim());
         fd.append('otp', otp);
+
         const res  = await fetch('/register/verify-otp', { method:'POST', body:fd });
         const data = await res.json();
+
         if (res.ok) {
-            showStatus(otpStatus,'success',"<i class='bi bi-check-circle-fill'></i> Email verified! You can now create your account.");
-            document.getElementById('otpInput').disabled = true;
+            showStatus(otpStatus,'success',"Verified!");
             formState.otp = true;
             updateSubmitState();
         } else {
-            showStatus(otpStatus,'error',"<i class='bi bi-x-circle'></i> " + data.message);
-            formState.otp = false;
-            updateSubmitState();
+            showStatus(otpStatus,'error',data.message);
         }
+
     } catch {
-        showStatus(otpStatus,'error',"<i class='bi bi-x-circle'></i> Verification failed. Try again.");
+        showStatus(otpStatus,'error',"Verification failed");
     }
 }
 
-document.getElementById('otpInput').addEventListener('keypress', e => { if (!/[0-9]/.test(e.key)) e.preventDefault(); });
+/* ========================
+   INIT
+======================== */
 
-// SUBMIT guard
-document.getElementById('registerForm').addEventListener('submit', function(e) {
-    if (!formState.otp) {
-        e.preventDefault();
-        showStatus(otpStatus,'error',"<i class='bi bi-x-circle'></i> Please verify your email with OTP first");
-        otpSection.scrollIntoView({ behavior:'smooth', block:'center' });
-    } else {
-        submitBtn.innerHTML = 'Creating Account...';
-        submitBtn.disabled  = true;
-    }
-});
-
-// Init
 updateSubmitState();
-window.addEventListener('load', () => window.scrollTo({ top:0, behavior:'instant' }));
-document.querySelectorAll('.ap-input').forEach(input => {
-    input.addEventListener('focus', () => {
-        setTimeout(() => input.scrollIntoView({ behavior:'smooth', block:'center' }), 350);
-    });
-});
+
 </script>
 </body>
 </html>

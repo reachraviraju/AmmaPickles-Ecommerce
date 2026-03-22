@@ -15,34 +15,73 @@ public class OtpStore {
     private final OtpVerificationRepository otpRepository;
     private final Random random = new Random();
     private static final int OTP_VALID_MINUTES = 10;
-
+    
+    
+    
     @Transactional
     public String generateOtp(String email) {
-        String otp = String.format("%06d", random.nextInt(1_000_000));
-        String normalizedEmail = email.toLowerCase();
 
-        // Check if existing OTP record exists
+        String normalizedEmail = email.toLowerCase();
+        LocalDateTime now = LocalDateTime.now();
+
         OtpVerification existing = otpRepository.findByEmail(normalizedEmail).orElse(null);
 
-        if (existing != null) {
-            // UPDATE existing record instead of delete + insert
-            existing.setOtp(otp);
-            existing.setExpiresAt(LocalDateTime.now().plusMinutes(OTP_VALID_MINUTES));
-            existing.setVerified(false);
-            otpRepository.saveAndFlush(existing);
-        } else {
-            // INSERT new record
+        // 🔴 FIRST TIME USER
+        if (existing == null) {
+            String otp = String.format("%06d", random.nextInt(1_000_000));
+
             OtpVerification entry = OtpVerification.builder()
                     .email(normalizedEmail)
                     .otp(otp)
-                    .expiresAt(LocalDateTime.now().plusMinutes(OTP_VALID_MINUTES))
+                    .expiresAt(now.plusMinutes(OTP_VALID_MINUTES))
                     .verified(false)
+                    .requestCount(1) // 🔥 new field
+                    .firstRequestTime(now)
                     .build();
+
             otpRepository.saveAndFlush(entry);
+            return otp;
         }
+
+        // 🔴 RESET WINDOW (after 10 mins)
+        if (existing.getFirstRequestTime() == null ||
+            existing.getFirstRequestTime().plusMinutes(10).isBefore(now)) {
+
+            existing.setRequestCount(0);
+            existing.setFirstRequestTime(now);
+        }
+
+        // 🔴 LIMIT: MAX 3 REQUESTS
+        if (existing.getRequestCount() >= 3) {
+            throw new RuntimeException("Too many OTP requests. Try again after 10 minutes.");
+        }
+
+        // 🔴 COOLDOWN: 60 sec
+        long secondsSinceLastOtp = java.time.Duration.between(
+                existing.getExpiresAt().minusMinutes(OTP_VALID_MINUTES),
+                now
+        ).getSeconds();
+
+        if (secondsSinceLastOtp < 60) {
+            throw new RuntimeException("Please wait 60 seconds before requesting OTP again.");
+        }
+
+        // 🔴 GENERATE NEW OTP
+        String otp = String.format("%06d", random.nextInt(1_000_000));
+
+        existing.setOtp(otp);
+        existing.setExpiresAt(now.plusMinutes(OTP_VALID_MINUTES));
+        existing.setVerified(false);
+
+        // 🔥 INCREMENT COUNT
+        existing.setRequestCount(existing.getRequestCount() + 1);
+
+        otpRepository.saveAndFlush(existing);
 
         return otp;
     }
+
+    
 
     @Transactional
     public String validate(String email, String otp) {

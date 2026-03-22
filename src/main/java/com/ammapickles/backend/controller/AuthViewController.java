@@ -54,9 +54,26 @@ public class AuthViewController {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Email already registered. Please login instead."));
         }
-        String otp = otpStore.generateOtp(email);
-        emailService.sendOtpEmail(email, name, otp);
-        return ResponseEntity.ok(ApiResponse.success("OTP sent to " + email));
+        
+        try {
+                String otp = otpStore.generateOtp(email);
+
+                   boolean sent = emailService.sendOtpEmail(email, name, otp);
+
+                   if (!sent) {
+                              return ResponseEntity.status(500).body(ApiResponse.error("Failed to send OTP"));
+                              }
+     
+                     return ResponseEntity.ok(ApiResponse.success("OTP sent"));
+
+            } 
+        
+        catch (RuntimeException e) {
+           
+        	return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+        
+        
     }
 
     // REGISTER — verify OTP (called via fetch from JS)

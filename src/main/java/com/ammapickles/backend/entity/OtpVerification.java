@@ -21,6 +21,12 @@ public class OtpVerification {
 
     @Column(nullable = false)
     private LocalDateTime expiresAt;
+    
+    @Column(name = "request_count")
+    private int requestCount;
+
+    @Column(name = "first_request_time")
+    private LocalDateTime firstRequestTime;
 
     @Column(nullable = false)
     private boolean verified = false;
