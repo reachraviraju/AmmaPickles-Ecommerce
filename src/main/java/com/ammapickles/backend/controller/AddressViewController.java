@@ -46,7 +46,7 @@ public class AddressViewController {
         request.setMobileNumber(mobileNumber);
 
         addressService.createAddress(user.getId(), request);
-        return "redirect:/orders/place";
+        return "redirect:/place-order";
     }
 
     @PostMapping("/addresses/edit/{id}")
