@@ -16,7 +16,8 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.username}")
+    // This is your verified sender address in Brevo (e.g. ammapickles.official@gmail.com)
+    @Value("${app.mail.from}")
     private String fromEmail;
 
     @Override
