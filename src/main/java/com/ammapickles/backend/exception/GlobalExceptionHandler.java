@@ -95,9 +95,13 @@ public class GlobalExceptionHandler {
 
     // 500 INTERNAL SERVER ERROR 
        // Catch-all for unexpected errors
+ 
+    
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneric(Exception ex) {
-        //  Log the actual error for debugging
+        if (ex instanceof org.apache.catalina.connector.ClientAbortException) {
+            return null; // ignore broken pipe
+        }
         log.error("Unexpected error occurred: {}", ex.getMessage(), ex);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
