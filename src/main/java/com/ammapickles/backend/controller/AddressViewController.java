@@ -26,7 +26,8 @@ public class AddressViewController {
     }
 
     @PostMapping("/addresses/add")
-    public String saveAddress(@RequestParam String street,
+    public String saveAddress(@RequestParam String name ,
+    		                  @RequestParam String street,
                               @RequestParam String city,
                               @RequestParam(required = false) String district,
                               @RequestParam String state,
@@ -36,6 +37,7 @@ public class AddressViewController {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
 
         AddressRequest request = new AddressRequest();
+        request.setName(name);
         request.setStreet(street);
         request.setCity(city);
         request.setDistrict(district);
@@ -49,6 +51,7 @@ public class AddressViewController {
 
     @PostMapping("/addresses/edit/{id}")
     public String updateAddress(@PathVariable Long id,
+    		                    @RequestParam String name,
                                 @RequestParam String street,
                                 @RequestParam String city,
                                 @RequestParam(required = false) String district,
@@ -59,6 +62,7 @@ public class AddressViewController {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
 
         AddressRequest request = new AddressRequest();
+        request.setName(name);
         request.setStreet(street);
         request.setCity(city);
         request.setDistrict(district);

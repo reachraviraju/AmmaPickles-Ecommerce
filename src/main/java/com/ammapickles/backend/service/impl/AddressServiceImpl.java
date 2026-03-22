@@ -6,6 +6,7 @@ import com.ammapickles.backend.entity.Address;
 import com.ammapickles.backend.entity.User;
 import com.ammapickles.backend.exception.ResourceNotFoundException;
 import com.ammapickles.backend.repository.AddressRepository;
+import com.ammapickles.backend.repository.OrderRepository;
 import com.ammapickles.backend.repository.UserRepository;
 import com.ammapickles.backend.service.AddressService;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import javax.management.RuntimeErrorException;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ public class AddressServiceImpl implements AddressService {
 
     private final AddressRepository addressRepository;
     private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -105,6 +109,11 @@ public class AddressServiceImpl implements AddressService {
         Address address = addressRepository.findByIdAndUserId(addressId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Address not found or doesn't belong to user"));
+        
+        if(orderRepository.existsByDeliveryAddressId(addressId))
+        {
+        	throw new RuntimeException("cannot delete address used in orders");
+        }
         addressRepository.delete(address);
         log.info("Address deleted: {}", addressId);
     }
