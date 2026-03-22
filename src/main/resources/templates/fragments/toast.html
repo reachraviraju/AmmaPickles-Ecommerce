@@ -19,21 +19,29 @@
 </div>
    
   <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const toast = document.getElementById("toast");
+  
+  document.addEventListener("DOMContentLoaded", function () {
+	    const toast = document.getElementById("toast");
 
-    if (toast && toast.classList.contains("show")) {
-        setTimeout(() => {
-            toast.classList.remove("show");
+	    if (toast && toast.classList.contains("show")) {
+	        setTimeout(() => {
+	            /* Add hide class for smooth fade out */
+	            toast.classList.add("hide");
+	            toast.classList.remove("show");
 
-            // fully hide after animation
-            setTimeout(() => {
-                toast.style.display = "none";
-            }, 400);
+	            /* Fully hide after animation completes */
+	            setTimeout(() => {
+	                toast.style.display = "none";
+	            }, 400);
 
-        }, 2500);
-    }
-});
+	        }, 2500);
+	    }
+	});
+      
+  
+  
+  
+
 </script> 
    
    

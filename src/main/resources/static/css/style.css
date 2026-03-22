@@ -363,85 +363,84 @@ body {
     top: 80px;
     left: 50%;
     transform: translateX(-50%) translateY(-30px) scale(0.9);
-
     max-width: 90%;
     width: fit-content;
     min-width: 180px;
-
-    padding: 12px 18px;
+    padding: 12px 20px;
     border-radius: 40px;
 
-    font-size: 15px;
-    font-weight: 600;
+    /* Match login/register border style */
+    background: #0D0800;
+    border: 2px solid var(--gold);
+    box-shadow:
+        0 0 18px rgba(212,160,23,0.25),
+        0 8px 30px rgba(0,0,0,0.6);
+
+    color: var(--gold-lt);
+    font-family: 'Cinzel', serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 1px;
     text-align: center;
     white-space: normal;
-
-    background: linear-gradient(135deg, #C9920A, #E8B84B);
-    color: #000;
-
-    box-shadow: 0 10px 30px rgba(201,146,10,0.5);
 
     opacity: 0;
     z-index: 9999;
     overflow: hidden;
-
     transition: all 0.35s ease;
 }
 
 .ap-toast i {
     margin-right: 8px;
+    color: var(--gold-mid);
 }
 
-/* SHOW STATE */
 .ap-toast.show {
     opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1);
     animation: ap-toast-pop 0.35s ease;
 }
 
+.ap-toast.hide {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px) scale(0.9);
+    transition: all 0.4s ease;
+}
 
-
-/* SHINE EFFECT (ONLY WHEN VISIBLE) */
+/* Gold shine effect */
 .ap-toast.show::after {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: 40px;
-
     background: linear-gradient(
         120deg,
         transparent 20%,
-        rgba(255,255,255,0.6),
+        rgba(212,160,23,0.15),
         transparent 80%
     );
-
     animation: ap-toast-shine 1.2s ease;
 }
 
-/* SUCCESS (optional override) */
-.ap-toast-success {
-    background: linear-gradient(135deg, #C9920A, #E8B84B);
-    color: #000;
-}
-
-/* ERROR (optional override) */
+.ap-toast-success i { color: #81C784; }
 .ap-toast-error {
-    background: #ff4d4d;
-    color: #fff;
+    border-color: var(--red);
+    box-shadow: 0 0 18px rgba(139,0,0,0.25), 0 8px 30px rgba(0,0,0,0.6);
+    color: rgba(255,165,165,0.95);
 }
+.ap-toast-error i { color: #EF9A9A; }
 
-/* POP ANIMATION */
 @keyframes ap-toast-pop {
     0%   { transform: translateX(-50%) translateY(-30px) scale(0.8); }
     60%  { transform: translateX(-50%) translateY(5px) scale(1.05); }
     100% { transform: translateX(-50%) translateY(0) scale(1); }
 }
 
-/* SHINE ANIMATION */
 @keyframes ap-toast-shine {
-    0% { transform: translateX(-120%); }
+    0%   { transform: translateX(-120%); }
     100% { transform: translateX(120%); }
 }
+
 
 /* ==============================
    MOBILE OPTIMIZATION
@@ -483,11 +482,11 @@ body {
 .ap-hero {
     background:
         linear-gradient(to right,
-            rgba(0,0,0,0.92) 0%,
-            rgba(0,0,0,0.85) 20%,
-            rgba(0,0,0,0.55) 40%,
-            rgba(0,0,0,0.15) 60%,
-            rgba(0,0,0,0.05) 100%),
+            rgba(0,0,0,0.75) 0%,
+            rgba(0,0,0,0.60) 20%,
+            rgba(0,0,0,0.35) 40%,
+            rgba(0,0,0,0.10) 60%,
+            rgba(0,0,0,0.03) 100%),
         url('/images/amma_hero.png') !important;
     background-size: cover !important;
     background-position: center center !important;
