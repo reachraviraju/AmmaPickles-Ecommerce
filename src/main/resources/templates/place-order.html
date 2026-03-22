@@ -154,6 +154,9 @@
                                                th:value="${address.id}"
                                                required/>
                                         <div class="addr-card-body">
+                                        
+                                        
+                                        
                                             <div class="addr-street" th:text="${address.street}"></div>
                                             <div class="addr-detail">
                                                 <i class="bi bi-geo-alt"></i>
@@ -162,6 +165,11 @@
                                             <div class="addr-detail">
                                                 <i class="bi bi-map"></i>
                                                 <span th:text="${address.state} + ' — ' + ${address.pincode}"></span>
+                                            </div>
+                                            
+                                            <div class="addr-detail" th:if="${address.name != null}">
+                                             
+                                                <span th:text="${address.name}"></span>
                                             </div>
                                             <div class="addr-detail" th:if="${address.mobileNumber != null}">
                                                 <i class="bi bi-telephone"></i>
@@ -175,6 +183,7 @@
                                                 class="addr-action-btn edit"
                                                 title="Edit address"
                                                 th:data-id="${address.id}"
+                                                th:data-name="${address.name}"
                                                 th:data-street="${address.street}"
                                                 th:data-city="${address.city}"
                                                 th:data-district="${address.district}"
@@ -270,7 +279,12 @@
                 </button>
             </div>
             <form id="editForm" method="post">
+                
+                
                 <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                
+                 <label class="ap-label">Name</label>
+                <input class="ap-input" type="text" id="edit-name" name="name" required/>
                 <label class="ap-label">Street</label>
                 <input class="ap-input" type="text" id="edit-street" name="street" required/>
                 <label class="ap-label">City</label>
@@ -295,6 +309,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function openEditModal(btn) {
+        	document.getElementById('edit-name').value     = btn.dataset.name     || '';
             document.getElementById('edit-street').value   = btn.dataset.street   || '';
             document.getElementById('edit-city').value     = btn.dataset.city     || '';
             document.getElementById('edit-district').value = btn.dataset.district || '';

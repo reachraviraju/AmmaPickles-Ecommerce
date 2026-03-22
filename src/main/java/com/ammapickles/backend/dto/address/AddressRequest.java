@@ -6,6 +6,11 @@ import lombok.Data;
 
 @Data
 public class AddressRequest {
+	
+	
+	@NotBlank(message = "Name is required")
+    private String name;
+
 
     @NotBlank(message = "Street is required")
     private String street;

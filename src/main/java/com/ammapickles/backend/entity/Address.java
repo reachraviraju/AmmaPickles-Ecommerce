@@ -17,6 +17,9 @@ public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @NotBlank(message ="name is required")
+    private String name;
 
     @NotBlank(message = "Street is required")
     private String street;

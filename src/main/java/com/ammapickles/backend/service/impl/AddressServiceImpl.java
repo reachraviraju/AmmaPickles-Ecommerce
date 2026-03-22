@@ -60,6 +60,7 @@ public class AddressServiceImpl implements AddressService {
         }
 
         Address address = Address.builder()
+        		.name(request.getName())
                 .street(request.getStreet())
                 .city(request.getCity())
                 .district(request.getDistrict())
@@ -83,7 +84,7 @@ public class AddressServiceImpl implements AddressService {
         if (!address.getUser().getId().equals(requestingUserId)) {
             throw new SecurityException("Access denied to address: " + addressId);
         }
-
+        if (request.getName()         != null) address.setName(request.getName());
         if (request.getStreet()       != null) address.setStreet(request.getStreet());
         if (request.getCity()         != null) address.setCity(request.getCity());
         if (request.getDistrict()     != null) address.setDistrict(request.getDistrict());
@@ -112,6 +113,7 @@ public class AddressServiceImpl implements AddressService {
     private AddressResponse mapToResponse(Address address) {
         AddressResponse response = new AddressResponse();
         response.setId(address.getId());
+        response.setName(address.getName());
         response.setStreet(address.getStreet());
         response.setCity(address.getCity());
         response.setDistrict(address.getDistrict());
@@ -119,7 +121,7 @@ public class AddressServiceImpl implements AddressService {
         response.setPincode(address.getPincode());
         response.setMobileNumber(address.getMobileNumber());
         response.setFormattedAddress(
-                address.getStreet() + ", " + address.getCity() + ", " +
+        		address.getName() + ", " +   address.getStreet() + ", " + address.getCity() + ", " +
                 address.getDistrict() + " - " + address.getPincode()
         );
         return response;
