@@ -14,8 +14,6 @@
     <div th:replace="~{fragments/navbar :: navbar}"></div>
     <div th:replace="~{fragments/toast :: toast}"></div>
 
-   
-
     <div class="page-hdr">
         <h2>🛒 My Cart</h2>
         <p th:if="${cart != null}" th:text="${cart.totalItems} + ' item(s) in your cart'"></p>
@@ -41,7 +39,6 @@
 
             <!-- CART ITEMS -->
             <div class="col-lg-8" th:unless="${cart == null or cart.items.empty}">
-
                 <div class="cart-item"
                      th:each="item : ${cart.items}"
                      th:onclick="|window.location.href='/products/${item.variantId}'|"
@@ -56,28 +53,23 @@
                         <div class="ci-price" th:text="'₹' + ${item.price} + ' per jar'"></div>
                     </div>
 
-                    <!-- Quantity update -->
                     <form th:action="@{/cart/update/{id}(id=${item.cartItemId})}"
                           method="post"
                           onclick="event.stopPropagation()"
                           style="display:flex;align-items:center;gap:0.4rem;">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <!-- FIX: disabled when qty = 1 -->
-                        <button type="submit"
-                                name="quantity"
+                        <button type="submit" name="quantity"
                                 th:value="${item.quantity - 1}"
                                 class="qty-btn"
                                 th:disabled="${item.quantity == 1}">−</button>
                         <span class="ci-qty" th:text="${item.quantity}"></span>
-                        <button type="submit"
-                                name="quantity"
+                        <button type="submit" name="quantity"
                                 th:value="${item.quantity + 1}"
                                 class="qty-btn">+</button>
                     </form>
 
                     <div class="ci-total shine-gold" th:text="'₹' + ${item.itemTotal}"></div>
 
-                    <!-- Remove -->
                     <form th:action="@{/cart/remove/{id}(id=${item.cartItemId})}"
                           method="post"
                           onclick="event.stopPropagation()">
@@ -86,9 +78,7 @@
                             <i class="bi bi-trash3"></i>
                         </button>
                     </form>
-
                 </div>
-
             </div>
 
             <!-- ORDER SUMMARY -->
@@ -97,13 +87,13 @@
 
                     <div class="summary-title">Order Summary</div>
 
-                    <div class="free-del" th:if="${cart.cartTotal >= 1000}">
+                    <!-- FREE DELIVERY BADGE -->
+                    <div class="free-del" th:if="${cart.freeDelivery}">
                         🎉 You qualify for FREE delivery!
                     </div>
 
-                    <!-- Progress to free delivery -->
-                    <div th:if="${cart.cartTotal < 1000}"
-                         style="margin-bottom:1.2rem;">
+                    <!-- PROGRESS BAR (only if NOT free) -->
+                    <div th:if="${!cart.freeDelivery}" style="margin-bottom:1.2rem;">
                         <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.4rem;font-family:'Cinzel',serif;letter-spacing:1px;">
                             ADD ₹<span th:text="${1000 - cart.cartTotal}"></span> MORE FOR FREE DELIVERY
                         </div>
@@ -118,7 +108,7 @@
                     </div>
                     <div class="s-row">
                         <span class="lbl">Delivery</span>
-                        <span class="val" th:text="${cart.cartTotal >= 1000} ? 'FREE' : '₹70'"></span>
+                        <span class="val" th:text="${cart.freeDelivery} ? 'FREE' : '₹70'"></span>
                     </div>
                     <div class="s-row">
                         <span class="lbl">Items</span>
@@ -130,10 +120,9 @@
                     <div class="s-total">
                         <span class="tl">Grand Total</span>
                         <span class="tv shine-gold"
-                              th:text="${cart.cartTotal >= 1000} ? '₹' + ${cart.cartTotal} : '₹' + ${cart.cartTotal + 70}"></span>
+                              th:text="${cart.freeDelivery} ? '₹' + ${cart.cartTotal} : '₹' + ${cart.cartTotal + 70}"></span>
                     </div>
 
-                    <!-- COD badge -->
                     <div style="display:flex;align-items:center;gap:0.5rem;background:rgba(212,160,23,0.06);border:1px solid var(--border-gold);border-radius:8px;padding:0.6rem 1rem;margin-bottom:1.2rem;">
                         <i class="bi bi-cash-coin" style="color:var(--gold-mid);"></i>
                         <span style="font-size:0.78rem;color:var(--text-silver-soft);">Cash on Delivery</span>
@@ -141,11 +130,9 @@
 
                     <a href="/orders/place" class="btn-order">Proceed to Order →</a>
 
-                   
                     <div class="del-note">
-                           🚚 Free delivery on orders above ₹1000 &nbsp;·&nbsp; 🎁 First order above ₹500 gets free delivery!
+                        🚚 Free delivery on orders above ₹1000 &nbsp;·&nbsp; 🎁 First order above ₹500 gets free delivery!
                     </div>
-
                 </div>
             </div>
 

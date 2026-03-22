@@ -29,9 +29,8 @@ public class OrderServiceImpl implements OrderService {
     private final AddressRepository addressRepository;
     private final ProductRepository productRepository;
     private final EmailService emailService;
-    
 
-    private static final BigDecimal DELIVERY_CHARGE     = BigDecimal.valueOf(70);
+    private static final BigDecimal DELIVERY_CHARGE = BigDecimal.valueOf(70);
     private static final BigDecimal FREE_DELIVERY_ABOVE = BigDecimal.valueOf(1000);
     private static final BigDecimal FIRST_ORDER_FREE_ABOVE = BigDecimal.valueOf(500);
 
@@ -39,14 +38,15 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public List<OrderResponse> getOrdersByUser(Long userId) {
         log.info("Fetching orders for user: {}", userId);
-        return orderRepository.findByUserId(userId).stream()
-                .map(this::mapToResponse).toList();
+        return orderRepository.findByUserId(userId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public OrderResponse getOrderByIdForUser(Long orderId, Long userId) {
-        log.info("Fetching order {} for user {}", orderId, userId);
         Order order = orderRepository.findByIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
         return mapToResponse(order);
@@ -55,25 +55,30 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse placeOrder(Long userId, OrderRequest request) {
+
         log.info("Placing order for user: {}", userId);
 
+        // Fetch user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 
+        // Fetch address
         Address address = addressRepository.findByIdAndUserId(request.getAddressId(), userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Address not found or doesn't belong to user"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 
+        //  Fetch cart
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
 
         if (cart.getItems().isEmpty()) {
-            throw new IllegalStateException("Cannot place order — cart is empty!");
+            throw new IllegalStateException("Cart is empty!");
         }
 
-        BigDecimal totalAmount   = cart.getCartTotal();
-      
+        //  Calculate totals
+        BigDecimal totalAmount = cart.getCartTotal();
         BigDecimal deliveryCharge = calculateDeliveryCharge(totalAmount, userId);
 
+        // Create order
         Order order = Order.builder()
                 .user(user)
                 .deliveryAddress(address)
@@ -82,105 +87,129 @@ public class OrderServiceImpl implements OrderService {
                 .status(OrderStatus.CONFIRMED)
                 .build();
 
+        //  Convert cart -> order items
         List<OrderItem> orderItems = cart.getItems().stream()
                 .map(cartItem -> {
                     Product product = cartItem.getProduct();
+
                     int newQty = product.getQuantity() - cartItem.getQuantity();
-                    if (newQty < 0) throw new IllegalStateException("Insufficient stock for: " + product.getName());
+                    if (newQty < 0) {
+                        throw new IllegalStateException("Insufficient stock for: " + product.getName());
+                    }
+
                     product.setQuantity(newQty);
                     productRepository.save(product);
+
                     return OrderItem.builder()
                             .order(order)
                             .product(product)
                             .quantity(cartItem.getQuantity())
                             .price(product.getPrice())
                             .build();
-                }).toList();
+                })
+                .toList();
 
         order.setOrderItems(orderItems);
-        Order saved = orderRepository.save(order);
-        
-        emailService.sendOrderConfirmationEmail(
-        	    user.getEmail(),
-        	    user.getUsername(),
-        	    saved.getId(),
-        	    saved.getGrandTotal()
-        	);
-        
-        
-        
 
+        //  Save order
+        Order saved = orderRepository.save(order);
+
+        // Send email (non-blocking logic style)
+        emailService.sendOrderConfirmationEmail(
+                user.getEmail(),
+                user.getUsername(),
+                saved.getId(),
+                saved.getGrandTotal()
+        );
+
+        // Clear cart
         cart.getItems().clear();
         cartRepository.save(cart);
 
-        log.info("COD order confirmed with id: {}", saved.getId());
+        log.info("Order placed successfully: {}", saved.getId());
+
         return mapToResponse(saved);
     }
 
     @Override
     @Transactional
     public void cancelOrder(Long orderId, Long userId) {
-        log.info("Cancelling order {} for user {}", orderId, userId);
 
         Order order = orderRepository.findByIdAndUserId(orderId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        if (order.getStatus() != OrderStatus.CONFIRMED
-                && order.getStatus() != OrderStatus.PENDING) {
-            throw new IllegalStateException("Cannot cancel order — current status: " + order.getStatus());
+        if (order.getStatus() != OrderStatus.CONFIRMED &&
+                order.getStatus() != OrderStatus.PENDING) {
+            throw new IllegalStateException("Cannot cancel order");
         }
 
+        //  Restore stock
         order.getOrderItems().forEach(item -> {
             Product product = item.getProduct();
             product.setQuantity(product.getQuantity() + item.getQuantity());
             productRepository.save(product);
-            log.info("Restored {} units of {} after cancel", item.getQuantity(), product.getName());
         });
 
         order.setStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
-        log.info("Order cancelled and stock restored: {}", orderId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<OrderResponse> getAllOrders(Pageable pageable) {
-        log.info("Admin fetching all orders - page: {}", pageable.getPageNumber());
         return orderRepository.findAll(pageable).map(this::mapToResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
     public OrderResponse getOrderById(Long orderId) {
-        log.info("Admin fetching order: {}", orderId);
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
-        return mapToResponse(order);
+        return orderRepository.findById(orderId)
+                .map(this::mapToResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
     }
 
     @Override
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId, String status) {
-        log.info("Updating order {} status to {}", orderId, status);
+
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
         order.setStatus(OrderStatus.valueOf(status.toUpperCase()));
         orderRepository.save(order);
-        log.info("Order status updated: {} → {}", orderId, status);
+
         return mapToResponse(order);
     }
 
-   
-    
+    @Override
+    @Transactional(readOnly = true)
+    public Page<OrderResponse> getOrdersByStatus(OrderStatus status, Pageable pageable) {
+        return orderRepository.findByStatus(status, pageable)
+                .map(this::mapToResponse);
+    }
+
+    //  SINGLE SOURCE OF TRUTH
     private BigDecimal calculateDeliveryCharge(BigDecimal orderTotal, Long userId) {
-        if (orderTotal.compareTo(FREE_DELIVERY_ABOVE) >= 0) return BigDecimal.ZERO;
-        if (orderTotal.compareTo(FIRST_ORDER_FREE_ABOVE) >= 0
-                && orderRepository.countByUserId(userId) == 0) return BigDecimal.ZERO;
+
+        // Free delivery for all above ₹1000
+        if (orderTotal.compareTo(FREE_DELIVERY_ABOVE) >= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        // First order free above ₹500
+        boolean isFirstOrder = orderRepository.countByUserId(userId) == 0;
+
+        if (isFirstOrder && orderTotal.compareTo(FIRST_ORDER_FREE_ABOVE) >= 0) {
+            return BigDecimal.ZERO;
+        }
+
         return DELIVERY_CHARGE;
     }
 
     private OrderResponse mapToResponse(Order order) {
+
         OrderResponse response = new OrderResponse();
+
         response.setId(order.getId());
         response.setStatus(order.getStatus());
         response.setTotalAmount(order.getTotalAmount());
@@ -192,7 +221,8 @@ public class OrderServiceImpl implements OrderService {
         if (addr != null) {
             response.setDeliveryAddress(
                     addr.getStreet() + ", " + addr.getCity() + ", " +
-                    addr.getDistrict() + " - " + addr.getPincode());
+                            addr.getDistrict() + " - " + addr.getPincode()
+            );
         }
 
         List<OrderItemResponse> items = order.getOrderItems().stream()
@@ -203,20 +233,12 @@ public class OrderServiceImpl implements OrderService {
                     r.setQuantity(item.getQuantity());
                     r.setPriceAtTimeOfOrder(item.getPrice());
                     r.setItemTotal(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
-                    if (item.getProduct().getSize() != null)
-                        r.setSizeLabel(item.getProduct().getSize().getLabel());
                     return r;
-                }).toList();
+                })
+                .toList();
 
         response.setItems(items);
+
         return response;
-    }
-    
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Page<OrderResponse> getOrdersByStatus(OrderStatus status, Pageable pageable) {
-        log.info("Admin fetching orders by status: {}", status);
-        return orderRepository.findByStatus(status, pageable).map(this::mapToResponse);
     }
 }
