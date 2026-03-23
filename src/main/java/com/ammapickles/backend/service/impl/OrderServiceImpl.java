@@ -220,7 +220,7 @@ public class OrderServiceImpl implements OrderService {
         Address addr = order.getDeliveryAddress();
         if (addr != null) {
             response.setDeliveryAddress(
-                    addr.getStreet() + ", " + addr.getCity() + ", " +
+                   addr.getName()+", " + addr.getStreet() + ", " + addr.getCity() + ", " +
                             addr.getDistrict() + " - " + addr.getPincode()
             );
         }

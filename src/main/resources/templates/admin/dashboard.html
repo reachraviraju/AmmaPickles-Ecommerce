@@ -11,96 +11,152 @@
 </head>
 <body>
 
-    <div th:replace="~{fragments/admin-navbar :: adminNavbar}"></div>
+<div th:replace="~{fragments/admin-navbar :: adminNavbar}"></div>
 
-    <div class="page-hdr">
-        <h2>📊 Dashboard</h2>
-        <p>Welcome back, Admin</p>
+<div class="page-hdr">
+    <h2>📊 Dashboard</h2>
+    <p>Welcome back, Admin</p>
+</div>
+
+<div class="cart-main">
+
+    <div th:if="${success}" class="flash-success">
+        <i class="bi bi-check-circle-fill"></i>
+        <span th:text="${success}"></span>
     </div>
 
-    <div class="cart-main">
-
-        <div th:if="${success}" class="flash-success">
-            <i class="bi bi-check-circle-fill"></i>
-            <span th:text="${success}"></span>
+    <!-- ── TOP STAT CARDS ── -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Total Orders</div>
+                <div class="admin-stat-value shine-gold" th:text="${totalOrders}">0</div>
+            </div>
         </div>
-
-        <!-- STAT CARDS -->
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-md-3">
-                <div class="admin-stat-card">
-                    <div class="admin-stat-label">Total Orders</div>
-                    <div class="admin-stat-value shine-gold" th:text="${totalOrders}">0</div>
-                </div>
+        <div class="col-6 col-md-3">
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Total Revenue</div>
+                <div class="admin-stat-value shine-gold" th:text="'₹' + ${totalRevenue}">₹0</div>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="admin-stat-card">
-                    <div class="admin-stat-label">Total Revenue</div>
-                    <div class="admin-stat-value shine-gold" th:text="'₹' + ${totalRevenue}">₹0</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="admin-stat-card">
-                    <div class="admin-stat-label">Total Users</div>
-                    <div class="admin-stat-value shine-gold" th:text="${totalUsers}">0</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="admin-stat-card" style="border-color:rgba(255,152,0,0.3);">
-                    <div class="admin-stat-label" style="color:#FFB74D;">Pending</div>
-                    <div class="admin-stat-value" style="color:#FFB74D;" th:text="${pendingOrders}">0</div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Total Users</div>
+                <div class="admin-stat-value shine-gold" th:text="${totalUsers}">0</div>
+                <div style="font-size:0.65rem;color:rgba(76,175,80,0.8);margin-top:0.3rem;">
+                    +<span th:text="${newUsersToday}">0</span> today &nbsp;·&nbsp;
+                    +<span th:text="${newUsersThisWeek}">0</span> this week
                 </div>
             </div>
         </div>
+        <div class="col-6 col-md-3">
+            <div class="admin-stat-card" style="border-color:rgba(255,152,0,0.3);">
+                <div class="admin-stat-label" style="color:#FFB74D;">Pending</div>
+                <div class="admin-stat-value" style="color:#FFB74D;" th:text="${pendingOrders}">0</div>
+            </div>
+        </div>
+    </div>
 
-        <!-- STATUS BREAKDOWN -->
-        <div class="admin-section">
-            <div class="admin-section-title">Order Status Breakdown</div>
-            <div class="row g-3">
-                <div class="col-6 col-md-3">
-                    <div class="admin-status-card" style="background:rgba(33,150,243,0.08);border:1px solid rgba(33,150,243,0.3);">
-                        <div class="admin-status-label" style="color:#64B5F6;">CONFIRMED</div>
-                        <div class="admin-status-value" style="color:#64B5F6;" th:text="${pendingOrders}">0</div>
+    <div class="row g-4 mb-4">
+
+        <!-- ── ORDER STATUS BREAKDOWN ── -->
+        <div class="col-lg-6">
+            <div class="admin-section" style="height:100%;">
+                <div class="admin-section-title">Order Status Breakdown</div>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="admin-status-card" style="background:rgba(33,150,243,0.08);border:1px solid rgba(33,150,243,0.3);">
+                            <div class="admin-status-label" style="color:#64B5F6;">CONFIRMED</div>
+                            <div class="admin-status-value" style="color:#64B5F6;" th:text="${pendingOrders}">0</div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="admin-status-card" style="background:rgba(156,39,176,0.08);border:1px solid rgba(156,39,176,0.3);">
-                        <div class="admin-status-label" style="color:#CE93D8;">SHIPPED</div>
-                        <div class="admin-status-value" style="color:#CE93D8;" th:text="${shippedOrders}">0</div>
+                    <div class="col-6">
+                        <div class="admin-status-card" style="background:rgba(156,39,176,0.08);border:1px solid rgba(156,39,176,0.3);">
+                            <div class="admin-status-label" style="color:#CE93D8;">SHIPPED</div>
+                            <div class="admin-status-value" style="color:#CE93D8;" th:text="${shippedOrders}">0</div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="admin-status-card" style="background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.3);">
-                        <div class="admin-status-label" style="color:#81C784;">DELIVERED</div>
-                        <div class="admin-status-value" style="color:#81C784;" th:text="${deliveredOrders}">0</div>
+                    <div class="col-6">
+                        <div class="admin-status-card" style="background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.3);">
+                            <div class="admin-status-label" style="color:#81C784;">DELIVERED</div>
+                            <div class="admin-status-value" style="color:#81C784;" th:text="${deliveredOrders}">0</div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="admin-status-card" style="background:rgba(139,0,0,0.08);border:1px solid rgba(139,0,0,0.3);">
-                        <div class="admin-status-label" style="color:#EF9A9A;">CANCELLED</div>
-                        <div class="admin-status-value" style="color:#EF9A9A;" th:text="${cancelledOrders}">0</div>
+                    <div class="col-6">
+                        <div class="admin-status-card" style="background:rgba(139,0,0,0.08);border:1px solid rgba(139,0,0,0.3);">
+                            <div class="admin-status-label" style="color:#EF9A9A;">CANCELLED</div>
+                            <div class="admin-status-value" style="color:#EF9A9A;" th:text="${cancelledOrders}">0</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- QUICK LINKS -->
-        <div class="row g-3">
-            <div class="col-md-6">
-                <a href="/admin/orders" class="btn-order" style="text-decoration:none;display:block;text-align:center;">
-                    <i class="bi bi-bag-check"></i> Manage Orders
-                </a>
-            </div>
-            <div class="col-md-6">
-                <a href="/admin/products" class="btn-order"
-                   style="text-decoration:none;display:block;text-align:center;background:transparent;border:1.5px solid rgba(212,160,23,0.4);color:var(--gold-mid);">
-                    <i class="bi bi-box-seam"></i> Manage Products
-                </a>
+        <!-- ── QUICK LINKS ── -->
+        <div class="col-lg-6">
+            <div class="admin-section" style="height:100%;">
+                <div class="admin-section-title">Quick Actions</div>
+                <div class="d-flex flex-column gap-3">
+                    <a href="/admin/orders" class="btn-order" style="text-decoration:none;text-align:center;">
+                        <i class="bi bi-bag-check"></i> Manage Orders
+                    </a>
+                    <a href="/admin/products" class="btn-order"
+                       style="text-decoration:none;text-align:center;background:transparent;border:1.5px solid rgba(212,160,23,0.4);color:var(--gold-mid);">
+                        <i class="bi bi-box-seam"></i> Manage Products
+                    </a>
+                    <a href="/admin/products/add" class="btn-order"
+                       style="text-decoration:none;text-align:center;background:transparent;border:1.5px solid rgba(76,175,80,0.4);color:#81C784;">
+                        <i class="bi bi-plus-circle"></i> Add New Product
+                    </a>
+                </div>
             </div>
         </div>
 
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ── RECENT USERS TABLE ── -->
+    <div class="admin-section">
+        <div class="admin-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>Recent Users</span>
+            <span style="font-size:0.7rem;color:var(--text-muted);font-family:'Nunito',sans-serif;letter-spacing:0;">
+                Showing last 8 registrations
+            </span>
+        </div>
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Orders</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="entry : ${userOrderCounts}">
+                        <td class="td-id" th:text="${entry.key.id}"></td>
+                        <td th:text="${entry.key.username != null ? entry.key.username : '—'}"></td>
+                        <td class="td-muted" th:text="${entry.key.email}"></td>
+                        <td class="td-muted" th:text="${entry.key.phoneNumber != null ? entry.key.phoneNumber : '—'}"></td>
+                        <td>
+                            <span th:if="${entry.value > 0}"
+                                  class="td-gold"
+                                  th:text="${entry.value}"></span>
+                            <span th:unless="${entry.value > 0}"
+                                  style="color:var(--text-muted);">0</span>
+                        </td>
+                        <td class="td-muted"
+                            th:text="${#temporals.format(entry.key.createdAt, 'dd MMM yyyy')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -4,6 +4,7 @@ import com.ammapickles.backend.dto.order.OrderResponse;
 import com.ammapickles.backend.dto.product.ProductRequest;
 import com.ammapickles.backend.entity.OrderStatus;
 import com.ammapickles.backend.entity.Size;
+import com.ammapickles.backend.entity.User;
 import com.ammapickles.backend.repository.OrderRepository;
 import com.ammapickles.backend.repository.UserRepository;
 import com.ammapickles.backend.service.CategoryService;
@@ -20,6 +21,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
+import java.time.DayOfWeek;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin")
@@ -34,20 +42,48 @@ public class AdminViewController {
     private final CategoryService categoryService;
 
     // DASHBOARD
+
     @GetMapping({"", "/", "/dashboard"})
     public String dashboard(Model model) {
+
+        // Order stats
         model.addAttribute("totalOrders",     orderRepository.count());
-        model.addAttribute("totalUsers",      userRepository.count());
         model.addAttribute("totalRevenue",    orderRepository.getTotalRevenue(OrderStatus.CANCELLED));
         model.addAttribute("pendingOrders",   orderRepository.countByStatus(OrderStatus.CONFIRMED));
         model.addAttribute("shippedOrders",   orderRepository.countByStatus(OrderStatus.SHIPPED));
         model.addAttribute("deliveredOrders", orderRepository.countByStatus(OrderStatus.DELIVERED));
         model.addAttribute("cancelledOrders", orderRepository.countByStatus(OrderStatus.CANCELLED));
-        model.addAttribute("activePage",      "dashboard");
+
+        // User stats
+        long totalUsers = userRepository.count();
+        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
+        LocalDateTime weekStart  = LocalDate.now()
+                .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                .atStartOfDay();
+
+        long newUsersToday    = userRepository.countByCreatedAtAfter(todayStart);
+        long newUsersThisWeek = userRepository.countByCreatedAtAfter(weekStart);
+
+        model.addAttribute("totalUsers",       totalUsers);
+        model.addAttribute("newUsersToday",    newUsersToday);
+        model.addAttribute("newUsersThisWeek", newUsersThisWeek);
+
+        // Recent users table (last 8) with order count per user
+        List<User> recentUsers = userRepository.findAllByOrderByCreatedAtDesc(
+                PageRequest.of(0, 8));
+
+        Map<User, Long> userOrderCounts = new LinkedHashMap<>();
+        for (User u : recentUsers) {
+            userOrderCounts.put(u, orderRepository.countByUserId(u.getId()));
+        }
+        model.addAttribute("userOrderCounts", userOrderCounts);
+
+        model.addAttribute("activePage", "dashboard");
         return "admin/dashboard";
     }
 
-    // ORDERS
+    // ── ORDERS ───────────────────────────────────────────────────────────────
+
     @GetMapping("/orders")
     public String ordersList(@RequestParam(defaultValue = "0") int page,
                              @RequestParam(defaultValue = "10") int size,
@@ -86,7 +122,8 @@ public class AdminViewController {
         return "redirect:/admin/orders/" + id;
     }
 
-    // PRODUCTS
+    // ── PRODUCTS ─────────────────────────────────────────────────────────────
+
     @GetMapping("/products")
     public String productsList(@RequestParam(defaultValue = "0") int page,
                                @RequestParam(defaultValue = "10") int size,
