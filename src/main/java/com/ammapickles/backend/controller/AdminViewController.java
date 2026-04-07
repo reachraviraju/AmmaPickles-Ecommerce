@@ -82,7 +82,7 @@ public class AdminViewController {
         return "admin/dashboard";
     }
 
-    // ── ORDERS ───────────────────────────────────────────────────────────────
+    // ── ORDERS
 
     @GetMapping("/orders")
     public String ordersList(@RequestParam(defaultValue = "0") int page,
