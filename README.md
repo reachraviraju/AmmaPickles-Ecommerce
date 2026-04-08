@@ -1,13 +1,41 @@
-#  Amma Pickles  E-Commerce Platform
+#  Amma Pickles — E-Commerce Platform
 
 ![Java](https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=java)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen?style=flat-square&logo=springboot)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-brightgreen?style=flat-square&logo=springboot)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?style=flat-square&logo=mysql)
 ![Spring Security](https://img.shields.io/badge/Spring%20Security-JWT%20%2B%20Session-green?style=flat-square&logo=springsecurity)
 ![Thymeleaf](https://img.shields.io/badge/Thymeleaf-Frontend-005F0F?style=flat-square&logo=thymeleaf)
-![Status](https://img.shields.io/badge/Status-In%20Development-yellow?style=flat-square)
+![Docker](https://img.shields.io/badge/Docker-Containerized-blue?style=flat-square&logo=docker)
+![Status](https://img.shields.io/badge/Status-Live-brightgreen?style=flat-square)
 
-> A full-stack e-commerce platform for authentic Andhra homemade pickles — built with Spring Boot, Thymeleaf web frontend, and a complete JWT-secured REST API backend.
+> A full-stack e-commerce platform for authentic Andhra homemade pickles — built with Spring Boot, Thymeleaf web frontend, and a complete JWT-secured REST API backend. Containerized with Docker and deployed on Render.
+
+---
+
+## 🌐 Live Demo
+
+👉 [https://ammapickles-ecommerce.onrender.com](https://ammapickles-ecommerce.onrender.com)
+
+> **Note:** Hosted on Render free tier — app may take 30–40 seconds to wake up on first visit.
+
+---
+
+## 📸 Screenshots
+
+### Home Page
+![Home](screenshots/home.png)
+
+### Product Detail
+![Product Detail](screenshots/product-detail.png)
+
+### Cart
+![Cart](screenshots/cart.png)
+
+### Orders
+![Orders](screenshots/orders.png)
+
+### Admin Dashboard
+![Admin](screenshots/admin-dashboard.png)
 
 ---
 
@@ -15,16 +43,21 @@
 
 **Amma Pickles** is a fully functional online store for ordering traditional Andhra pickles — Veg and Non-Veg varieties available in three sizes (½ kg, 1 kg, 2 kg). The project features a **dual architecture**: a Thymeleaf-rendered web UI for customers, and a JWT-secured REST API for external/mobile access.
 
-**What's working right now:**
+**What's working:**
 - Browse and search products by name or category
 - Product detail page with size variants
 - Cart management (add, update, remove, clear)
 - Place orders with COD — confirmed immediately
-- Distance-based delivery charges (free above ₹500)
+- Flat ₹70 delivery charge (free above ₹1000 or first order above ₹500)
 - Stock is deducted on order and restored on cancellation
 - Delivery address management
 - Session-based web login and JWT-based API login
-- Admin can manage products, categories, and update order statuses via REST API
+- Login with email or phone number
+- OTP email verification on registration
+- Secure forgot-password flow with email token
+- Email notifications on registration and order events
+- Admin dashboard — manage products, categories, users, and orders
+- Real-time registration form validation with debounced API checks
 
 ---
 
@@ -44,15 +77,44 @@ This project uses a **dual-layer architecture** — both layers share the same s
 | Category | Technology |
 |---------|-----------|
 | Language | Java 17 |
-| Framework | Spring Boot 3.x |
+| Framework | Spring Boot 3.5.6 |
 | ORM | Spring Data JPA / Hibernate |
 | Database | MySQL 8.0 |
 | Security | Spring Security (JWT + Session) |
 | Frontend | Thymeleaf, HTML, CSS |
+| Email | Brevo SMTP |
+| Caching | Spring Cache |
 | Build Tool | Maven |
+| Containerization | Docker (multi-stage build) |
 | Validation | Jakarta Bean Validation |
 | Monitoring | Spring Boot Actuator |
 | Utilities | Lombok, SLF4J |
+
+---
+
+## ⚡ Performance Optimizations
+
+| Optimization | Description |
+|---|---|
+| Spring Cache | Products cached in memory — reduces DB hits on every request |
+| Cache Eviction | Cache auto-clears on admin add/update/delete — always fresh data |
+| Lazy Initialization | Beans load on demand — reduces startup time by ~40% |
+| Database Indexing | Indexes on name, category_id, composite — faster queries |
+| Connection Pooling | HikariCP limited to 5 connections — protects free tier DB |
+| open-in-view disabled | Prevents unnecessary DB connections during view rendering |
+
+---
+
+## 🚀 Deployment
+
+| Component | Platform |
+|---|---|
+| Application | Render (Docker container) |
+| Database | Aiven MySQL |
+| Containerization | Docker (multi-stage build) |
+| Email Service | Brevo SMTP |
+
+**Docker multi-stage build** — Stage 1 builds the jar using Maven, Stage 2 runs only the jar using lightweight JRE. Final image is small and production-ready.
 
 ---
 
@@ -113,6 +175,7 @@ src/main/
 - Java 17+
 - MySQL 8.0+
 - Maven 3.6+
+- Docker (optional — for containerized run)
 
 ### 1. Clone the Repository
 ```bash
@@ -149,12 +212,25 @@ spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
 # JPA
 spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.show-sql=false
+spring.jpa.open-in-view=false
 
 # JWT (24 hours expiry)
 jwt.secret=your_base64_encoded_secret_key
 jwt.expiration=86400000
+
+# Mail (Brevo SMTP)
+spring.mail.host=smtp-relay.brevo.com
+spring.mail.port=587
+spring.mail.username=your_brevo_email
+spring.mail.password=your_brevo_smtp_key
+app.mail.from=your_sender_email
+
+# Cache
+spring.cache.type=simple
+
+# Lazy initialization
+spring.main.lazy-initialization=true
 
 # Actuator
 management.endpoints.web.exposure.include=health,info
@@ -166,6 +242,12 @@ mvn spring-boot:run
 ```
 
 Visit: `http://localhost:8080/home`
+
+### 6. Run with Docker
+```bash
+docker build -t ammapickles .
+docker run -p 8080:8080 ammapickles
+```
 
 ---
 
@@ -180,7 +262,7 @@ Visit: `http://localhost:8080/home`
 | `/css/**`, `/images/**`, `/favicon.ico` | Public |
 | `/cart/**`, `/orders/**`, `/addresses/**` | Authenticated (session) |
 
-- Login: `POST /login` with fields `username` (email) and `password`
+- Login: `POST /login` with fields `username` (email or phone) and `password`
 - Logout: `GET /logout` → redirects to `/home`
 
 ### API Chain (JWT — Stateless)
@@ -209,12 +291,14 @@ Visit: `http://localhost:8080/home`
 |-----|------|------|
 | `/home` | Product catalog — browse, search, filter by category | No |
 | `/products/{id}` | Product detail with size variants | No |
-| `/login` | Login form | No |
-| `/register` | Registration form | No |
+| `/login` | Login form (email or phone) | No |
+| `/register` | Registration form with live validation | No |
+| `/forgot-password` | Request password reset via email | No |
 | `/cart` | Shopping cart | Yes |
 | `/orders` | Order history | Yes |
 | `/orders/place` | Place order — choose delivery address | Yes |
 | `/addresses/add` | Add new delivery address | Yes |
+| `/admin/dashboard` | Admin dashboard — users, products, orders | ADMIN |
 
 ---
 
@@ -236,17 +320,15 @@ Products are displayed **grouped by name** on the home and detail pages.
 
 | Condition | Charge |
 |-----------|--------|
-| Order total ≥ ₹500 | FREE |
-| Order total < ₹500 | ₹5 per km |
-| Minimum charge | ₹30 |
+| Order total ≥ ₹1000 | FREE |
+| First order ≥ ₹500 | FREE |
+| All other orders | ₹70 flat |
 
 ```
-deliveryCharge = max(₹30, distance × ₹5)   [if orderTotal < ₹500]
-deliveryCharge = ₹0                          [if orderTotal ≥ ₹500]
+deliveryCharge = ₹0    [if orderTotal ≥ ₹1000 OR first order ≥ ₹500]
+deliveryCharge = ₹70   [all other orders]
 grandTotal     = totalAmount + deliveryCharge
 ```
-
-> The `distanceInKm` value is saved with each delivery address and used at order time.
 
 ---
 
@@ -257,11 +339,10 @@ grandTotal     = totalAmount + deliveryCharge
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | POST | `/api/auth/register` | Public | Register new customer |
-| POST | `/api/auth/login` | Public | Login with email, returns JWT |
-| PUT | `/api/auth/reset-password/{email}` | Public | Reset password ⚠️ (see note below) |
-| GET | `/api/auth/verify/{token}` | Public | Email verify stub (not implemented yet) |
-
-> ⚠️ **Password Reset Note:** The current reset endpoint accepts a new password directly without OTP or email token verification. A secure forgot-password flow (token-based) is planned — see [Planned Features](#-planned-features).
+| POST | `/api/auth/login` | Public | Login with email or phone, returns JWT |
+| POST | `/api/auth/forgot-password` | Public | Send password reset OTP to email |
+| POST | `/api/auth/reset-password` | Public | Reset password using OTP token |
+| GET | `/api/auth/verify/{token}` | Public | Email verification on registration |
 
 **Register Request:**
 ```json
@@ -282,6 +363,8 @@ grandTotal     = totalAmount + deliveryCharge
   "password": "yourpassword"
 }
 ```
+
+> Can also login with phone number instead of email.
 
 **Login Response:**
 ```json
@@ -395,8 +478,8 @@ grandTotal     = totalAmount + deliveryCharge
   "id": 12,
   "status": "CONFIRMED",
   "totalAmount": 398.00,
-  "deliveryCharge": 30.00,
-  "grandTotal": 428.00,
+  "deliveryCharge": 70.00,
+  "grandTotal": 468.00,
   "orderDate": "2025-01-15T10:30:00",
   "deliveryAddress": "12 Main St, Kurnool, Kurnool - 518001",
   "items": [
@@ -439,12 +522,12 @@ grandTotal     = totalAmount + deliveryCharge
 **Address Request:**
 ```json
 {
+  "name": "Home",
   "street": "12 Market Road",
   "city": "Kurnool",
   "district": "Kurnool",
   "state": "Andhra Pradesh",
-  "pincode": "518001",
-  "distanceInKm": 5.5
+  "pincode": "518001"
 }
 ```
 
@@ -475,7 +558,9 @@ grandTotal     = totalAmount + deliveryCharge
 | `cart_items` | Items with quantity |
 | `orders` | Orders with total, delivery charge, status |
 | `order_items` | Line items with price snapshot at order time |
-| `addresses` | Delivery addresses with distanceInKm |
+| `addresses` | Delivery addresses |
+| `password_reset_tokens` | Secure tokens for forgot-password flow |
+| `email_verification_tokens` | Tokens for email verification on registration |
 
 ---
 
@@ -509,7 +594,7 @@ All REST errors return a consistent format:
 
 ### Step 1 — Register
 ```
-POST http://localhost:8080/api/auth/register
+POST https://ammapickles-ecommerce.onrender.com/api/auth/register
 Content-Type: application/json
 
 {
@@ -522,7 +607,7 @@ Content-Type: application/json
 
 ### Step 2 — Login & Copy Token
 ```
-POST http://localhost:8080/api/auth/login
+POST https://ammapickles-ecommerce.onrender.com/api/auth/login
 Content-Type: application/json
 
 {
@@ -536,34 +621,34 @@ Authorization tab → Bearer Token → paste the token.
 
 ### Step 4 — Browse Products
 ```
-GET http://localhost:8080/api/products/grouped
+GET https://ammapickles-ecommerce.onrender.com/api/products/grouped
 ```
 
 ### Step 5 — Add to Cart
 ```
-POST http://localhost:8080/api/cart/user/1/product/5?quantity=2
+POST https://ammapickles-ecommerce.onrender.com/api/cart/user/1/product/5?quantity=2
 Authorization: Bearer <token>
 ```
 
 ### Step 6 — Add Address
 ```
-POST http://localhost:8080/api/addresses/user/1
+POST https://ammapickles-ecommerce.onrender.com/api/addresses/user/1
 Authorization: Bearer <token>
 Content-Type: application/json
 
 {
+  "name": "Home",
   "street": "12 Main Road",
   "city": "Kurnool",
   "district": "Kurnool",
   "state": "Andhra Pradesh",
-  "pincode": "518001",
-  "distanceInKm": 6.0
+  "pincode": "518001"
 }
 ```
 
 ### Step 7 — Place Order
 ```
-POST http://localhost:8080/api/orders
+POST https://ammapickles-ecommerce.onrender.com/api/orders
 Authorization: Bearer <token>
 Content-Type: application/json
 
@@ -576,23 +661,18 @@ Content-Type: application/json
 
 ## 🔜 Planned Features
 
-These features are identified and will be implemented in upcoming commits:
-
 | Feature | Description | Status |
 |---------|------------|--------|
-| Login with Email or Phone Number | Allow customers to log in using either their registered email or phone number | 🔧 In Progress |
-| Secure Password Reset | Forgot-password flow with email token — generate reset link → validate token → allow new password | 🔧 In Progress |
-| Product Image Support | Add `imageUrl` field to products so each pickle can display its own photo | 📋 Planned |
-| Email Verification | Complete the email verify flow on registration (currently a stub) | 📋 Planned |
-| Order Detail Page (Web) | Individual order detail page showing full breakdown of a specific order | 📋 Planned |
-| Email Notifications | Send confirmation emails on registration, order placement, and cancellation | 📋 Planned |
-| Admin Web Dashboard | Thymeleaf pages for admin to manage products, categories, and orders without Postman | 📋 Planned |
+| Product Image Support | Add imageUrl field to products so each pickle displays its own photo | 📋 Planned |
+| Razorpay Payment | Online payment integration | 📋 Planned |
+| Order Detail Page (Web) | Individual order detail page showing full breakdown | 📋 Planned |
+| Interactive Orders Page | Expandable timeline panel with order status tracking | 📋 Planned |
 
 ---
 
 ## 👨‍💻 Developer
 
-**Ravi Raju**
+**Ravi Raju Chintalapudi**
 Java Backend Developer
 🔗 [GitHub: @reachraviraju](https://github.com/reachraviraju)
 
