@@ -11,6 +11,9 @@ import com.ammapickles.backend.repository.ProductRepository;
 import com.ammapickles.backend.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -40,6 +43,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "product", key = "#id")
     @Transactional(readOnly = true)
     public ProductResponse getProductById(Long id) {
         log.info("Fetching product with id: {}", id);
@@ -71,6 +75,7 @@ public class ProductServiceImpl implements ProductService {
     // GROUPED METHODS — for web frontend
 
     @Override
+    @Cacheable("productsGrouped")
     @Transactional(readOnly = true)
     public List<ProductGroupResponse> getAllProductsGrouped() {
         log.info("Fetching all products grouped by name");
@@ -84,6 +89,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "productsByCategory", key = "#categoryId")
     @Transactional(readOnly = true)
     public List<ProductGroupResponse> getProductsGroupedByCategory(Long categoryId) {
         log.info("Fetching products grouped by name for category: {}", categoryId);
@@ -114,6 +120,7 @@ public class ProductServiceImpl implements ProductService {
     // WRITE METHODS
 
     @Override
+    @CacheEvict(value = {"productsGrouped", "productsByCategory", "product"}, allEntries = true)
     @Transactional
     public ProductResponse addProduct(ProductRequest request) {
         log.info("Adding new product: {}", request.getName());
@@ -134,6 +141,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = {"productsGrouped", "productsByCategory", "product"}, allEntries = true)
     @Transactional
     public ProductResponse updateProduct(Long id, ProductRequest request) {
         log.info("Updating product with id: {}", id);
@@ -163,6 +171,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
+    @CacheEvict(value = {"productsGrouped", "productsByCategory", "product"}, allEntries = true)
     @Transactional
     public void deleteProduct(Long id) {
         log.info("Deleting product with id: {}", id);
