@@ -1,4 +1,4 @@
-#  Amma Pickles — E-Commerce Platform
+#  Spring Boot E-commerce Backend Project (AmmaPickles)
 
 ![Java](https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=java)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-brightgreen?style=flat-square&logo=springboot)
