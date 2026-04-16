@@ -15,6 +15,7 @@ import com.ammapickles.backend.repository.UserRepository;
 import com.ammapickles.backend.service.CartService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,7 +70,11 @@ public class CartServiceImpl implements CartService {
 
         if (existingItem.isPresent()) {
             CartItem item = existingItem.get();
-            item.setQuantity(item.getQuantity() + quantity);
+            int updatedQuantity = item.getQuantity() + quantity;
+            if (product.getQuantity() < updatedQuantity) {
+                throw new IllegalStateException("Insufficient stock. Available: " + product.getQuantity());
+            }
+            item.setQuantity(updatedQuantity);
             log.info("Updated quantity for product {} in cart", productId);
         } else {
             CartItem newItem = CartItem.builder()
@@ -97,7 +102,7 @@ public class CartServiceImpl implements CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found: " + cartItemId));
 
         if (!item.getCart().getUser().getId().equals(requestingUserId))
-            throw new SecurityException("Access denied to cart item: " + cartItemId);
+            throw new AccessDeniedException("Access denied to cart item: " + cartItemId);
 
         if (item.getProduct().getQuantity() < quantity)
             throw new IllegalStateException("Insufficient stock. Available: " + item.getProduct().getQuantity());
@@ -116,7 +121,7 @@ public class CartServiceImpl implements CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found: " + cartItemId));
 
         if (!item.getCart().getUser().getId().equals(requestingUserId))
-            throw new SecurityException("Access denied to cart item: " + cartItemId);
+            throw new AccessDeniedException("Access denied to cart item: " + cartItemId);
 
         cartItemRepository.delete(item);
         log.info("Cart item removed: {}", cartItemId);

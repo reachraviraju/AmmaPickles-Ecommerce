@@ -12,6 +12,7 @@ import com.ammapickles.backend.repository.UserRepository;
 import com.ammapickles.backend.service.AddressService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +49,7 @@ public class AddressServiceImpl implements AddressService {
         Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new ResourceNotFoundException("Address not found: " + addressId));
         if (!address.getUser().getId().equals(requestingUserId)) {
-            throw new SecurityException("Access denied to address: " + addressId);
+            throw new AccessDeniedException("Access denied to address: " + addressId);
         }
         return mapToResponse(address);
     }
@@ -87,7 +88,7 @@ public class AddressServiceImpl implements AddressService {
         Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new ResourceNotFoundException("Address not found: " + addressId));
         if (!address.getUser().getId().equals(requestingUserId)) {
-            throw new SecurityException("Access denied to address: " + addressId);
+            throw new AccessDeniedException("Access denied to address: " + addressId);
         }
         if (request.getName()         != null) address.setName(request.getName());
         if (request.getStreet()       != null) address.setStreet(request.getStreet());
@@ -113,7 +114,7 @@ public class AddressServiceImpl implements AddressService {
         
         if(orderRepository.existsByDeliveryAddressId(addressId))
         {
-        	throw new RuntimeException("Cannot delete this address as it is linked to an existing order.");
+        	throw new IllegalStateException("Cannot delete this address as it is linked to an existing order.");
         }
         addressRepository.delete(address);
         log.info("Address deleted: {}", addressId);
