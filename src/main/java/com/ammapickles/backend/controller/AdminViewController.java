@@ -28,6 +28,7 @@ import java.time.DayOfWeek;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin")
@@ -72,9 +73,18 @@ public class AdminViewController {
         List<User> recentUsers = userRepository.findAllByOrderByCreatedAtDesc(
                 PageRequest.of(0, 8));
 
+        Map<Long, Long> orderCountByUserId = recentUsers.isEmpty()
+                ? Map.of()
+                : orderRepository.countByUserIds(
+                        recentUsers.stream().map(User::getId).toList()
+                ).stream().collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+
         Map<User, Long> userOrderCounts = new LinkedHashMap<>();
         for (User u : recentUsers) {
-            userOrderCounts.put(u, orderRepository.countByUserId(u.getId()));
+            userOrderCounts.put(u, orderCountByUserId.getOrDefault(u.getId(), 0L));
         }
         model.addAttribute("userOrderCounts", userOrderCounts);
 

@@ -26,6 +26,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT COALESCE(SUM(o.totalAmount + o.deliveryCharge), 0) FROM Order o WHERE o.status <> :status")
     BigDecimal getTotalRevenue(@Param("status") OrderStatus status);
-    
-    
+
+    @Query("SELECT o.user.id, COUNT(o) FROM Order o WHERE o.user.id IN :userIds GROUP BY o.user.id")
+    List<Object[]> countByUserIds(@Param("userIds") List<Long> userIds);
 }
