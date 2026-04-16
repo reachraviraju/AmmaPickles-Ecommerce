@@ -12,7 +12,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -26,17 +25,12 @@ public class ProductViewController {
                                 Model model,
                                 @AuthenticationPrincipal UserDetails userDetails) {
 
-       
-        ProductGroupResponse product = productService.getAllProductsGrouped().stream()
-                .filter(p -> p.getVariants() != null &&
-                        p.getVariants().stream().anyMatch(v -> v.getId().equals(id)))
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
-     // find selected variant
+        ProductGroupResponse product = productService.getProductGroupByVariantId(id);
+
         ProductGroupResponse.ProductVariant selected = product.getVariants().stream()
                 .filter(v -> v.getId().equals(id))
                 .findFirst()
-                .orElse(product.getVariants().get(0));
+                .orElseThrow(() -> new ResourceNotFoundException("Product variant not found: " + id));
 
         model.addAttribute("product", product);
         model.addAttribute("selectedVariant", selected);

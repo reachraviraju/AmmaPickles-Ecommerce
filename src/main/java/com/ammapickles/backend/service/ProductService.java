@@ -14,6 +14,7 @@ public interface ProductService {
 	List<ProductGroupResponse> getAllProductsGrouped();
 	List<ProductGroupResponse> getProductsGroupedByCategory(Long categoryId);
 	List<ProductGroupResponse> searchProductsGrouped(String name);
+    ProductGroupResponse getProductGroupByVariantId(Long variantId);
 
     //  READ
     

@@ -29,4 +29,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByNameOrderBySizeAsc(String name);
 
     List<Product> findByNameAndCategoryIdOrderBySizeAsc(String name, Long categoryId);
+
+    List<Product> findAllByOrderByNameAscSizeAsc();
+
+    List<Product> findByCategoryIdOrderByNameAscSizeAsc(Long categoryId);
+
+    List<Product> findByNameContainingIgnoreCaseOrderByNameAscSizeAsc(String keyword);
 }

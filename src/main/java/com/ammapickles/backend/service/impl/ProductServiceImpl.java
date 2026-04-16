@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -79,13 +80,8 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public List<ProductGroupResponse> getAllProductsGrouped() {
         log.info("Fetching all products grouped by name");
-        return productRepository.findDistinctProductNames()
-                .stream()
-                .map(name -> {
-                    List<Product> variants = productRepository.findByNameOrderBySizeAsc(name);
-                    return mapToGroupResponse(variants);
-                })
-                .toList();
+        List<Product> products = productRepository.findAllByOrderByNameAscSizeAsc();
+        return groupProducts(products);
     }
 
     @Override
@@ -95,26 +91,16 @@ public class ProductServiceImpl implements ProductService {
         log.info("Fetching products grouped by name for category: {}", categoryId);
         categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
-        return productRepository.findDistinctProductNamesByCategory(categoryId)
-                .stream()
-                .map(name -> {
-                    List<Product> variants = productRepository
-                            .findByNameAndCategoryIdOrderBySizeAsc(name, categoryId);
-                    return mapToGroupResponse(variants);
-                })
-                .toList();
+        List<Product> products = productRepository.findByCategoryIdOrderByNameAscSizeAsc(categoryId);
+        return groupProducts(products);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ProductGroupResponse> searchProductsGrouped(String keyword) {
         log.info("Searching grouped products with keyword: {}", keyword);
-        return productRepository.findByNameContainingIgnoreCase(keyword)
-                .stream()
-                .collect(Collectors.groupingBy(Product::getName))
-                .entrySet().stream()
-                .map(entry -> mapToGroupResponse(entry.getValue()))
-                .toList();
+        List<Product> products = productRepository.findByNameContainingIgnoreCaseOrderByNameAscSizeAsc(keyword);
+        return groupProducts(products);
     }
 
     // WRITE METHODS
@@ -161,11 +147,13 @@ public class ProductServiceImpl implements ProductService {
         return mapToResponse(existing);
     }
     
+    @Override
     @Transactional(readOnly = true)
     public ProductGroupResponse getProductGroupByVariantId(Long variantId) {
         Product product = productRepository.findById(variantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + variantId));
-        List<Product> variants = productRepository.findByNameOrderBySizeAsc(product.getName());
+        List<Product> variants = productRepository.findByNameAndCategoryIdOrderBySizeAsc(
+                product.getName(), product.getCategory().getId());
         return mapToGroupResponse(variants);
     }
 
@@ -237,5 +225,17 @@ public class ProductServiceImpl implements ProductService {
 
         group.setVariants(variantList);
         return group;
+    }
+
+    private List<ProductGroupResponse> groupProducts(List<Product> products) {
+        return products.stream()
+                .collect(Collectors.groupingBy(
+                        Product::getName,
+                        LinkedHashMap::new,
+                        Collectors.toList()))
+                .values()
+                .stream()
+                .map(this::mapToGroupResponse)
+                .toList();
     }
 }
