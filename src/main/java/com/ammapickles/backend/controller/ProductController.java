@@ -36,11 +36,28 @@ public class ProductController {
             @RequestParam(defaultValue = "id,asc") String[] sort) {
 
         //  PageRequest.of() — builds Pageable from page, size, sort params
-        Pageable pageable = PageRequest.of(page, size,
-                Sort.by(Sort.Direction.fromString(sort[1]), sort[0]));
+        Pageable pageable = buildPageable(page, size, sort);
 
         Page<ProductResponse> response = productService.getAllProducts(pageable);
         return ResponseEntity.ok(ApiResponse.success("Products fetched successfully", response));
+    }
+
+    private Pageable buildPageable(int page, int size, String[] sort) {
+        Sort resolvedSort = Sort.by("id").ascending();
+
+        if (sort != null && sort.length > 0 && sort[0] != null && !sort[0].isBlank()) {
+            try {
+                Sort.Direction direction = Sort.Direction.ASC;
+                if (sort.length > 1 && sort[1] != null && !sort[1].isBlank()) {
+                    direction = Sort.Direction.fromString(sort[1]);
+                }
+                resolvedSort = Sort.by(direction, sort[0]);
+            } catch (IllegalArgumentException ignored) {
+                resolvedSort = Sort.by("id").ascending();
+            }
+        }
+
+        return PageRequest.of(page, size, resolvedSort);
     }
 
     
