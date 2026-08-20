@@ -16,7 +16,7 @@
 
 👉 [https://ammapickles-ecommerce.onrender.com](https://ammapickles-ecommerce.onrender.com)
 
-> **Note:** Hosted on Render free tier — app may take 30–40 seconds to wake up on first visit.
+> **Note:** Hosted on Render free tier - app may take 30–40 seconds to wake up on first visit.
 
 ---
 
@@ -41,7 +41,7 @@
 
 ## 📌 About the Project
 
-**Amma Pickles** is a fully functional online store for ordering traditional Andhra pickles — Veg and Non-Veg varieties available in three sizes (½ kg, 1 kg, 2 kg). The project features a **dual architecture**: a Thymeleaf-rendered web UI for customers, and a JWT-secured REST API for external/mobile access.
+**Amma Pickles** is a fully functional online store for ordering traditional Andhra pickles - Veg and Non-Veg varieties available in three sizes (½ kg, 1 kg, 2 kg). The project features a **dual architecture**: a Thymeleaf-rendered web UI for customers, and a JWT-secured REST API for external/mobile access.
 
 **What's working:**
 - Browse and search products by name or category
