@@ -12,6 +12,7 @@
 <body>
 
 <div th:replace="~{fragments/navbar :: navbar}"></div>
+<div th:replace="~{fragments/toast :: toast}"></div>
 
 <div class="pd-breadcrumb">
     <a href="/home"><i class="bi bi-house"></i> Home</a>
@@ -32,9 +33,12 @@
                          class="pd-main-img"
                          th:alt="${product.name}"/>
                     <span class="pd-cat-badge" th:text="${product.categoryName}"></span>
-                    <div class="pd-stock-bar" th:classappend="${product.inStock} ? 'in' : 'out'">
-                        <i class="bi" th:classappend="${product.inStock} ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
-                        <span th:text="${product.inStock} ? 'In Stock — Ready to Ship' : 'Out of Stock'"></span>
+                    <div class="pd-stock-bar" id="stockBar"
+                         th:classappend="${selectedVariant != null ? (selectedVariant.inStock ? 'in' : 'out') : (product.inStock ? 'in' : 'out')}">
+                        <i class="bi" id="stockIcon"
+                           th:classappend="${selectedVariant != null ? (selectedVariant.inStock ? 'bi-check-circle-fill' : 'bi-x-circle-fill') : (product.inStock ? 'bi-check-circle-fill' : 'bi-x-circle-fill')}"></i>
+                        <span id="stockText"
+                              th:text="${selectedVariant != null ? (selectedVariant.inStock ? 'In Stock — Ready to Ship' : 'Out of Stock') : (product.inStock ? 'In Stock — Ready to Ship' : 'Out of Stock')}"></span>
                     </div>
                 </div>
 
@@ -74,9 +78,9 @@
                     <div class="size-options">
                         <div th:each="variant, stat : ${product.variants}"
                              class="size-option"
-                             th:classappend="${stat.index == 0} ? ' active'"
-                             th:attr="data-price=${variant.price}, data-variant-id=${variant.id}"
-                             th:text="${variant.sizeLabel}">
+                             th:classappend="${(selectedVariant != null and variant.id == selectedVariant.id) or (selectedVariant == null and stat.index == 0)} ? ' active' : ''"
+                             th:attr="data-price=${variant.price}, data-variant-id=${variant.id}, data-in-stock=${variant.inStock}"
+                             th:text="${variant.sizeLabel} + (!${variant.inStock} ? ' (Sold Out)' : '')">
                         </div>
                     </div>
                 </div>
@@ -85,28 +89,38 @@
                     <div>
                         <div class="pd-price-label">Price</div>
                         <div class="pd-price shine-gold" id="priceDisplay"
-                             th:text="'₹' + ${product.price}"></div>
+                             th:text="'₹' + ${selectedVariant != null ? selectedVariant.price : product.price}"></div>
                     </div>
 
                     <!-- Add to Cart form — action updated by JS on size change -->
-                    <form th:if="${product.inStock and username != null}"
+                    <form th:if="${username != null}"
                           id="addToCartForm"
-                          th:action="@{/cart/add/{id}(id=${product.variants[0].id})}"
-                          method="post">
+                          th:action="@{/cart/add/{id}(id=${selectedVariant != null ? selectedVariant.id : product.variants[0].id})}"
+                          method="post"
+                          style="display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap;">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button class="btn-order">
-                            <i class="bi bi-cart-plus me-2"></i> Add to Cart
+
+                        <!-- Quantity Selector -->
+                        <div style="display:flex;align-items:center;background:rgba(255,255,255,0.06);border:1.5px solid rgba(212,160,23,0.3);border-radius:10px;overflow:hidden;height:44px;">
+                            <button type="button" id="qtyMinus" style="background:transparent;border:none;color:white;width:34px;height:100%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>
+                            <input type="number" id="qtyInput" name="quantity" value="1" min="1" max="10" readonly style="width:36px;background:transparent;border:none;color:white;text-align:center;font-weight:700;font-size:0.95rem;outline:none;-moz-appearance:textfield;"/>
+                            <button type="button" id="qtyPlus" style="background:transparent;border:none;color:white;width:34px;height:100%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
+                        </div>
+
+                        <button type="submit" id="addToCartBtn" class="btn-order"
+                                th:disabled="${selectedVariant != null ? !selectedVariant.inStock : !product.inStock}"
+                                style="width:auto;padding:0.75rem 2rem;min-width:160px;">
+                            <i class="bi bi-cart-plus me-2"></i>
+                            <span id="btnOrderText" th:text="${selectedVariant != null ? (selectedVariant.inStock ? 'Add to Cart' : 'Out of Stock') : (product.inStock ? 'Add to Cart' : 'Out of Stock')}">Add to Cart</span>
                         </button>
                     </form>
 
-                    <button th:if="${product.inStock and username == null}"
+                    <button th:if="${username == null}"
                             class="btn-order"
+                            style="width:auto;padding:0.75rem 2rem;"
                             onclick="window.location.href='/login'">
                         <i class="bi bi-cart-plus me-2"></i> Login to Add
                     </button>
-
-                    <button th:unless="${product.inStock}"
-                            class="btn-cancel" disabled>Out of Stock</button>
                 </div>
 
                 <div class="pd-divider"></div>
@@ -148,6 +162,11 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const addToCartForm = document.getElementById('addToCartForm');
+    const addToCartBtn  = document.getElementById('addToCartBtn');
+    const btnOrderText  = document.getElementById('btnOrderText');
+    const stockBar      = document.getElementById('stockBar');
+    const stockIcon     = document.getElementById('stockIcon');
+    const stockText     = document.getElementById('stockText');
 
     document.querySelectorAll('.size-option').forEach(btn => {
         btn.addEventListener('click', function () {
@@ -155,14 +174,51 @@
             this.classList.add('active');
 
             // Update price display
-            document.getElementById('priceDisplay').textContent = '₹' + this.dataset.price;
+            if (this.dataset.price) {
+                document.getElementById('priceDisplay').textContent = '₹' + this.dataset.price;
+            }
 
             // Update form action to selected variant
-            if (addToCartForm) {
+            if (addToCartForm && this.dataset.variantId) {
                 addToCartForm.action = '/cart/add/' + this.dataset.variantId;
+            }
+
+            // Update stock badge and button state
+            const inStock = this.dataset.inStock === 'true';
+            if (inStock) {
+                if (stockBar) { stockBar.className = 'pd-stock-bar in'; }
+                if (stockIcon) { stockIcon.className = 'bi bi-check-circle-fill'; }
+                if (stockText) { stockText.textContent = 'In Stock — Ready to Ship'; }
+                if (addToCartBtn) {
+                    addToCartBtn.disabled = false;
+                    if (btnOrderText) btnOrderText.textContent = 'Add to Cart';
+                }
+            } else {
+                if (stockBar) { stockBar.className = 'pd-stock-bar out'; }
+                if (stockIcon) { stockIcon.className = 'bi bi-x-circle-fill'; }
+                if (stockText) { stockText.textContent = 'Out of Stock'; }
+                if (addToCartBtn) {
+                    addToCartBtn.disabled = true;
+                    if (btnOrderText) btnOrderText.textContent = 'Out of Stock';
+                }
             }
         });
     });
+
+    // Quantity selector logic
+    const qtyInput = document.getElementById('qtyInput');
+    const qtyMinus = document.getElementById('qtyMinus');
+    const qtyPlus  = document.getElementById('qtyPlus');
+    if (qtyMinus && qtyPlus && qtyInput) {
+        qtyMinus.addEventListener('click', () => {
+            let val = parseInt(qtyInput.value) || 1;
+            if (val > 1) qtyInput.value = val - 1;
+        });
+        qtyPlus.addEventListener('click', () => {
+            let val = parseInt(qtyInput.value) || 1;
+            if (val < 10) qtyInput.value = val + 1;
+        });
+    }
 
     /* Toast auto dismiss */
     (function () {
