@@ -100,16 +100,16 @@
             <i class="bi bi-send"></i> Send OTP to Email
           </button>
           <div id="otpInputArea" style="display:none;">
-            <div style="font-size:0.72rem;color:rgba(130,200,130,0.85);margin-bottom:0.6rem;">
+            <div id="otpSuccessMsg" style="font-size:0.75rem;color:rgba(130,200,130,0.95);margin-bottom:0.6rem;">
               <i class="bi bi-check-circle"></i> OTP sent! Check your inbox (also spam).
             </div>
             <div class="otp-input-row">
               <input type="text" id="otpInput" class="otp-input"
                      maxlength="6" placeholder="6-digit OTP"/>
-              <button type="button" class="otp-verify-btn" onclick="verifyOtp()">Verify</button>
+              <button type="button" id="verifyOtpBtn" class="otp-verify-btn" onclick="verifyOtp()">Verify</button>
             </div>
             <div id="otpStatus" class="field-status" style="display:none;"></div>
-            <button type="button" class="otp-resend-btn" onclick="sendOtp()">Resend OTP</button>
+            <button type="button" id="resendOtpBtn" class="otp-resend-btn" onclick="resendOtp()">Resend OTP</button>
           </div>
         </div>
 
@@ -233,57 +233,97 @@ passwordInput.addEventListener('input', function() {
 });
 
 /* ========================
-   SEND OTP (FIXED)
+   SEND OTP (ROBUST & NO CRASHES)
 ======================== */
 
-async function sendOtp() {
+let countdownTimer = null;
 
+async function sendOtp() {
     if (otpCooldown > 0) return;
 
+    const email = emailInput.value.trim();
+    const name = nameInput.value.trim();
+
+    if (!isValidEmail(email)) {
+        showStatus(otpStatus, 'error', 'Please enter a valid email address first.');
+        return;
+    }
+
     const btn = document.getElementById('sendOtpBtn');
+    const resendBtn = document.getElementById('resendOtpBtn');
 
     btn.disabled = true;
-    btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Sending...';
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="width:0.8rem;height:0.8rem;border-width:2px;margin-right:4px;"></span> Sending OTP...';
+    if (resendBtn) {
+        resendBtn.disabled = true;
+        resendBtn.textContent = 'Sending...';
+    }
+    otpStatus.style.display = 'none';
 
     try {
         const fd = new FormData();
-        fd.append('email', emailInput.value.trim());
-        fd.append('name', nameInput.value.trim());
+        fd.append('email', email);
+        fd.append('name', name || 'Customer');
 
         const res  = await fetch('/register/send-otp', { method:'POST', body:fd });
         const data = await res.json();
 
         if (res.ok && data.success) {
-
             document.getElementById('otpInputArea').style.display = 'block';
-            otpStatus.style.display = 'none';
+            btn.style.display = 'none'; // Hide primary send button once input area is open
+            showStatus(otpStatus, 'success', '<i class="bi bi-check-circle"></i> OTP sent successfully! Check your inbox.');
 
-            showToast("✔ OTP sent");
-
-            /* 🔥 COOLDOWN START */
-            otpCooldown = 60;
-
-            const interval = setInterval(() => {
-                otpCooldown--;
-                btn.innerHTML = `<i class="bi bi-clock"></i> ${otpCooldown}s`;
-
-                if (otpCooldown <= 0) {
-                    clearInterval(interval);
-                    btn.innerHTML = '<i class="bi bi-send"></i> Resend OTP';
-                }
-            }, 1000);
-
+            startCooldown(60);
         } else {
-            showStatus(otpStatus,'error',data.message);
-            showToast("❌ OTP failed");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-send"></i> Send OTP to Email';
+            if (resendBtn) {
+                resendBtn.disabled = false;
+                resendBtn.textContent = 'Resend OTP';
+            }
+            showStatus(otpStatus, 'error', data.message || 'Failed to send OTP. Please try again.');
         }
-
-    } catch {
-        showStatus(otpStatus,'error',"Network error");
-        showToast("❌ Network error");
+    } catch (err) {
+        console.error('Error sending OTP:', err);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-send"></i> Send OTP to Email';
+        if (resendBtn) {
+            resendBtn.disabled = false;
+            resendBtn.textContent = 'Resend OTP';
+        }
+        showStatus(otpStatus, 'error', 'Network error. Please check your connection and try again.');
     }
+}
 
-    btn.disabled = false;
+function resendOtp() {
+    if (otpCooldown > 0) return;
+    sendOtp();
+}
+
+function startCooldown(seconds) {
+    otpCooldown = seconds;
+    const resendBtn = document.getElementById('resendOtpBtn');
+    if (!resendBtn) return;
+
+    resendBtn.disabled = true;
+    resendBtn.style.opacity = '0.6';
+    resendBtn.style.cursor = 'not-allowed';
+    resendBtn.textContent = `Resend OTP (${otpCooldown}s)`;
+
+    if (countdownTimer) clearInterval(countdownTimer);
+
+    countdownTimer = setInterval(() => {
+        otpCooldown--;
+        if (otpCooldown > 0) {
+            resendBtn.textContent = `Resend OTP (${otpCooldown}s)`;
+        } else {
+            clearInterval(countdownTimer);
+            resendBtn.disabled = false;
+            resendBtn.style.opacity = '1';
+            resendBtn.style.cursor = 'pointer';
+            resendBtn.textContent = 'Resend OTP';
+        }
+    }, 1000);
 }
 
 /* ========================
@@ -291,12 +331,19 @@ async function sendOtp() {
 ======================== */
 
 async function verifyOtp() {
-    const otp = document.getElementById('otpInput').value.trim();
+    const otpInput = document.getElementById('otpInput');
+    const otp = otpInput.value.trim();
+    const verifyBtn = document.getElementById('verifyOtpBtn') || document.querySelector('.otp-verify-btn');
 
     if (otp.length !== 6) {
-        showStatus(otpStatus,'error',"Enter 6-digit OTP");
+        showStatus(otpStatus, 'error', 'Please enter a 6-digit OTP.');
+        otpInput.focus();
         return;
     }
+
+    verifyBtn.disabled = true;
+    const originalText = verifyBtn.textContent;
+    verifyBtn.textContent = 'Verifying...';
 
     try {
         const fd = new FormData();
@@ -306,17 +353,47 @@ async function verifyOtp() {
         const res  = await fetch('/register/verify-otp', { method:'POST', body:fd });
         const data = await res.json();
 
-        if (res.ok) {
-            showStatus(otpStatus,'success',"Verified!");
+        if (res.ok && data.success) {
+            showStatus(otpStatus, 'success', '<i class="bi bi-check-circle-fill"></i> Email verified successfully!');
             formState.otp = true;
+            otpInput.disabled = true;
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Verified ✔';
+            verifyBtn.style.background = '#28a745';
+            verifyBtn.style.color = '#fff';
+
+            if (countdownTimer) clearInterval(countdownTimer);
+            const resendBtn = document.getElementById('resendOtpBtn');
+            if (resendBtn) resendBtn.style.display = 'none';
+
             updateSubmitState();
         } else {
-            showStatus(otpStatus,'error',data.message);
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = originalText;
+            showStatus(otpStatus, 'error', data.message || 'Invalid OTP. Please check and try again.');
         }
-
-    } catch {
-        showStatus(otpStatus,'error',"Verification failed");
+    } catch (err) {
+        console.error('Error verifying OTP:', err);
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = originalText;
+        showStatus(otpStatus, 'error', 'Verification failed. Please try again.');
     }
+}
+
+/* ========================
+   FORM SUBMIT VALIDATION
+======================== */
+
+const regForm = document.getElementById('registerForm');
+if (regForm) {
+    regForm.addEventListener('submit', function(e) {
+        if (!formState.otp) {
+            e.preventDefault();
+            showStatus(otpStatus, 'error', 'Please verify your email with OTP before creating your account.');
+            const otpIn = document.getElementById('otpInput');
+            if (otpIn) otpIn.focus();
+        }
+    });
 }
 
 /* ========================

@@ -72,6 +72,7 @@
           <input class="ap-input" type="password" id="password" name="password"
                  placeholder="Enter your password"
                  autocomplete="current-password"
+                 required
                  style="padding-right:3rem;"/>
           <button type="button" onclick="togglePassword()" id="eyeBtn"
                   style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);
@@ -108,6 +109,27 @@ function togglePassword() {
     icon.className  = visible ? 'bi bi-eye' : 'bi bi-eye-slash';
     btn.style.color = visible ? 'rgba(212,160,23,0.6)' : 'rgba(212,160,23,1)';
 }
+
+const form = document.querySelector('form');
+if (form) {
+    form.addEventListener('submit', function(e) {
+        const u = document.querySelector('input[name="username"]');
+        const p = document.getElementById('password');
+        if (!u || !u.value.trim()) {
+            e.preventDefault();
+            if (u) u.focus();
+            return;
+        }
+        if (!p || !p.value) {
+            e.preventDefault();
+            if (p) {
+                p.focus();
+                p.reportValidity();
+            }
+        }
+    });
+}
+
 document.querySelectorAll('.ap-input').forEach(input => {
     input.addEventListener('focus', () => {
         setTimeout(() => input.scrollIntoView({ behavior:'smooth', block:'center' }), 350);
