@@ -1,28 +1,39 @@
 package com.ammapickles.backend.service.impl;
 
 import com.ammapickles.backend.service.EmailService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
-    @Value("${app.mail.from}")
+    @Value("${app.mail.from:reachraviraju@gmail.com}")
     private String fromEmail;
 
-    // COMMON EMAIL  ---- > >  ALL EMAILS USE THIS)
+    private final ObjectMapper objectMapper;
+
+    // COMMON EMAIL HELPER
     private boolean sendEmail(String toEmail, String subject, String htmlContent) {
         try {
             String apiKey = System.getenv("BREVO_API_KEY");
+            if (apiKey == null || apiKey.isBlank()) {
+                log.warn("BREVO_API_KEY is not set. Email to {} was not sent.", toEmail);
+                return false;
+            }
 
             URL url = new URL("https://api.brevo.com/v3/smtp/email");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -33,25 +44,26 @@ public class EmailServiceImpl implements EmailService {
             conn.setRequestProperty("content-type", "application/json");
             conn.setDoOutput(true);
 
-            // TIMEOUT FIX 
+            // Fast timeouts so free tier never hangs
             conn.setConnectTimeout(5000);
             conn.setReadTimeout(5000);
 
-            String json = "{"
-                    + "\"sender\": {\"email\": \"" + fromEmail + "\", \"name\": \"Amma Pickles\"},"
-                    + "\"to\": [{\"email\": \"" + toEmail + "\"}],"
-                    + "\"subject\": \"" + subject + "\","
-                    + "\"htmlContent\": \"" + htmlContent + "\""
-                    + "}";
+            Map<String, Object> payload = Map.of(
+                    "sender", Map.of("email", fromEmail, "name", "Amma Pickles"),
+                    "to", List.of(Map.of("email", toEmail)),
+                    "subject", subject,
+                    "htmlContent", htmlContent
+            );
+
+            byte[] jsonBytes = objectMapper.writeValueAsBytes(payload);
 
             try (OutputStream os = conn.getOutputStream()) {
-                os.write(json.getBytes());
+                os.write(jsonBytes);
                 os.flush();
             }
 
             int responseCode = conn.getResponseCode();
 
-            // FAILURE HANDLING
             if (responseCode != 201) {
                 log.error("Email failed for {} | Response: {}", toEmail, responseCode);
                 return false;
@@ -66,7 +78,6 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-  
     @Override
     public boolean sendOtpEmail(String toEmail, String username, String otp) {
         String html = "<h2>Amma Pickles</h2>"
@@ -78,7 +89,7 @@ public class EmailServiceImpl implements EmailService {
         return sendEmail(toEmail, "Amma Pickles — Your OTP Code", html);
     }
 
-  
+    @Async
     @Override
     public boolean sendWelcomeEmail(String toEmail, String username) {
         String html = "<h2>Welcome to Amma Pickles 🌶️</h2>"
@@ -89,7 +100,7 @@ public class EmailServiceImpl implements EmailService {
         return sendEmail(toEmail, "Welcome to Amma Pickles!", html);
     }
 
-   
+    @Async
     @Override
     public boolean sendPasswordResetEmail(String toEmail, String username, String resetLink) {
         String html = "<h2>Password Reset</h2>"
@@ -100,6 +111,7 @@ public class EmailServiceImpl implements EmailService {
         return sendEmail(toEmail, "Reset Your Password", html);
     }
 
+    @Async
     @Override
     public boolean sendOrderConfirmationEmail(String toEmail, String username,
                                               Long orderId, BigDecimal grandTotal) {
@@ -112,4 +124,4 @@ public class EmailServiceImpl implements EmailService {
 
         return sendEmail(toEmail, "Order #" + orderId + " Confirmed!", html);
     }
-}
+}

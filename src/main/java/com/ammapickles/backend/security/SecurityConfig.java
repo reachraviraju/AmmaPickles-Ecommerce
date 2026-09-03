@@ -119,6 +119,7 @@ public class SecurityConfig {
                     "/api/products/**", "/api/categories/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/**").hasRole("ADMIN")
+                .requestMatchers("/api/orders/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/cart/**",
                                  "/api/orders/**",
                                  "/api/addresses/**").hasRole("CUSTOMER")
@@ -129,7 +130,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT,    "/api/categories/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN")
                 .requestMatchers("/api/users/**").authenticated()
-                .requestMatchers("/addresses/**").authenticated()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -153,7 +153,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
+        return new BCryptPasswordEncoder(10);
     }
 
     @Bean

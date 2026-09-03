@@ -21,7 +21,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // Count users registered after a given time (for today / this week)
     long countByCreatedAtAfter(LocalDateTime dateTime);
+    
 
     // Recent users ordered by join date — for admin dashboard table
     List<User> findAllByOrderByCreatedAtDesc(Pageable pageable);
-}
+}     
+

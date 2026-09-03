@@ -217,7 +217,8 @@ public class ProductServiceImpl implements ProductService {
                     Collectors.toMap(
                         v -> v.getSize() != null ? v.getSize().name() : "STANDARD",
                         v -> v,
-                        (existing, duplicate) -> existing
+                        (existing, duplicate) -> existing,
+                        LinkedHashMap::new
                     ),
                     map -> new java.util.ArrayList<>(map.values())
                 ));

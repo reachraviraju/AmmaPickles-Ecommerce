@@ -11,7 +11,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+    @Index(name = "idx_users_created_at", columnList = "createdAt")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -42,6 +44,7 @@ public class User {
     private String phoneNumber;
 
     
+    @Builder.Default
     @Column(nullable = false)
     private boolean enabled = true;
 

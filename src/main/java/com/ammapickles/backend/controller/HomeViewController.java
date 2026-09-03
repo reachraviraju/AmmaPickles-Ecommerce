@@ -1,14 +1,12 @@
 package com.ammapickles.backend.controller;
 
 import com.ammapickles.backend.dto.product.ProductGroupResponse;
-import com.ammapickles.backend.entity.User;
 import com.ammapickles.backend.repository.CategoryRepository;
-import com.ammapickles.backend.repository.UserRepository;
+import com.ammapickles.backend.security.CustomUserDetails;
 import com.ammapickles.backend.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class HomeViewController {
 
     private final ProductService productService;
-    private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
 
     @GetMapping("/")
@@ -29,7 +26,7 @@ public class HomeViewController {
 
     @GetMapping("/home")
     public String homePage(Model model,
-                           @AuthenticationPrincipal UserDetails userDetails,
+                           @AuthenticationPrincipal CustomUserDetails userDetails,
                            @RequestParam(required = false) String search,
                            @RequestParam(required = false) Long category,
                            @RequestParam(defaultValue = "0") int page,
@@ -64,9 +61,8 @@ public class HomeViewController {
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("totalProducts", totalProducts);
 
-        if (userDetails != null) {
-            User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-            model.addAttribute("username", user.getUsername());
+        if (userDetails != null && userDetails.getUser() != null) {
+            model.addAttribute("username", userDetails.getUser().getUsername());
         }
 
         return "home";

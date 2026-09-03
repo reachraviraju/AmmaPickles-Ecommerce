@@ -5,15 +5,15 @@ import com.ammapickles.backend.repository.OtpVerificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Random;
 
 @Component
 @RequiredArgsConstructor
 public class OtpStore {
 
     private final OtpVerificationRepository otpRepository;
-    private final Random random = new Random();
+    private final SecureRandom random = new SecureRandom();
     private static final int OTP_VALID_MINUTES = 10;
     
     
