@@ -32,8 +32,10 @@ public class AddressController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse.error("Access denied"));
         }
+        
         List<AddressResponse> response = addressService.getAddressesByUser(userId);
         return ResponseEntity.ok(ApiResponse.success("Addresses fetched successfully", response));
+          
     }
 
     @GetMapping("/{id}")

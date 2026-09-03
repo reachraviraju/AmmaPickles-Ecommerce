@@ -28,6 +28,7 @@ public class OtpVerification {
     @Column(name = "first_request_time")
     private LocalDateTime firstRequestTime;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean verified = false;
 

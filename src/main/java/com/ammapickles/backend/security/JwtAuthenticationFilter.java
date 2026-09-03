@@ -25,20 +25,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService; // Spring picks CustomUserDetailsService automatically
 
-    //Skip JWT filter for ALL web pages
-    
-    // These pages use Session login, not JWT
-    private static final List<String> WEB_URLS = List.of(
-            "/home", "/cart", "/orders",
-            "/login", "/register", "/",
-            "/css", "/images", "/js", "/favicon"
-    );
-
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        // Skip JWT check for all web pages
-        return WEB_URLS.stream().anyMatch(path::startsWith);
+        // JWT filter only applies to REST API endpoints
+        return !path.startsWith("/api/");
     }
 
     @Override

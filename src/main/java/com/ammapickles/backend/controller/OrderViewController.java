@@ -1,13 +1,11 @@
 package com.ammapickles.backend.controller;
 
 import com.ammapickles.backend.dto.order.OrderRequest;
-import com.ammapickles.backend.entity.User;
-import com.ammapickles.backend.repository.UserRepository;
+import com.ammapickles.backend.security.CustomUserDetails;
 import com.ammapickles.backend.service.AddressService;
 import com.ammapickles.backend.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,43 +20,38 @@ public class OrderViewController {
 
     private final OrderService orderService;
     private final AddressService addressService;
-    private final UserRepository userRepository;
 
     @GetMapping("/orders")
-    public String ordersPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-        model.addAttribute("orders", orderService.getOrdersByUser(user.getId()));
-        model.addAttribute("username", user.getUsername());
+    public String ordersPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        model.addAttribute("orders", orderService.getOrdersByUser(userDetails.getId()));
+        model.addAttribute("username", userDetails.getUser().getUsername());
         return "orders";
     }
 
     @GetMapping("/orders/place")
-    public String placeOrderPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-        model.addAttribute("addresses", addressService.getAddressesByUser(user.getId()));
-        model.addAttribute("username", user.getUsername());
+    public String placeOrderPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        model.addAttribute("addresses", addressService.getAddressesByUser(userDetails.getId()));
+        model.addAttribute("username", userDetails.getUser().getUsername());
         return "place-order";
     }
 
     @PostMapping("/orders/place")
     public String submitOrder(@RequestParam Long addressId,
-                              @AuthenticationPrincipal UserDetails userDetails,
+                              @AuthenticationPrincipal CustomUserDetails userDetails,
                               RedirectAttributes flash) {
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         OrderRequest request = new OrderRequest();
         request.setAddressId(addressId);
-        orderService.placeOrder(user.getId(), request);
+        orderService.placeOrder(userDetails.getId(), request);
         flash.addFlashAttribute("successMsg", "Order placed successfully! 🎉");
         return "redirect:/orders";
     }
 
     @PostMapping("/orders/cancel/{id}")
     public String cancelOrder(@PathVariable Long id,
-                              @AuthenticationPrincipal UserDetails userDetails,
+                              @AuthenticationPrincipal CustomUserDetails userDetails,
                               RedirectAttributes flash) {
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-        orderService.cancelOrder(id, user.getId());
+        orderService.cancelOrder(id, userDetails.getId());
         flash.addFlashAttribute("successMsg", "Order cancelled successfully!");
         return "redirect:/orders";
     }
-}
+}
