@@ -271,7 +271,12 @@ async function sendOtp() {
         if (res.ok && data.success) {
             document.getElementById('otpInputArea').style.display = 'block';
             btn.style.display = 'none'; // Hide primary send button once input area is open
-            showStatus(otpStatus, 'success', '<i class="bi bi-check-circle"></i> OTP sent successfully! Check your inbox.');
+            otpStatus.style.display = 'none';
+            const otpIn = document.getElementById('otpInput');
+            if (otpIn) {
+                otpIn.value = '';
+                otpIn.focus();
+            }
 
             startCooldown(60);
         } else {
