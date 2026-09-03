@@ -466,8 +466,8 @@ body {
 .otp-input { flex:1; padding:0.65rem 0.9rem; background:rgba(255,255,255,0.04); border:1.5px solid rgba(212,160,23,0.25); border-radius:8px; color:white; font-family:'Nunito',sans-serif; font-size:1rem; letter-spacing:8px; text-align:center; outline:none; }
 .otp-input:focus { border-color:var(--gold-mid); }
 .otp-verify-btn { padding:0.65rem 1rem; background:var(--grad-gold); border:none; border-radius:8px; color:#1a0800; font-weight:700; font-size:0.8rem; cursor:pointer; white-space:nowrap; }
-.otp-resend-btn { background:transparent; border:none; color:rgba(212,160,23,0.55); font-size:0.72rem; cursor:pointer; font-family:'Nunito',sans-serif; float:right; margin-top:0.3rem; }
-.otp-resend-btn:hover { color:var(--gold-lt); }
+.otp-resend-btn { background:transparent; border:none; color:#FFFFFF !important; font-size:0.78rem; font-weight:600; cursor:pointer; font-family:'Nunito',sans-serif; float:right; margin-top:0.35rem; }
+.otp-resend-btn:hover { color:#FFFFFF !important; text-decoration:underline; }
 .auth-divider { display:flex; align-items:center; gap:1rem; margin:1.1rem 0; }
 .auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:rgba(212,160,23,0.08); }
 .auth-divider span { color:var(--text-muted); font-size:0.75rem; }

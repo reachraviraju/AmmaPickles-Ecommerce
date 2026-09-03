@@ -108,8 +108,10 @@
                      maxlength="6" placeholder="6-digit OTP"/>
               <button type="button" id="verifyOtpBtn" class="otp-verify-btn" onclick="verifyOtp()">Verify</button>
             </div>
-            <div id="otpStatus" class="field-status" style="display:none;"></div>
-            <button type="button" id="resendOtpBtn" class="otp-resend-btn" onclick="resendOtp()">Resend OTP</button>
+            <div id="otpStatus" class="field-status" style="display:none;margin-top:0.3rem;margin-bottom:0.4rem;"></div>
+            <button type="button" id="resendOtpBtn" class="otp-resend-btn" onclick="resendOtp()" style="color:#FFFFFF !important;font-weight:700;display:inline-flex;align-items:center;gap:0.35rem;">
+              <i class="bi bi-arrow-repeat"></i> Resend OTP →
+            </button>
           </div>
         </div>
 
@@ -311,22 +313,23 @@ function startCooldown(seconds) {
     if (!resendBtn) return;
 
     resendBtn.disabled = true;
-    resendBtn.style.opacity = '0.6';
+    resendBtn.style.color = '#FFFFFF';
+    resendBtn.style.opacity = '0.9';
     resendBtn.style.cursor = 'not-allowed';
-    resendBtn.textContent = `Resend OTP (${otpCooldown}s)`;
+    resendBtn.innerHTML = `<span style="color:#FFFFFF;font-weight:600;">Resend OTP in </span><span style="color:#FFFFFF;font-weight:700;">(${otpCooldown}s)</span>`;
 
     if (countdownTimer) clearInterval(countdownTimer);
 
     countdownTimer = setInterval(() => {
         otpCooldown--;
         if (otpCooldown > 0) {
-            resendBtn.textContent = `Resend OTP (${otpCooldown}s)`;
+            resendBtn.innerHTML = `<span style="color:#FFFFFF;font-weight:600;">Resend OTP in </span><span style="color:#FFFFFF;font-weight:700;">(${otpCooldown}s)</span>`;
         } else {
             clearInterval(countdownTimer);
             resendBtn.disabled = false;
             resendBtn.style.opacity = '1';
             resendBtn.style.cursor = 'pointer';
-            resendBtn.textContent = 'Resend OTP';
+            resendBtn.innerHTML = '<span style="color:#FFFFFF;font-weight:700;"><i class="bi bi-arrow-repeat me-1"></i> Resend OTP →</span>';
         }
     }, 1000);
 }
