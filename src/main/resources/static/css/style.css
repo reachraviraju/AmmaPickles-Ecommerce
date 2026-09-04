@@ -740,6 +740,15 @@ body {
     pointer-events: auto;
 }
 
+/* Desktop / Laptop: Always visible */
+@media (min-width: 769px) {
+    .custom-pickle-floating-widget {
+        transform: translateY(0) !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+}
+
 /* Tooltip / Speech Bubble */
 .widget-speech-bubble {
     background: linear-gradient(135deg, rgba(30, 16, 6, 0.96) 0%, rgba(16, 8, 3, 0.98) 100%);

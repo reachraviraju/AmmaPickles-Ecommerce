@@ -178,7 +178,7 @@
 </script>
 
 <!-- Dynamic Floating AI Custom Pickle Widget with Spinning Gold Ring -->
-<div class="custom-pickle-floating-widget widget-hidden" id="customPickleWidget">
+<div class="custom-pickle-floating-widget" id="customPickleWidget">
     <div class="widget-speech-bubble" id="widgetBubble">
         <span class="bubble-text">Want custom pickle? <strong>Chat with Amma AI ✨</strong></span>
         <button type="button" class="bubble-close" onclick="dismissCustomPickleBubble(event)" aria-label="Close tooltip">&times;</button>
@@ -197,13 +197,9 @@
 <script>
 function dismissCustomPickleBubble(e) {
     if (e) e.stopPropagation();
-    const w = document.getElementById('customPickleWidget');
-    if (w) {
-        w.classList.remove('widget-visible');
-        w.classList.add('widget-hidden');
-        w.style.display = 'none';
-    }
-    try { sessionStorage.setItem('dismissCustomBubble', 'true'); } catch(err){}
+    const b = document.getElementById('widgetBubble');
+    if (b) b.style.display = 'none';
+    try { sessionStorage.setItem('dismissCustomSpeechBubble', 'true'); } catch(err){}
 }
 
 (function() {
@@ -217,36 +213,42 @@ function dismissCustomPickleBubble(e) {
             return;
         }
 
-        // Never show if dismissed in this session
-        if (sessionStorage.getItem('dismissCustomBubble') === 'true') {
-            widget.style.display = 'none';
+        // Hide speech bubble if user closed it before in this session
+        if (sessionStorage.getItem('dismissCustomSpeechBubble') === 'true') {
+            const b = document.getElementById('widgetBubble');
+            if (b) b.style.display = 'none';
+        }
+
+        const isMobile = window.innerWidth <= 768;
+
+        // On Laptop/Desktop: ALWAYS keep the spinning button visible!
+        if (!isMobile) {
+            widget.classList.remove('widget-hidden');
+            widget.classList.add('widget-visible');
             return;
         }
 
-        // 10s Visible + 6s Hidden Timing (in milliseconds)
+        // On Mobile: 10s Visible + 6s Hidden Dynamic Cycle
         const VISIBLE_DURATION = 10000; // 10 seconds visible
         const HIDDEN_DURATION  = 6000;  // 6 seconds hidden
-        const INITIAL_DELAY    = 2000;  // 2 seconds on page load
+        const INITIAL_DELAY    = 1500;  // 1.5 seconds after page load
 
         let hideTimer = null;
         let reappearTimer = null;
         let isInteracting = false;
 
         function showWidget() {
-            if (isInteracting || sessionStorage.getItem('dismissCustomBubble') === 'true') return;
+            if (isInteracting) return;
             widget.classList.remove('widget-hidden');
             widget.classList.add('widget-visible');
 
             clearTimeout(hideTimer);
             hideTimer = setTimeout(function() {
-                if (!isInteracting) {
-                    hideWidget();
-                }
+                if (!isInteracting) hideWidget();
             }, VISIBLE_DURATION);
         }
 
         function hideWidget() {
-            if (sessionStorage.getItem('dismissCustomBubble') === 'true') return;
             widget.classList.remove('widget-visible');
             widget.classList.add('widget-hidden');
 
@@ -256,25 +258,18 @@ function dismissCustomPickleBubble(e) {
             }, HIDDEN_DURATION);
         }
 
-        // Pause timer while user is hovering or touching
-        widget.addEventListener('mouseenter', function() {
-            isInteracting = true;
-            clearTimeout(hideTimer);
-        });
-        widget.addEventListener('mouseleave', function() {
-            isInteracting = false;
-            hideTimer = setTimeout(hideWidget, 3500);
-        });
+        // Pause timer while user touches widget
         widget.addEventListener('touchstart', function() {
             isInteracting = true;
             clearTimeout(hideTimer);
         }, { passive: true });
+
         widget.addEventListener('touchend', function() {
             isInteracting = false;
             hideTimer = setTimeout(hideWidget, 5000);
         }, { passive: true });
 
-        // Initial launch after 2 seconds
+        // Start mobile cycle
         setTimeout(showWidget, INITIAL_DELAY);
 
     } catch(err) {
