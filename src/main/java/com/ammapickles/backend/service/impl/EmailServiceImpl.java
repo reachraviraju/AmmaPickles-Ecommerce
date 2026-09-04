@@ -91,29 +91,29 @@ public class EmailServiceImpl implements EmailService {
 
     @Async
     @Override
-    public boolean sendWelcomeEmail(String toEmail, String username) {
+    public void sendWelcomeEmail(String toEmail, String username) {
         String html = "<h2>Welcome to Amma Pickles 🌶️</h2>"
                 + "<p>Hello " + username + ",</p>"
                 + "<p>Your account is ready.</p>"
                 + "<p>Happy Shopping!</p>";
 
-        return sendEmail(toEmail, "Welcome to Amma Pickles!", html);
+        sendEmail(toEmail, "Welcome to Amma Pickles!", html);
     }
 
     @Async
     @Override
-    public boolean sendPasswordResetEmail(String toEmail, String username, String resetLink) {
+    public void sendPasswordResetEmail(String toEmail, String username, String resetLink) {
         String html = "<h2>Password Reset</h2>"
                 + "<p>Hello " + username + ",</p>"
                 + "<p>Click below to reset your password:</p>"
                 + "<a href='" + resetLink + "'>Reset Password</a>";
 
-        return sendEmail(toEmail, "Reset Your Password", html);
+        sendEmail(toEmail, "Reset Your Password", html);
     }
 
     @Async
     @Override
-    public boolean sendOrderConfirmationEmail(String toEmail, String username,
+    public void sendOrderConfirmationEmail(String toEmail, String username,
                                               Long orderId, BigDecimal grandTotal) {
 
         String html = "<h2>Order Confirmed 🎉</h2>"
@@ -122,6 +122,6 @@ public class EmailServiceImpl implements EmailService {
                 + "<p><b>Order ID:</b> #" + orderId + "</p>"
                 + "<p><b>Amount:</b> ₹" + grandTotal + "</p>";
 
-        return sendEmail(toEmail, "Order #" + orderId + " Confirmed!", html);
+        sendEmail(toEmail, "Order #" + orderId + " Confirmed!", html);
     }
 }

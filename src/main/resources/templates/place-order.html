@@ -78,6 +78,7 @@
 <body id="place-order-page">
 
     <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div th:replace="~{fragments/toast :: toast}"></div>
 
     <!-- Scroll ribbon -->
     <div class="auth-scroll" style="max-width:100%;border-radius:0;border-left:none;border-right:none;margin-bottom:0;">
@@ -316,6 +317,20 @@
             });
         });
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeEditModal(); });
+
+        /* Toast auto dismiss */
+        (function() {
+            const toast = document.getElementById("toast");
+            if (toast && toast.classList.contains("show")) {
+                setTimeout(function() {
+                    toast.classList.add("hide");
+                    toast.classList.remove("show");
+                    setTimeout(function() {
+                        toast.style.display = "none";
+                    }, 400);
+                }, 3500);
+            }
+        })();
     </script>
 </body>
 </html>

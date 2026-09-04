@@ -12,6 +12,7 @@
 <body>
 
 <div th:replace="~{fragments/navbar :: navbar}"></div>
+<div th:replace="~{fragments/toast :: toast}"></div>
 
 <div class="page-hdr">
     <h2>📍 Add Delivery Address</h2>
@@ -93,6 +94,20 @@ document.querySelectorAll('.ap-input').forEach(input => {
 document.getElementById('mobileInput').addEventListener('keypress', e => {
     if (!/[0-9]/.test(e.key)) e.preventDefault();
 });
+
+/* Toast auto dismiss */
+(function() {
+    const toast = document.getElementById("toast");
+    if (toast && toast.classList.contains("show")) {
+        setTimeout(function() {
+            toast.classList.add("hide");
+            toast.classList.remove("show");
+            setTimeout(function() {
+                toast.style.display = "none";
+            }, 400);
+        }, 3500);
+    }
+})();
 </script>
 </body>
 </html>

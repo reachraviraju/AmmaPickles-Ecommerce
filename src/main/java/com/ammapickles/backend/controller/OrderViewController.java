@@ -5,6 +5,7 @@ import com.ammapickles.backend.security.CustomUserDetails;
 import com.ammapickles.backend.service.AddressService;
 import com.ammapickles.backend.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class OrderViewController {
@@ -39,19 +41,30 @@ public class OrderViewController {
     public String submitOrder(@RequestParam Long addressId,
                               @AuthenticationPrincipal CustomUserDetails userDetails,
                               RedirectAttributes flash) {
-        OrderRequest request = new OrderRequest();
-        request.setAddressId(addressId);
-        orderService.placeOrder(userDetails.getId(), request);
-        flash.addFlashAttribute("successMsg", "Order placed successfully! 🎉");
-        return "redirect:/orders";
+        try {
+            OrderRequest request = new OrderRequest();
+            request.setAddressId(addressId);
+            orderService.placeOrder(userDetails.getId(), request);
+            flash.addFlashAttribute("successMsg", "Order placed successfully! 🎉");
+            return "redirect:/orders";
+        } catch (Exception e) {
+            log.error("Failed to place order for user {}: {}", userDetails.getId(), e.getMessage(), e);
+            flash.addFlashAttribute("errorMsg", e.getMessage() != null ? e.getMessage() : "Failed to place order. Please try again.");
+            return "redirect:/orders/place";
+        }
     }
 
     @PostMapping("/orders/cancel/{id}")
     public String cancelOrder(@PathVariable Long id,
                               @AuthenticationPrincipal CustomUserDetails userDetails,
                               RedirectAttributes flash) {
-        orderService.cancelOrder(id, userDetails.getId());
-        flash.addFlashAttribute("successMsg", "Order cancelled successfully!");
+        try {
+            orderService.cancelOrder(id, userDetails.getId());
+            flash.addFlashAttribute("successMsg", "Order cancelled successfully!");
+        } catch (Exception e) {
+            log.error("Failed to cancel order {} for user {}: {}", id, userDetails.getId(), e.getMessage(), e);
+            flash.addFlashAttribute("errorMsg", e.getMessage() != null ? e.getMessage() : "Failed to cancel order.");
+        }
         return "redirect:/orders";
     }
 }

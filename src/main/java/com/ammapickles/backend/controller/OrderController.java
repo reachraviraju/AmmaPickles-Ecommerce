@@ -33,7 +33,7 @@ public class OrderController {
 
     
     @GetMapping("/user/{userId}")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrdersByUser(
             @PathVariable Long userId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -48,7 +48,7 @@ public class OrderController {
 
    
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderById(
             @PathVariable Long id,
             //  @AuthenticationPrincipal — gets currently logged in user from JWT
@@ -61,7 +61,7 @@ public class OrderController {
 
     
     @PostMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<ApiResponse<OrderResponse>> placeOrder(
             @Valid @RequestBody OrderRequest request,
             // Getting userId from JWT token — not from request body!
@@ -76,7 +76,7 @@ public class OrderController {
 
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<ApiResponse<Void>> cancelOrder(
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {

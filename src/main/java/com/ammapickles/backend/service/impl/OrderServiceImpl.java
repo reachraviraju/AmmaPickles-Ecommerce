@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -109,18 +110,22 @@ public class OrderServiceImpl implements OrderService {
                 })
                 .toList();
 
-        order.setOrderItems(orderItems);
+        order.setOrderItems(new ArrayList<>(orderItems));
 
         //  Save order
         Order saved = orderRepository.save(order);
 
-        // Send email (non-blocking logic style)
-        emailService.sendOrderConfirmationEmail(
-                user.getEmail(),
-                user.getUsername(),
-                saved.getId(),
-                saved.getGrandTotal()
-        );
+        // Send email asynchronously (wrapped in try-catch so email failure never rolls back the order)
+        try {
+            emailService.sendOrderConfirmationEmail(
+                    user.getEmail(),
+                    user.getUsername(),
+                    saved.getId(),
+                    saved.getGrandTotal()
+            );
+        } catch (Exception e) {
+            log.error("Failed to trigger order confirmation email for order {}: {}", saved.getId(), e.getMessage());
+        }
 
         // Clear cart
         cart.getItems().clear();
@@ -230,6 +235,9 @@ public class OrderServiceImpl implements OrderService {
                     OrderItemResponse r = new OrderItemResponse();
                     r.setProductId(item.getProduct().getId());
                     r.setProductName(item.getProduct().getName());
+                    if (item.getProduct().getSize() != null) {
+                        r.setSizeLabel(item.getProduct().getSize().getLabel());
+                    }
                     r.setQuantity(item.getQuantity());
                     r.setPriceAtTimeOfOrder(item.getPrice());
                     r.setItemTotal(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));

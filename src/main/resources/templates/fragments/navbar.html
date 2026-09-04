@@ -1,5 +1,6 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
 <body>
 
 <th:block th:fragment="navbar">
@@ -22,6 +23,11 @@
 
     <!-- Nav Pills (desktop) -->
     <div class="nav-pills nav-pills-desktop">
+
+        <a href="/admin/dashboard" class="pill-gold"
+           sec:authorize="hasRole('ADMIN')" style="margin-right:0.3rem;">
+            <i class="bi bi-speedometer2"></i> Admin Panel
+        </a>
 
         <a href="/cart" class="pill-gold"
            th:if="${username != null}">
@@ -98,6 +104,12 @@
         <a href="/home" class="drawer-link">
             <i class="bi bi-house"></i> Home
         </a>
+
+        <div sec:authorize="hasRole('ADMIN')">
+            <a href="/admin/dashboard" class="drawer-link" style="color:var(--gold-mid)!important;font-weight:700;">
+                <i class="bi bi-speedometer2"></i> Admin Panel
+            </a>
+        </div>
 
         <div th:if="${username != null}">
             <a href="/cart" class="drawer-link">
