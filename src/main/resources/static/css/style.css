@@ -709,3 +709,431 @@ body {
     .admin-stat-value { font-size:1.5rem; }
     .page-hdr h2 { font-size:1rem; }
 }
+
+/* ============================================================
+   27. CRAZY DYNAMIC SPINNING FLOATING CUSTOM PICKLE WIDGET
+   ============================================================ */
+.custom-pickle-floating-widget {
+    position: fixed;
+    bottom: 26px;
+    right: 24px;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.8));
+    pointer-events: auto;
+}
+
+/* Tooltip / Speech Bubble */
+.widget-speech-bubble {
+    background: linear-gradient(135deg, rgba(30, 16, 6, 0.96) 0%, rgba(16, 8, 3, 0.98) 100%);
+    border: 1.5px solid rgba(232, 184, 75, 0.6);
+    color: #f7eedd;
+    padding: 8px 14px 8px 16px;
+    border-radius: 25px;
+    font-size: 0.86rem;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.7), 0 0 20px rgba(212, 160, 23, 0.35);
+    backdrop-filter: blur(10px);
+    animation: gentlePulseBubble 3s infinite ease-in-out;
+}
+
+.widget-speech-bubble strong {
+    color: var(--gold-lt);
+    text-shadow: 0 0 10px rgba(232, 184, 75, 0.5);
+}
+
+.bubble-close {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+    transition: all 0.2s;
+}
+.bubble-close:hover {
+    color: #fff;
+    transform: scale(1.2);
+}
+
+/* Button & Outer Crazy Spinning Rings */
+.widget-btn-wrapper {
+    position: relative;
+    width: 68px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.widget-btn-wrapper:hover {
+    transform: scale(1.15);
+}
+
+/* Mini Chip Label on Button (Ideal for mobile recognition) */
+.widget-mini-chip {
+    position: absolute;
+    top: -9px;
+    background: linear-gradient(135deg, #FFB703, #C9920A);
+    color: #120700;
+    font-size: 0.62rem;
+    font-weight: 900;
+    padding: 1px 7px;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    z-index: 10;
+    pointer-events: none;
+    border: 1px solid #FFF0A0;
+    animation: miniChipFloat 2.5s infinite ease-in-out;
+}
+
+@keyframes miniChipFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+/* 1. Radar Expanding Aura Waves */
+.widget-spin-aura {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid rgba(232, 184, 75, 0.6);
+    animation: radarWave 2.4s infinite cubic-bezier(0, 0.2, 0.8, 1);
+    pointer-events: none;
+}
+
+/* 2. Primary Fast Crazy Clockwise Spinning Fiery Gold Ring */
+.widget-outer-spin-ring {
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0%, #FFB703 35%, #FFF0A0 55%, #FF7B00 75%, transparent 100%);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.5px), #fff calc(100% - 3px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 3.5px), #fff calc(100% - 3px));
+    animation: spinCrazyClockwise 1.6s linear infinite;
+    filter: drop-shadow(0 0 10px rgba(255, 183, 3, 0.85));
+    pointer-events: none;
+}
+
+/* 3. Secondary Counter-Clockwise Spinning Dashed Cosmic Orbit */
+.widget-spin-ring-secondary {
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(255, 230, 130, 0.7);
+    animation: spinCrazyCounter 4s linear infinite;
+    box-shadow: 0 0 14px rgba(212, 160, 23, 0.3);
+    pointer-events: none;
+}
+
+/* Turbocharged Crazy Spin on Hover! */
+.widget-btn-wrapper:hover .widget-outer-spin-ring {
+    animation-duration: 0.6s !important;
+    filter: drop-shadow(0 0 18px rgba(255, 200, 50, 1));
+}
+.widget-btn-wrapper:hover .widget-spin-ring-secondary {
+    animation-duration: 1.5s !important;
+    border-color: #FFF0A0;
+}
+
+/* Inner Glass/Metallic Core Button */
+.widget-inner-btn {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #2d1808 0%, #160a03 70%, #0c0502 100%);
+    border: 2px solid rgba(232, 184, 75, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 14px rgba(212, 160, 23, 0.5), 0 0 20px rgba(0, 0, 0, 0.9);
+    z-index: 5;
+}
+
+.widget-jar-icon {
+    font-size: 1.65rem;
+    line-height: 1;
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.7));
+    animation: jarWiggleFloat 3s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes spinCrazyClockwise {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spinCrazyCounter {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+@keyframes radarWave {
+    0% {
+        transform: scale(0.85);
+        opacity: 0.9;
+        border-color: #FFF0A0;
+    }
+    100% {
+        transform: scale(1.45);
+        opacity: 0;
+        border-color: #C9920A;
+    }
+}
+
+@keyframes gentlePulseBubble {
+    0%, 100% {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7), 0 0 15px rgba(212, 160, 23, 0.25);
+        transform: translateY(0);
+    }
+    50% {
+        box-shadow: 0 6px 26px rgba(0, 0, 0, 0.8), 0 0 24px rgba(236, 192, 80, 0.55);
+        transform: translateY(-3px);
+    }
+}
+
+@keyframes jarWiggleFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    20% { transform: translateY(-3px) rotate(-6deg); }
+    40% { transform: translateY(-1px) rotate(6deg); }
+    60% { transform: translateY(-3px) rotate(-3deg); }
+    80% { transform: translateY(0) rotate(0deg); }
+}
+
+/* ============================================================
+   28. NAVBAR CUSTOM PICKLE PILL
+   ============================================================ */
+.pill-custom-pickle {
+    background: linear-gradient(135deg, rgba(212, 160, 23, 0.2), rgba(212, 160, 23, 0.08));
+    border: 1px solid rgba(232, 184, 75, 0.5);
+    color: var(--gold-lt) !important;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.25s ease;
+    box-shadow: 0 0 10px rgba(212, 160, 23, 0.15);
+}
+.pill-custom-pickle i {
+    color: #FFF0A0;
+    animation: starTwinkle 2s infinite ease-in-out;
+}
+.pill-custom-pickle:hover {
+    background: var(--grad-gold);
+    color: #170d02 !important;
+    border-color: var(--shine-1);
+    box-shadow: 0 0 18px rgba(212, 160, 23, 0.5);
+    transform: translateY(-2px);
+}
+.pill-custom-pickle:hover i {
+    color: #170d02;
+}
+
+@keyframes starTwinkle {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.25); filter: drop-shadow(0 0 4px #FFF0A0); }
+}
+
+/* ============================================================
+   29. ARTISANAL CUSTOM PICKLE BANNER (HOMEPAGE)
+   ============================================================ */
+.ap-custom-banner-section {
+    padding: 10px 0 25px 0;
+}
+
+.ap-custom-banner {
+    position: relative;
+    background: linear-gradient(135deg, #241105 0%, #150903 50%, #0c0502 100%);
+    border: 1.5px solid rgba(212, 160, 23, 0.35);
+    border-radius: var(--radius-card);
+    padding: 30px 38px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(212, 160, 23, 0.06);
+}
+
+.ap-custom-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #ECC050, #FFF5B0, #ECC050, transparent);
+}
+
+.custom-banner-content {
+    max-width: 650px;
+}
+
+.custom-banner-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(212, 160, 23, 0.12);
+    border: 1px solid rgba(212, 160, 23, 0.3);
+    color: var(--gold-lt);
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+}
+
+.custom-banner-content h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 10px;
+    line-height: 1.25;
+}
+
+.custom-banner-content h2 em {
+    font-style: normal;
+    color: var(--gold-lt);
+    text-shadow: 0 0 20px rgba(232, 184, 75, 0.4);
+}
+
+.custom-banner-content p {
+    font-size: 0.95rem;
+    color: #c4b5a3;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.custom-banner-content p strong {
+    color: var(--shine-1);
+}
+
+.custom-banner-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.cb-tag {
+    font-size: 0.8rem;
+    color: #a89a88;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.cb-tag i {
+    color: var(--gold-mid);
+}
+
+.custom-banner-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btn-custom-pickle-cta {
+    background: var(--grad-gold);
+    color: #1a0f00 !important;
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 13px 26px;
+    border-radius: 35px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(212, 160, 23, 0.45), 0 0 15px rgba(236, 192, 80, 0.3);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+}
+
+.btn-custom-pickle-cta:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 6px 28px rgba(212, 160, 23, 0.65), 0 0 25px rgba(236, 192, 80, 0.5);
+    color: #0d0600 !important;
+}
+
+.custom-cta-note {
+    font-size: 0.75rem;
+    color: #928373;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+    .ap-custom-banner {
+        flex-direction: column;
+        text-align: center;
+        padding: 24px 20px;
+    }
+    .custom-banner-tags {
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .custom-pickle-floating-widget {
+        bottom: 20px;
+        right: 16px;
+    }
+    .widget-speech-bubble {
+        display: none; /* Keep mobile clean without blocking touch areas */
+    }
+    .widget-btn-wrapper {
+        width: 58px;
+        height: 58px;
+    }
+    .widget-inner-btn {
+        width: 44px;
+        height: 44px;
+    }
+    .widget-jar-icon {
+        font-size: 1.35rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .custom-pickle-floating-widget {
+        bottom: 16px;
+        right: 14px;
+    }
+    .ap-custom-banner {
+        padding: 20px 14px;
+        margin: 15px 0;
+    }
+    .custom-banner-content h2 {
+        font-size: 1.35rem;
+    }
+    .custom-banner-content p {
+        font-size: 0.85rem;
+    }
+    .btn-custom-pickle-cta {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+    }
+}
