@@ -2,13 +2,14 @@
 
 ![Java](https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=java)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-brightgreen?style=flat-square&logo=springboot)
+![Google Gemini](https://img.shields.io/badge/Google%20Gemini-1.5%20Flash%20AI-8E75B2?style=flat-square&logo=googlegemini)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?style=flat-square&logo=mysql)
 ![Spring Security](https://img.shields.io/badge/Spring%20Security-JWT%20%2B%20Session-green?style=flat-square&logo=springsecurity)
 ![Thymeleaf](https://img.shields.io/badge/Thymeleaf-Frontend-005F0F?style=flat-square&logo=thymeleaf)
 ![Docker](https://img.shields.io/badge/Docker-Containerized-blue?style=flat-square&logo=docker)
 ![Status](https://img.shields.io/badge/Status-Live-brightgreen?style=flat-square)
 
-> A full-stack e-commerce platform for authentic Andhra homemade pickles — built with Spring Boot, Thymeleaf web frontend, and a complete JWT-secured REST API backend. Containerized with Docker and deployed on Render.
+> A full-stack e-commerce platform for authentic Andhra homemade pickles — built with Spring Boot, Thymeleaf web frontend, and a complete JWT-secured REST API backend. Features an **AI-powered Custom Pickle Chef** backed by **Google Gemini 1.5 Flash**. Containerized with Docker and deployed on Render.
 
 ---
 
@@ -17,6 +18,23 @@
 👉 [https://ammapickles-ecommerce.onrender.com](https://ammapickles-ecommerce.onrender.com)
 
 > **Note:** Hosted on Render free tier — app may take 30–40 seconds to wake up on first visit.
+
+---
+
+## 🤖 Featured: AI-Powered Custom Pickle Chef (Google Gemini)
+
+Customers can craft their own custom handmade pickle batch by conversing with **"Amma's Master Pickle Chef"**, powered by **Google Gemini 1.5 Flash**:
+
+- 🥒 **Artisanal Customization**: Tailors the pickle across 9 essential parameters:
+  - **Main Ingredient**: Mango (Avakaya), Lemon (Nimmakaya), Ginger (Allam), Gongura, Tomato, Red Chilli, Garlic, etc.
+  - **Oil Selection**: Cold-Pressed Sesame (Nuvvula Nune), Mustard (Aavala Nune), Groundnut, or Chef's Choice.
+  - **Spice & Salt Levels**: Custom spice calibration (Mild to Extra Hot Andhra style) and tailored salt balance.
+  - **Extra Ingredients & Requests**: Extra garlic cloves, fenugreek (menthi), curry leaves, hing, organic inputs, or less oil.
+  - **Batch Constraints**: Enforces a minimum artisanal order of 2kg to guarantee authentic fermentation and flavor.
+- 💬 **Natural Multi-turn Dialogue**: Understands free-form conversational inputs, regional Indian pickle terminology, and offers culinary recommendations.
+- ⚡ **Automated Order Persistence**: Intelligently extracts final order specifications into MySQL (`custom_order_requests`) linked to customer contact details.
+- 🛡️ **Zero-Downtime Fallback**: Built-in resilient fallback ensures ordering works seamlessly even if external AI APIs are unreachable.
+- 🧑‍🍳 **Kitchen Admin Dashboard**: Admins can track custom orders at `/admin/custom-orders`, update status (`NEW` ➔ `CONTACTED` ➔ `IN_PROGRESS` ➔ `DELIVERED`), and call customers with one click.
 
 ---
 
@@ -44,6 +62,7 @@
 **Amma Pickles** is a fully functional online store for ordering traditional Andhra pickles — Veg and Non-Veg varieties available in three sizes (½ kg, 1 kg, 2 kg). The project features a **dual architecture**: a Thymeleaf-rendered web UI for customers, and a JWT-secured REST API for external/mobile access.
 
 **What's working:**
+- 🤖 **AI Custom Pickle Chef**: Real-time culinary consultation and custom batch ordering with Google Gemini
 - Browse and search products by name or category
 - Product detail page with size variants
 - Cart management (add, update, remove, clear)
@@ -78,6 +97,7 @@ This project uses a **dual-layer architecture** — both layers share the same s
 |---------|-----------|
 | Language | Java 17 |
 | Framework | Spring Boot 3.5.6 |
+| **AI / LLM** | **Google Gemini 1.5 Flash (Generative Language API)** |
 | ORM | Spring Data JPA / Hibernate |
 | Database | MySQL 8.0 |
 | Security | Spring Security (JWT + Session) |
