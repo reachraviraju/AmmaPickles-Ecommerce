@@ -21,20 +21,56 @@
 
 ---
 
-## 🤖 Featured: AI-Powered Custom Pickle Chef (Google Gemini)
 
-Customers can craft their own custom handmade pickle batch by conversing with **"Amma's Master Pickle Chef"**, powered by **Google Gemini 1.5 Flash**:
 
-- 🥒 **Artisanal Customization**: Tailors the pickle across 9 essential parameters:
-  - **Main Ingredient**: Mango (Avakaya), Lemon (Nimmakaya), Ginger (Allam), Gongura, Tomato, Red Chilli, Garlic, etc.
-  - **Oil Selection**: Cold-Pressed Sesame (Nuvvula Nune), Mustard (Aavala Nune), Groundnut, or Chef's Choice.
-  - **Spice & Salt Levels**: Custom spice calibration (Mild to Extra Hot Andhra style) and tailored salt balance.
-  - **Extra Ingredients & Requests**: Extra garlic cloves, fenugreek (menthi), curry leaves, hing, organic inputs, or less oil.
-  - **Batch Constraints**: Enforces a minimum artisanal order of 2kg to guarantee authentic fermentation and flavor.
-- 💬 **Natural Multi-turn Dialogue**: Understands free-form conversational inputs, regional Indian pickle terminology, and offers culinary recommendations.
-- ⚡ **Automated Order Persistence**: Intelligently extracts final order specifications into MySQL (`custom_order_requests`) linked to customer contact details.
-- 🛡️ **Zero-Downtime Fallback**: Built-in resilient fallback ensures ordering works seamlessly even if external AI APIs are unreachable.
-- 🧑‍🍳 **Kitchen Admin Dashboard**: Admins can track custom orders at `/admin/custom-orders`, update status (`NEW` ➔ `CONTACTED` ➔ `IN_PROGRESS` ➔ `DELIVERED`), and call customers with one click.
+## 🤖 AI Custom Pickle Chef — Google Gemini
+
+**Amma's Master Pickle Chef** is an AI-powered feature that helps customers create their own custom pickle batch using **Google Gemini 1.5 Flash**.
+
+Customers can chat with the AI, describe their taste and requirements, and get personalized pickle recommendations.
+
+### What Customers Can Customize
+
+* 🥒 **Pickle Type** — Mango, Lemon, Ginger, Gongura, Tomato, Garlic, Chicken, etc.
+* 🌶️ **Spice Level** — Mild, Medium, Hot, or Extra Hot.
+* 🧂 **Salt Level** — Adjust salt according to preference.
+* 🫙 **Oil Type** — Sesame, Mustard, Groundnut, or Chef's Choice.
+* 🧄 **Extra Ingredients** — Garlic, Fenugreek, Curry Leaves, Hing, etc.
+* 📦 **Batch Size** — Custom batches starting from 2 kg.
+* 💬 **Natural Conversation** — Customers can describe their requirements in normal language instead of filling out a complex form.
+
+### How It Works
+
+1. Customer opens the **AI Custom Pickle Chef**.
+2. Customer describes the pickle they want.
+3. Gemini understands the requirements and suggests a suitable recipe.
+4. Customer can continue chatting and make changes.
+5. Once the customer confirms the requirements, the custom order details are saved in MySQL.
+6. Admin can view and manage the custom order from the admin dashboard.
+
+### Example
+
+**Customer:**
+
+> I want 2 kg of spicy mango pickle with extra garlic and less oil.
+
+**AI Chef:**
+
+> Sure! I recommend a 2 kg spicy mango pickle with extra garlic and reduced sesame oil. Would you like the spice level to be medium or extra hot?
+
+### Backend Integration
+
+* **AI:** Google Gemini 1.5 Flash
+* **API:** Google Generative Language API
+* **Backend:** Spring Boot
+* **Database:** MySQL
+* **Persistence:** Custom order requirements are stored in the `custom_order_requests` table.
+* **Admin:** Custom orders can be viewed and their status can be updated from the admin dashboard.
+* **Fallback:** If the Gemini API is unavailable, the system still allows the customer to submit the custom order.
+
+This combines **AI-powered conversation with a real e-commerce ordering workflow**, rather than using AI only as a chatbot.
+
+
 
 ---
 
