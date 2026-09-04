@@ -232,8 +232,18 @@
     const completedBanner = document.getElementById('completedBanner');
     const sessionId = document.getElementById('sessionId').value;
 
-    const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+    const csrfMeta = document.querySelector('meta[name="_csrf"]');
+    const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+    const csrfToken = csrfMeta ? csrfMeta.content : '';
+    const csrfHeader = csrfHeaderMeta ? csrfHeaderMeta.content : '';
+
+    function getHeaders() {
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfHeader && csrfToken) {
+            headers[csrfHeader] = csrfToken;
+        }
+        return headers;
+    }
 
     let isWaitingForResponse = false;
     let hasOptions = false;
@@ -252,10 +262,7 @@
         showTyping();
         fetch('/api/custom-pickle/chat/start', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                [csrfHeader]: csrfToken
-            },
+            headers: getHeaders(),
             body: JSON.stringify({ sessionId: sessionId })
         })
         .then(r => {
@@ -299,10 +306,7 @@
 
         fetch('/api/custom-pickle/chat/send', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                [csrfHeader]: csrfToken
-            },
+            headers: getHeaders(),
             body: JSON.stringify({ sessionId: sessionId, message: message })
         })
         .then(r => {
