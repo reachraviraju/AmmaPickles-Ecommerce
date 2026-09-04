@@ -178,7 +178,7 @@
 </script>
 
 <!-- Dynamic Floating AI Custom Pickle Widget with Spinning Gold Ring -->
-<div class="custom-pickle-floating-widget" id="customPickleWidget">
+<div class="custom-pickle-floating-widget widget-hidden" id="customPickleWidget">
     <div class="widget-speech-bubble" id="widgetBubble">
         <span class="bubble-text">Want custom pickle? <strong>Chat with Amma AI ✨</strong></span>
         <button type="button" class="bubble-close" onclick="dismissCustomPickleBubble(event)" aria-label="Close tooltip">&times;</button>
@@ -197,17 +197,89 @@
 <script>
 function dismissCustomPickleBubble(e) {
     if (e) e.stopPropagation();
-    const b = document.getElementById('widgetBubble');
-    if (b) b.style.display = 'none';
+    const w = document.getElementById('customPickleWidget');
+    if (w) {
+        w.classList.remove('widget-visible');
+        w.classList.add('widget-hidden');
+        w.style.display = 'none';
+    }
     try { sessionStorage.setItem('dismissCustomBubble', 'true'); } catch(err){}
 }
+
 (function() {
     try {
-        if (sessionStorage.getItem('dismissCustomBubble') === 'true') {
-            const b = document.getElementById('widgetBubble');
-            if (b) b.style.display = 'none';
+        const widget = document.getElementById('customPickleWidget');
+        if (!widget) return;
+
+        // Never show on custom pickle chat / order page
+        if (window.location.pathname.includes('custom-pickle')) {
+            widget.style.display = 'none';
+            return;
         }
-    } catch(err){}
+
+        // Never show if dismissed in this session
+        if (sessionStorage.getItem('dismissCustomBubble') === 'true') {
+            widget.style.display = 'none';
+            return;
+        }
+
+        // 10s Visible + 6s Hidden Timing (in milliseconds)
+        const VISIBLE_DURATION = 10000; // 10 seconds visible
+        const HIDDEN_DURATION  = 6000;  // 6 seconds hidden
+        const INITIAL_DELAY    = 2000;  // 2 seconds on page load
+
+        let hideTimer = null;
+        let reappearTimer = null;
+        let isInteracting = false;
+
+        function showWidget() {
+            if (isInteracting || sessionStorage.getItem('dismissCustomBubble') === 'true') return;
+            widget.classList.remove('widget-hidden');
+            widget.classList.add('widget-visible');
+
+            clearTimeout(hideTimer);
+            hideTimer = setTimeout(function() {
+                if (!isInteracting) {
+                    hideWidget();
+                }
+            }, VISIBLE_DURATION);
+        }
+
+        function hideWidget() {
+            if (sessionStorage.getItem('dismissCustomBubble') === 'true') return;
+            widget.classList.remove('widget-visible');
+            widget.classList.add('widget-hidden');
+
+            clearTimeout(reappearTimer);
+            reappearTimer = setTimeout(function() {
+                showWidget();
+            }, HIDDEN_DURATION);
+        }
+
+        // Pause timer while user is hovering or touching
+        widget.addEventListener('mouseenter', function() {
+            isInteracting = true;
+            clearTimeout(hideTimer);
+        });
+        widget.addEventListener('mouseleave', function() {
+            isInteracting = false;
+            hideTimer = setTimeout(hideWidget, 3500);
+        });
+        widget.addEventListener('touchstart', function() {
+            isInteracting = true;
+            clearTimeout(hideTimer);
+        }, { passive: true });
+        widget.addEventListener('touchend', function() {
+            isInteracting = false;
+            hideTimer = setTimeout(hideWidget, 5000);
+        }, { passive: true });
+
+        // Initial launch after 2 seconds
+        setTimeout(showWidget, INITIAL_DELAY);
+
+    } catch(err) {
+        console.error("Custom pickle widget error:", err);
+    }
 })();
 </script>
 
