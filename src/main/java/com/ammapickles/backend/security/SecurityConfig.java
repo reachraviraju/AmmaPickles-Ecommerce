@@ -66,15 +66,15 @@ public class SecurityConfig {
                 	    "/images/**",
                 	    "/js/**",
                 	    "/favicon.ico",
-                	    "/products/**",
-                	    "/custom-pickle/**",
-                	    "/api/custom-pickle/**"
+                	    "/products/**"
                       ).permitAll()
 
                 //  PROTECTED 
                 .requestMatchers("/cart/**").authenticated()
                 .requestMatchers("/orders/**").authenticated()
                 .requestMatchers("/profile/**").authenticated()
+                .requestMatchers("/custom-pickle/**").authenticated()
+                .requestMatchers("/api/custom-pickle/**").authenticated()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 
                 .anyRequest().authenticated()
