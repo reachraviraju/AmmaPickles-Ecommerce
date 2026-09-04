@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Custom Order Detail — Admin — Amma Pickles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:wght@700;900&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+
+<div th:replace="~{fragments/admin-navbar :: adminNavbar}"></div>
+
+<div class="page-hdr">
+    <h2>🧑‍🍳 Custom Order #<span th:text="${request.id}"></span></h2>
+    <p>
+        <a href="/admin/custom-orders" style="color:#E8B84B;text-decoration:none;">
+            <i class="bi bi-arrow-left"></i> Back to Custom Orders
+        </a>
+    </p>
+</div>
+
+<div class="cart-main">
+
+    <div th:if="${success}" class="flash-success">
+        <i class="bi bi-check-circle-fill"></i>
+        <span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" class="flash-success" style="border-color:rgba(244,67,54,0.3);background:rgba(244,67,54,0.08);">
+        <i class="bi bi-exclamation-circle-fill" style="color:#EF9A9A;"></i>
+        <span th:text="${error}" style="color:#EF9A9A;"></span>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Order Details Card -->
+        <div class="col-lg-6">
+            <div class="admin-section" style="height:100%;">
+                <div class="admin-section-title">📋 Order Details</div>
+                <table style="width:100%;font-family:'Nunito',sans-serif;font-size:0.9rem;">
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:0.6rem 0;color:rgba(255,255,255,0.5);width:40%;">🥒 Main Ingredient</td>
+                        <td style="padding:0.6rem 0;color:#fff;font-weight:600;" th:text="${request.pickleType}"></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:0.6rem 0;color:rgba(255,255,255,0.5);">🫒 Oil Preference</td>
+                        <td style="padding:0.6rem 0;color:#fff;font-weight:600;" th:text="${request.oilPreference}"></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:0.6rem 0;color:rgba(255,255,255,0.5);">🌶️ Spice Level</td>
+                        <td style="padding:0.6rem 0;color:#fff;font-weight:600;" th:text="${request.spiceLevel}"></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:0.6rem 0;color:rgba(255,255,255,0.5);">🧂 Salt Level</td>
+                        <td style="padding:0.6rem 0;color:#fff;font-weight:600;" th:text="${request.saltLevel}"></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:0.6rem 0;color:rgba(255,255,255,0.5);">🧄 Extra Ingredients</td>
+                        <td style="padding:0.6rem 0;color:#fff;" th:text="${request.additionalIngredients != null ? request.additionalIngredients : 'None'}"></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:0.6rem 0;color:rgba(255,255,255,0.5);">📝 Special Requests</td>
+                        <td style="padding:0.6rem 0;color:#fff;" th:text="${request.specialInstructions != null ? request.specialInstructions : 'None'}"></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:0.6rem 0;color:rgba(255,255,255,0.5);">📦 Quantity</td>
+                        <td style="padding:0.6rem 0;color:#E8B84B;font-weight:700;font-size:1.1rem;" th:text="${request.quantity}"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Customer & Status Card -->
+        <div class="col-lg-6">
+            <div class="admin-section" style="height:100%;">
+                <div class="admin-section-title">👤 Customer Info & Status</div>
+
+                <table style="width:100%;font-family:'Nunito',sans-serif;font-size:0.9rem;margin-bottom:1.2rem;">
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:0.6rem 0;color:rgba(255,255,255,0.5);width:35%;">Name</td>
+                        <td style="padding:0.6rem 0;color:#fff;font-weight:600;" th:text="${request.customerName}"></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:0.6rem 0;color:rgba(255,255,255,0.5);">Phone</td>
+                        <td style="padding:0.6rem 0;">
+                            <a th:href="'tel:' + ${request.phoneNumber}"
+                               th:text="${request.phoneNumber}"
+                               style="color:#E8B84B;text-decoration:none;font-weight:700;font-size:1.1rem;">
+                            </a>
+                        </td>
+                    </tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:0.6rem 0;color:rgba(255,255,255,0.5);">Status</td>
+                        <td style="padding:0.6rem 0;">
+                            <span th:switch="${request.status.name()}">
+                                <span th:case="'NEW'" style="color:#64B5F6;font-weight:700;">🆕 NEW</span>
+                                <span th:case="'CONTACTED'" style="color:#FFB74D;font-weight:700;">📞 CONTACTED</span>
+                                <span th:case="'COMPLETED'" style="color:#81C784;font-weight:700;">✅ COMPLETED</span>
+                                <span th:case="'CANCELLED'" style="color:#EF9A9A;font-weight:700;">❌ CANCELLED</span>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:0.6rem 0;color:rgba(255,255,255,0.5);">Submitted</td>
+                        <td style="padding:0.6rem 0;color:rgba(255,255,255,0.5);"
+                            th:text="${#temporals.format(request.createdAt, 'dd MMM yyyy, hh:mm a')}"></td>
+                    </tr>
+                </table>
+
+                <!-- Update Status -->
+                <div style="margin-bottom:1rem;">
+                    <label style="font-family:'Nunito',sans-serif;font-size:0.8rem;color:rgba(255,255,255,0.5);margin-bottom:0.3rem;display:block;">
+                        Update Status:
+                    </label>
+                    <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+                        <form th:action="@{'/admin/custom-orders/' + ${request.id} + '/status'}" method="post" style="display:inline;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="status" value="CONTACTED"/>
+                            <button type="submit" class="chat-option-btn" style="color:#FFB74D;border-color:rgba(255,183,77,0.3);">
+                                📞 Mark Contacted
+                            </button>
+                        </form>
+                        <form th:action="@{'/admin/custom-orders/' + ${request.id} + '/status'}" method="post" style="display:inline;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="status" value="COMPLETED"/>
+                            <button type="submit" class="chat-option-btn" style="color:#81C784;border-color:rgba(76,175,80,0.3);">
+                                ✅ Mark Completed
+                            </button>
+                        </form>
+                        <form th:action="@{'/admin/custom-orders/' + ${request.id} + '/status'}" method="post" style="display:inline;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="status" value="CANCELLED"/>
+                            <button type="submit" class="chat-option-btn" style="color:#EF9A9A;border-color:rgba(244,67,54,0.3);">
+                                ❌ Cancel
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Admin Notes -->
+                <form th:action="@{'/admin/custom-orders/' + ${request.id} + '/notes'}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <label style="font-family:'Nunito',sans-serif;font-size:0.8rem;color:rgba(255,255,255,0.5);margin-bottom:0.3rem;display:block;">
+                        Admin Notes (agreed price, delivery date, etc.):
+                    </label>
+                    <textarea name="notes" rows="3"
+                              th:text="${request.adminNotes}"
+                              style="width:100%;background:rgba(20,20,20,0.6);border:1px solid rgba(212,160,23,0.2);border-radius:8px;padding:0.6rem;color:#fff;font-family:'Nunito',sans-serif;font-size:0.85rem;resize:vertical;"
+                              placeholder="e.g., Agreed ₹800 for 2kg Mango pickle, delivery by 15th Sept"></textarea>
+                    <button type="submit" class="btn-order" style="margin-top:0.5rem;font-size:0.8rem;">
+                        💾 Save Notes
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Chat History -->
+    <div class="admin-section" style="margin-top:1.5rem;">
+        <div class="admin-section-title">💬 Chat Conversation</div>
+        <div style="max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:0.6rem;padding:0.5rem;">
+            <div th:each="msg : ${chatHistory}"
+                 th:style="${msg.sender == 'USER'
+                     ? 'align-self:flex-end;background:linear-gradient(135deg,rgba(212,160,23,0.3),rgba(212,160,23,0.15));border:1px solid rgba(212,160,23,0.35);max-width:75%;padding:0.6rem 0.9rem;border-radius:12px;font-family:Nunito,sans-serif;font-size:0.85rem;color:#fff;'
+                     : 'align-self:flex-start;background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.15);max-width:75%;padding:0.6rem 0.9rem;border-radius:12px;font-family:Nunito,sans-serif;font-size:0.85rem;color:rgba(255,255,255,0.85);'}">
+                <div style="font-size:0.65rem;color:rgba(255,255,255,0.35);margin-bottom:0.2rem;">
+                    <span th:text="${msg.sender == 'USER' ? '👤 Customer' : '🤖 Bot'}"></span>
+                    · <span th:text="${#temporals.format(msg.timestamp, 'hh:mm a')}"></span>
+                </div>
+                <div th:utext="${msg.message.replace('**','').replace('\n','&lt;br&gt;')}"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<style>
+    .chat-option-btn {
+        background: rgba(212,160,23,0.08);
+        border: 1px solid rgba(212,160,23,0.3);
+        color: #E8B84B;
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .chat-option-btn:hover {
+        background: rgba(212,160,23,0.2);
+        transform: translateY(-1px);
+    }
+</style>
+</body>
+</html>

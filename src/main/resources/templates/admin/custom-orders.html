@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Custom Orders — Admin — Amma Pickles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:wght@700;900&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+
+<div th:replace="~{fragments/admin-navbar :: adminNavbar}"></div>
+
+<div class="page-hdr">
+    <h2>🧑‍🍳 Custom Pickle Orders</h2>
+    <p>Manage custom pickle order requests from customers</p>
+</div>
+
+<div class="cart-main">
+
+    <div th:if="${success}" class="flash-success">
+        <i class="bi bi-check-circle-fill"></i>
+        <span th:text="${success}"></span>
+    </div>
+
+    <!-- Status Filter Pills -->
+    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;">
+        <a href="/admin/custom-orders"
+           class="pill-gold"
+           th:classappend="${currentFilter == null} ? ' active' : ''"
+           style="text-decoration:none;font-size:0.8rem;">
+            All
+        </a>
+        <a href="/admin/custom-orders?status=NEW"
+           class="pill-ghost"
+           th:classappend="${currentFilter == 'NEW'} ? ' active' : ''"
+           style="text-decoration:none;font-size:0.8rem;">
+            🆕 New (<span th:text="${newCount}">0</span>)
+        </a>
+        <a href="/admin/custom-orders?status=CONTACTED"
+           class="pill-ghost"
+           th:classappend="${currentFilter == 'CONTACTED'} ? ' active' : ''"
+           style="text-decoration:none;font-size:0.8rem;">
+            📞 Contacted (<span th:text="${contactedCount}">0</span>)
+        </a>
+        <a href="/admin/custom-orders?status=COMPLETED"
+           class="pill-ghost"
+           th:classappend="${currentFilter == 'COMPLETED'} ? ' active' : ''"
+           style="text-decoration:none;font-size:0.8rem;">
+            ✅ Completed (<span th:text="${completedCount}">0</span>)
+        </a>
+        <a href="/admin/custom-orders?status=CANCELLED"
+           class="pill-ghost"
+           th:classappend="${currentFilter == 'CANCELLED'} ? ' active' : ''"
+           style="text-decoration:none;font-size:0.8rem;">
+            ❌ Cancelled (<span th:text="${cancelledCount}">0</span>)
+        </a>
+    </div>
+
+    <!-- Requests Table -->
+    <div class="admin-section">
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Customer</th>
+                        <th>Phone</th>
+                        <th>Pickle</th>
+                        <th>Qty</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="req : ${requests}">
+                        <td class="td-id" th:text="${req.id}"></td>
+                        <td th:text="${req.customerName}"></td>
+                        <td>
+                            <a th:href="'tel:' + ${req.phoneNumber}"
+                               th:text="${req.phoneNumber}"
+                               style="color:#E8B84B;text-decoration:none;">
+                            </a>
+                        </td>
+                        <td th:text="${req.pickleType}"></td>
+                        <td th:text="${req.quantity}"></td>
+                        <td>
+                            <span th:switch="${req.status.name()}">
+                                <span th:case="'NEW'" style="color:#64B5F6;font-weight:700;">🆕 NEW</span>
+                                <span th:case="'CONTACTED'" style="color:#FFB74D;font-weight:700;">📞 CONTACTED</span>
+                                <span th:case="'COMPLETED'" style="color:#81C784;font-weight:700;">✅ COMPLETED</span>
+                                <span th:case="'CANCELLED'" style="color:#EF9A9A;font-weight:700;">❌ CANCELLED</span>
+                            </span>
+                        </td>
+                        <td class="td-muted"
+                            th:text="${#temporals.format(req.createdAt, 'dd MMM yyyy HH:mm')}"></td>
+                        <td>
+                            <a th:href="@{'/admin/custom-orders/' + ${req.id}}"
+                               class="btn-order"
+                               style="font-size:0.75rem;padding:0.3rem 0.8rem;text-decoration:none;">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(requests)}">
+                        <td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem;">
+                            No custom order requests found.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

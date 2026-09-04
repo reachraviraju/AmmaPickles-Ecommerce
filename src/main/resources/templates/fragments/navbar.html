@@ -39,6 +39,11 @@
             <i class="bi bi-box-seam"></i> My Orders
         </a>
 
+        <a href="/custom-pickle" class="pill-ghost"
+           th:if="${username != null}">
+            <i class="bi bi-chat-dots"></i> Custom Pickle
+        </a>
+
         <a href="/profile" class="pill-ghost"
            th:if="${username != null}">
             <i class="bi bi-person-circle"></i>
@@ -117,6 +122,9 @@
             </a>
             <a href="/orders" class="drawer-link">
                 <i class="bi bi-box-seam"></i> My Orders
+            </a>
+            <a href="/custom-pickle" class="drawer-link">
+                <i class="bi bi-chat-dots"></i> Custom Pickle
             </a>
             <a href="/profile" class="drawer-link">
                 <i class="bi bi-person-circle"></i> Profile

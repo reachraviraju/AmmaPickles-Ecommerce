@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Custom Pickle Order — Amma Pickles</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F9AB;</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:wght@700;900&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <style>
+        .chat-container {
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .chat-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .chat-header h2 {
+            font-family: 'Cinzel', serif;
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: linear-gradient(105deg, #C9920A, #E8B84B, #FFF0A0, #E8B84B, #C9920A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.5rem;
+        }
+        .chat-header p {
+            color: rgba(255,255,255,0.5);
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.85rem;
+        }
+        .chat-box {
+            background: rgba(20, 20, 20, 0.6);
+            border: 1px solid rgba(212, 160, 23, 0.15);
+            border-radius: 16px;
+            padding: 1.5rem;
+            min-height: 450px;
+            max-height: 65vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            scroll-behavior: smooth;
+        }
+        .chat-bubble {
+            max-width: 85%;
+            padding: 0.8rem 1.1rem;
+            border-radius: 14px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            animation: fadeInUp 0.3s ease;
+            word-wrap: break-word;
+        }
+        .chat-bubble.bot {
+            align-self: flex-start;
+            background: rgba(212, 160, 23, 0.1);
+            border: 1px solid rgba(212, 160, 23, 0.2);
+            color: rgba(255,255,255,0.9);
+        }
+        .chat-bubble.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, rgba(212,160,23,0.3), rgba(212,160,23,0.15));
+            border: 1px solid rgba(212, 160, 23, 0.35);
+            color: #fff;
+        }
+        .chat-bubble strong { color: #E8B84B; }
+
+        .chat-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            animation: fadeInUp 0.4s ease;
+        }
+        .chat-option-btn {
+            background: rgba(212, 160, 23, 0.08);
+            border: 1px solid rgba(212, 160, 23, 0.3);
+            color: #E8B84B;
+            padding: 0.45rem 1rem;
+            border-radius: 20px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .chat-option-btn:hover {
+            background: rgba(212, 160, 23, 0.2);
+            border-color: rgba(212, 160, 23, 0.6);
+            transform: translateY(-1px);
+        }
+        .chat-option-btn:active { transform: scale(0.97); }
+
+        .chat-input-area {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 1rem;
+        }
+        .chat-input {
+            flex: 1;
+            background: rgba(20, 20, 20, 0.6);
+            border: 1px solid rgba(212, 160, 23, 0.2);
+            border-radius: 12px;
+            padding: 0.7rem 1rem;
+            color: #fff;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .chat-input:focus { border-color: rgba(212, 160, 23, 0.5); }
+        .chat-input::placeholder { color: rgba(255,255,255,0.3); }
+        .chat-input:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .chat-send-btn {
+            background: linear-gradient(135deg, #C9920A, #E8B84B);
+            border: none;
+            border-radius: 12px;
+            padding: 0.7rem 1.2rem;
+            color: #1a1a1a;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        .chat-send-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(212,160,23,0.3); }
+        .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 0.8rem 1.1rem;
+            align-self: flex-start;
+        }
+        .typing-dot {
+            width: 8px; height: 8px;
+            background: rgba(212, 160, 23, 0.5);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        .min-order-badge {
+            display: inline-block;
+            background: rgba(255, 152, 0, 0.15);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+            color: #FFB74D;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .completed-banner {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 12px;
+            margin-top: 1rem;
+            color: #81C784;
+            font-family: 'Nunito', sans-serif;
+        }
+        .completed-banner a {
+            color: #E8B84B;
+            text-decoration: underline;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 576px) {
+            .chat-container { margin: 1rem auto; }
+            .chat-box { min-height: 350px; max-height: 55vh; padding: 1rem; }
+            .chat-bubble { max-width: 92%; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <h2>🧑‍🍳 Custom Pickle Order</h2>
+        <p>Tell us your preferences and we'll make it just for you!</p>
+        <span class="min-order-badge">📦 Minimum Order: 2kg</span>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+        <!-- Messages will be injected here -->
+    </div>
+
+    <div class="chat-input-area" id="inputArea">
+        <input type="text" class="chat-input" id="chatInput"
+               placeholder="Type your message..." autocomplete="off"/>
+        <button class="chat-send-btn" id="sendBtn" onclick="sendMessage()">
+            <i class="bi bi-send-fill"></i>
+        </button>
+    </div>
+
+    <div class="completed-banner" id="completedBanner" style="display:none;">
+        ✅ Order submitted! <a href="/home">Back to Home</a> or
+        <a href="/custom-pickle">New Custom Order</a>
+    </div>
+</div>
+
+<input type="hidden" id="sessionId" th:value="${chatSessionId}"/>
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+<script>
+(function() {
+    const chatBox = document.getElementById('chatBox');
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const inputArea = document.getElementById('inputArea');
+    const completedBanner = document.getElementById('completedBanner');
+    const sessionId = document.getElementById('sessionId').value;
+
+    const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+    let isWaitingForResponse = false;
+    let hasOptions = false;
+
+    // Start chat on page load
+    startChat();
+
+    chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    function startChat() {
+        showTyping();
+        fetch('/api/custom-pickle/chat/start', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [csrfHeader]: csrfToken
+            },
+            body: JSON.stringify({ sessionId: sessionId })
+        })
+        .then(r => {
+            if (!r.ok) throw new Error("Network response error: " + r.status);
+            return r.json();
+        })
+        .then(data => {
+            removeTyping();
+            addBotMessage(data.message, data.options);
+        })
+        .catch(err => {
+            removeTyping();
+            addBotMessage("⚠️ Network or connection issue. Please refresh the page to reconnect.");
+        });
+    }
+
+    window.sendMessage = function() {
+        const msg = chatInput.value.trim();
+        if (!msg || isWaitingForResponse) return;
+
+        addUserMessage(msg);
+        chatInput.value = '';
+        sendToBot(msg);
+    };
+
+    window.selectOption = function(option) {
+        if (isWaitingForResponse) return;
+        addUserMessage(option);
+        // Remove option buttons
+        const optContainers = chatBox.querySelectorAll('.chat-options');
+        optContainers.forEach(c => c.remove());
+        hasOptions = false;
+        sendToBot(option);
+    };
+
+    function sendToBot(message) {
+        isWaitingForResponse = true;
+        sendBtn.disabled = true;
+        chatInput.disabled = true;
+        showTyping();
+
+        fetch('/api/custom-pickle/chat/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [csrfHeader]: csrfToken
+            },
+            body: JSON.stringify({ sessionId: sessionId, message: message })
+        })
+        .then(r => {
+            if (!r.ok) throw new Error("Network response error: " + r.status);
+            return r.json();
+        })
+        .then(data => {
+            removeTyping();
+            addBotMessage(data.message, data.options);
+
+            if (data.completed) {
+                chatInput.disabled = true;
+                sendBtn.disabled = true;
+                inputArea.style.display = 'none';
+                completedBanner.style.display = 'block';
+            } else {
+                isWaitingForResponse = false;
+                sendBtn.disabled = false;
+                chatInput.disabled = false;
+                if (!data.options) {
+                    chatInput.focus();
+                }
+            }
+        })
+        .catch(err => {
+            removeTyping();
+            addBotMessage("⚠️ Network or connection error. Please check your internet connection and try again.");
+            isWaitingForResponse = false;
+            sendBtn.disabled = false;
+            chatInput.disabled = false;
+            chatInput.focus();
+        });
+    }
+
+    function renderMarkdown(text) {
+        if (!text) return '';
+        // Escape HTML
+        let escaped = text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+
+        // Code blocks
+        escaped = escaped.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+        // Inline code
+        escaped = escaped.replace(/`([^`]+)`/g, '<code>$1</code>');
+        // Bold: **text**
+        escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        // Italics: *text* or _text_
+        escaped = escaped.replace(/_([^_]+)_/g, '<em>$1</em>');
+        escaped = escaped.replace(/(^|[^*])\*([^*]+)\*([^*]|$)/g, '$1<em>$2</em>$3');
+
+        // Convert bullet points (* or - ) to list items
+        const lines = escaped.split('\n');
+        let formatted = [];
+        let inList = false;
+
+        for (let line of lines) {
+            let trimmed = line.trim();
+            if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+                if (!inList) {
+                    formatted.push('<ul style="margin: 0.4rem 0; padding-left: 1.2rem;">');
+                    inList = true;
+                }
+                formatted.push('<li>' + trimmed.substring(2) + '</li>');
+            } else {
+                if (inList) {
+                    formatted.push('</ul>');
+                    inList = false;
+                }
+                formatted.push(line);
+            }
+        }
+        if (inList) formatted.push('</ul>');
+
+        return formatted.join('<br>').replace(/<br><ul/g, '<ul').replace(/<\/ul><br>/g, '</ul>');
+    }
+
+    function addBotMessage(text, options) {
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-bubble bot';
+        bubble.innerHTML = renderMarkdown(text);
+        chatBox.appendChild(bubble);
+
+        if (options && options.length > 0) {
+            hasOptions = true;
+            const optDiv = document.createElement('div');
+            optDiv.className = 'chat-options';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'chat-option-btn';
+                btn.textContent = opt;
+                btn.onclick = function() { selectOption(opt); };
+                optDiv.appendChild(btn);
+            });
+            chatBox.appendChild(optDiv);
+            chatInput.placeholder = 'Select an option or type your own choice...';
+        } else {
+            hasOptions = false;
+            chatInput.placeholder = 'Type your message to Amma Chef...';
+        }
+
+        scrollToBottom();
+    }
+
+    function addUserMessage(text) {
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-bubble user';
+        bubble.textContent = text;
+        chatBox.appendChild(bubble);
+        scrollToBottom();
+    }
+
+    function showTyping() {
+        const typing = document.createElement('div');
+        typing.className = 'typing-indicator';
+        typing.id = 'typingIndicator';
+        typing.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+        chatBox.appendChild(typing);
+        scrollToBottom();
+    }
+
+    function removeTyping() {
+        const t = document.getElementById('typingIndicator');
+        if (t) t.remove();
+    }
+
+    function scrollToBottom() {
+        setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 50);
+    }
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

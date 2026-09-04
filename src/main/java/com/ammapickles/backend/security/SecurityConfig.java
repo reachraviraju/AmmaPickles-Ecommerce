@@ -40,6 +40,8 @@ public class SecurityConfig {
                              "/profile/**",
                              "/admin/**",           
                              "/products/**",
+                             "/custom-pickle/**",
+                             "/api/custom-pickle/**",
                              "/css/**", "/images/**", "/js/**",
                              "/favicon.ico")
 
@@ -64,8 +66,9 @@ public class SecurityConfig {
                 	    "/images/**",
                 	    "/js/**",
                 	    "/favicon.ico",
-                	    "/products/**"
-                	    
+                	    "/products/**",
+                	    "/custom-pickle/**",
+                	    "/api/custom-pickle/**"
                       ).permitAll()
 
                 //  PROTECTED 
