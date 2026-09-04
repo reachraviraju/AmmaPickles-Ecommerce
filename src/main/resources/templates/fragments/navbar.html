@@ -219,16 +219,7 @@ function dismissCustomPickleBubble(e) {
             if (b) b.style.display = 'none';
         }
 
-        const isMobile = window.innerWidth <= 768;
-
-        // On Laptop/Desktop: ALWAYS keep the spinning button visible!
-        if (!isMobile) {
-            widget.classList.remove('widget-hidden');
-            widget.classList.add('widget-visible');
-            return;
-        }
-
-        // On Mobile: 10s Visible + 6s Hidden Dynamic Cycle
+        // 10s Visible + 6s Hidden Dynamic Cycle (Mobile & Laptop)
         const VISIBLE_DURATION = 10000; // 10 seconds visible
         const HIDDEN_DURATION  = 6000;  // 6 seconds hidden
         const INITIAL_DELAY    = 1500;  // 1.5 seconds after page load
@@ -258,7 +249,17 @@ function dismissCustomPickleBubble(e) {
             }, HIDDEN_DURATION);
         }
 
-        // Pause timer while user touches widget
+        // Pause timer while user hovers (laptop) or touches (mobile)
+        widget.addEventListener('mouseenter', function() {
+            isInteracting = true;
+            clearTimeout(hideTimer);
+        });
+
+        widget.addEventListener('mouseleave', function() {
+            isInteracting = false;
+            hideTimer = setTimeout(hideWidget, 4000);
+        });
+
         widget.addEventListener('touchstart', function() {
             isInteracting = true;
             clearTimeout(hideTimer);
