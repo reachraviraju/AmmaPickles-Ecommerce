@@ -79,6 +79,9 @@ This combines **AI-powered conversation with a real e-commerce ordering workflow
 ### Home Page
 ![Home](screenshots/home.png)
 
+### AI Pickle Chef Chatbot (Google Gemini)
+![AI Pickle Chef Chatbot](screenshots/gemini-pickle-chatbot.png)
+
 ### Product Detail
 ![Product Detail](screenshots/product-detail.png)
 
