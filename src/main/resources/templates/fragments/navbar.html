@@ -53,8 +53,8 @@
               method="post"
               style="margin:0; padding:0;">
             <input type="hidden"
-                   th:name="${_csrf.parameterName}"
-                   th:value="${_csrf.token}"/>
+                   th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}"
+                   th:value="${_csrf != null ? _csrf.token : ''}"/>
             <button type="submit" class="pill-ghost"
                     style="background:transparent; cursor:pointer;">
                 <i class="bi bi-box-arrow-right"></i> Logout
@@ -132,8 +132,8 @@
             <hr class="drawer-divider"/>
             <form th:action="@{/logout}" method="post" style="margin:0;">
                 <input type="hidden"
-                       th:name="${_csrf.parameterName}"
-                       th:value="${_csrf.token}"/>
+                       th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}"
+                       th:value="${_csrf != null ? _csrf.token : ''}"/>
                 <button type="submit"
                         class="drawer-link drawer-logout"
                         style="width:100%;text-align:left;">
