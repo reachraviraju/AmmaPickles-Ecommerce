@@ -311,11 +311,14 @@ body {
 .order-id { font-family:'Playfair Display',serif; font-size:0.9rem; color:white; margin-bottom:1px; }
 .order-date { color:var(--text-silver-soft); font-size:0.68rem; }
 .status-badge { padding:0.18rem 0.7rem; border-radius:20px; font-size:0.6rem; font-weight:700; font-family:'Cinzel',serif; letter-spacing:1px; text-transform:uppercase; }
+.status-NEW       { background:rgba(212,160,23,0.15); border:1px solid rgba(212,160,23,0.4); color:#E8B84B; }
+.status-CONTACTED { background:rgba(0,150,136,0.15);  border:1px solid rgba(0,150,136,0.4);  color:#4DB6AC; }
 .status-PENDING   { background:rgba(255,152,0,0.15);  border:1px solid rgba(255,152,0,0.4);  color:#FFB74D; }
 .status-CONFIRMED { background:rgba(33,150,243,0.15); border:1px solid rgba(33,150,243,0.4); color:#64B5F6; }
 .status-PREPARING { background:rgba(230,126,34,0.15); border:1px solid rgba(230,126,34,0.4); color:#F39C12; }
 .status-SHIPPED   { background:rgba(156,39,176,0.15); border:1px solid rgba(156,39,176,0.4); color:#CE93D8; }
 .status-DELIVERED { background:rgba(76,175,80,0.15);  border:1px solid rgba(76,175,80,0.4);  color:#81C784; }
+.status-COMPLETED { background:rgba(76,175,80,0.15);  border:1px solid rgba(76,175,80,0.4);  color:#81C784; }
 .status-CANCELLED { background:rgba(139,0,0,0.20);    border:1px solid rgba(139,0,0,0.5);    color:#EF9A9A; }
 .order-body { padding:0.75rem 1rem; }
 .addr-row { background:rgba(212,160,23,0.06); border-left:2px solid rgba(212,160,23,0.45); padding:0.4rem 0.75rem; border-radius:0 6px 6px 0; font-size:0.75rem; color:var(--text-silver); margin-bottom:0.75rem; }

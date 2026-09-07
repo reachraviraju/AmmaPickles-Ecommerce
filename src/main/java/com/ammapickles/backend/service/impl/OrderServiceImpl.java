@@ -180,6 +180,12 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
+        // Guard: cannot update completed or cancelled orders
+        OrderStatus current = order.getStatus();
+        if (current == OrderStatus.DELIVERED || current == OrderStatus.CANCELLED) {
+            throw new IllegalStateException("Cannot update a " + current + " order.");
+        }
+
         order.setStatus(OrderStatus.valueOf(status.toUpperCase()));
         orderRepository.save(order);
 
