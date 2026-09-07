@@ -92,8 +92,8 @@ public class AdminCustomOrderViewController {
         try {
             CustomOrderStatus newStatus = CustomOrderStatus.valueOf(status.toUpperCase());
 
-            // Validation: Cannot advance to PREPARING, SHIPPED, or DELIVERED before order is CONFIRMED with price
-            if ((newStatus == CustomOrderStatus.PREPARING || newStatus == CustomOrderStatus.SHIPPED || newStatus == CustomOrderStatus.DELIVERED)
+            // Validation: Cannot advance to PREPARING, SHIPPED, DELIVERED, or COMPLETED before order is CONFIRMED with price
+            if ((newStatus == CustomOrderStatus.PREPARING || newStatus == CustomOrderStatus.SHIPPED || newStatus == CustomOrderStatus.DELIVERED || newStatus == CustomOrderStatus.COMPLETED)
                     && request.getAgreedPrice() == null) {
                 redirectAttributes.addFlashAttribute("error",
                         "Cannot advance to " + newStatus.name() + " yet! Please fill the 'Confirm Order' form with agreed price first.");
@@ -103,12 +103,7 @@ public class AdminCustomOrderViewController {
             request.setStatus(newStatus);
 
             // Auto-link user account by phone if not already linked
-            if (request.getUser() == null && request.getPhoneNumber() != null) {
-                String phone = request.getPhoneNumber().replaceAll("[^0-9]", "");
-                if (phone.length() >= 10) {
-                    userRepository.findByPhoneNumber(phone).ifPresent(request::setUser);
-                }
-            }
+            tryLinkUserByPhone(request);
 
             customOrderRepo.save(request);
             redirectAttributes.addFlashAttribute("success",
@@ -148,12 +143,7 @@ public class AdminCustomOrderViewController {
         request.setStatus(CustomOrderStatus.CONFIRMED);
 
         // Try to auto-link customer's user account by phone if not already linked
-        if (request.getUser() == null && request.getPhoneNumber() != null) {
-            String phone = request.getPhoneNumber().replaceAll("[^0-9]", "");
-            if (phone.length() == 10) {
-                userRepository.findByPhoneNumber(phone).ifPresent(request::setUser);
-            }
-        }
+        tryLinkUserByPhone(request);
 
         customOrderRepo.save(request);
         redirectAttributes.addFlashAttribute("success",
@@ -161,6 +151,16 @@ public class AdminCustomOrderViewController {
                 ", Balance ₹" + request.getBalanceDue());
 
         return "redirect:/admin/custom-orders/" + id;
+    }
+
+    private void tryLinkUserByPhone(CustomOrderRequest request) {
+        if (request.getUser() == null && request.getPhoneNumber() != null) {
+            String raw = request.getPhoneNumber().replaceAll("[^0-9]", "");
+            String phone10 = raw.length() >= 10 ? raw.substring(raw.length() - 10) : raw;
+            userRepository.findByPhoneNumber(phone10)
+                    .or(() -> userRepository.findByPhoneNumber(raw))
+                    .ifPresent(request::setUser);
+        }
     }
 
     /**

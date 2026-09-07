@@ -53,7 +53,7 @@ public class AddressViewController {
             log.error("Failed to save address for user {}: {}", userDetails.getId(), e.getMessage(), e);
             flash.addFlashAttribute("errorMsg", e.getMessage() != null ? e.getMessage() : "Failed to save address.");
         }
-        if (redirect != null && !redirect.isBlank()) {
+        if (redirect != null && redirect.startsWith("/") && !redirect.startsWith("//") && !redirect.contains("\\")) {
             return "redirect:" + redirect;
         }
         return "redirect:/orders/place";
