@@ -192,14 +192,28 @@
                         </td>
                     </tr>
                     <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:0.6rem 0;color:rgba(255,255,255,0.5);">User Account</td>
+                        <td style="padding:0.6rem 0;">
+                            <span th:if="${request.user != null}" style="color:#81C784;font-weight:600;">
+                                <i class="bi bi-person-check-fill me-1"></i>
+                                Linked (@<span th:text="${request.user.username}"></span>)
+                            </span>
+                            <span th:if="${request.user == null}" style="color:rgba(255,255,255,0.4);font-size:0.85rem;">
+                                <i class="bi bi-person-dash me-1"></i> Not Linked
+                            </span>
+                        </td>
+                    </tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
                         <td style="padding:0.6rem 0;color:rgba(255,255,255,0.5);">Current Status</td>
                         <td style="padding:0.6rem 0;">
                             <span th:switch="${request.status.name()}">
                                 <span th:case="'NEW'" style="color:#64B5F6;font-weight:700;">🆕 NEW</span>
                                 <span th:case="'CONTACTED'" style="color:#FFB74D;font-weight:700;">📞 CONTACTED</span>
-                                <span th:case="'CONFIRMED'" style="color:#81C784;font-weight:700;">🤝 CONFIRMED</span>
-                                <span th:case="'PREPARING'" style="color:#CE93D8;font-weight:700;">🏺 PREPARING</span>
-                                <span th:case="'COMPLETED'" style="color:#66BB6A;font-weight:700;">✅ COMPLETED</span>
+                                <span th:case="'CONFIRMED'" style="color:#64B5F6;font-weight:700;">🤝 CONFIRMED</span>
+                                <span th:case="'PREPARING'" style="color:#F39C12;font-weight:700;">🏺 PREPARING</span>
+                                <span th:case="'SHIPPED'" style="color:#CE93D8;font-weight:700;">🚚 SHIPPED</span>
+                                <span th:case="'DELIVERED'" style="color:#81C784;font-weight:700;">✅ DELIVERED</span>
+                                <span th:case="'COMPLETED'" style="color:#81C784;font-weight:700;">✅ DELIVERED</span>
                                 <span th:case="'CANCELLED'" style="color:#EF9A9A;font-weight:700;">❌ CANCELLED</span>
                             </span>
                         </td>
@@ -211,40 +225,80 @@
                     </tr>
                 </table>
 
-                <!-- Quick Status Transitions -->
-                <div style="margin-bottom:1rem;">
-                    <label style="font-family:'Nunito',sans-serif;font-size:0.8rem;color:rgba(255,255,255,0.5);margin-bottom:0.4rem;display:block;">
-                        Quick Status Change:
-                    </label>
-                    <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
-                        <form th:action="@{'/admin/custom-orders/' + ${request.id} + '/status'}" method="post" style="display:inline;">
+                <!-- Guided Lifecycle Status Transitions -->
+                <div style="margin-bottom:1.2rem;background:rgba(212,160,23,0.04);border:1px solid rgba(212,160,23,0.15);border-radius:10px;padding:0.8rem;">
+                    <div style="font-family:'Cinzel',serif;font-size:0.75rem;color:var(--gold-mid);letter-spacing:1px;margin-bottom:0.6rem;">
+                        <i class="bi bi-diagram-3-fill me-1"></i> Order Lifecycle Action
+                    </div>
+
+                    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+
+                        <!-- When NEW: allow marking as Contacted -->
+                        <form th:if="${request.status.name() == 'NEW'}"
+                              th:action="@{'/admin/custom-orders/' + ${request.id} + '/status'}" method="post" style="display:inline;">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                             <input type="hidden" name="status" value="CONTACTED"/>
-                            <button type="submit" class="chat-option-btn" style="color:#FFB74D;border-color:rgba(255,183,77,0.3);">
-                                📞 Contacted
+                            <button type="submit" class="btn btn-sm btn-outline-warning" style="font-size:0.82rem;font-weight:600;border-radius:8px;">
+                                📞 Mark as Contacted
                             </button>
                         </form>
-                        <form th:action="@{'/admin/custom-orders/' + ${request.id} + '/status'}" method="post" style="display:inline;">
+
+                        <!-- When CONTACTED: Guide admin to fill the confirmation form -->
+                        <div th:if="${request.status.name() == 'CONTACTED'}" style="font-size:0.82rem;color:#FFB74D;">
+                            <i class="bi bi-info-circle me-1"></i> Customer contacted! Fill the <strong>Confirmation Form</strong> below to agree on price and confirm order.
+                        </div>
+
+                        <!-- When CONFIRMED: allow moving to PREPARING -->
+                        <form th:if="${request.status.name() == 'CONFIRMED'}"
+                              th:action="@{'/admin/custom-orders/' + ${request.id} + '/status'}" method="post" style="display:inline;">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                             <input type="hidden" name="status" value="PREPARING"/>
-                            <button type="submit" class="chat-option-btn" style="color:#CE93D8;border-color:rgba(206,147,216,0.3);">
-                                🏺 Preparing
+                            <button type="submit" class="btn btn-sm" style="background:#F39C12;color:#fff;font-weight:600;border-radius:8px;">
+                                🏺 Start Kitchen Preparation
                             </button>
                         </form>
-                        <form th:action="@{'/admin/custom-orders/' + ${request.id} + '/status'}" method="post" style="display:inline;">
+
+                        <!-- When PREPARING: allow moving to SHIPPED -->
+                        <form th:if="${request.status.name() == 'PREPARING'}"
+                              th:action="@{'/admin/custom-orders/' + ${request.id} + '/status'}" method="post" style="display:inline;">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                            <input type="hidden" name="status" value="COMPLETED"/>
-                            <button type="submit" class="chat-option-btn" style="color:#81C784;border-color:rgba(76,175,80,0.3);">
-                                ✅ Completed
+                            <input type="hidden" name="status" value="SHIPPED"/>
+                            <button type="submit" class="btn btn-sm" style="background:#AB47BC;color:#fff;font-weight:600;border-radius:8px;">
+                                🚚 Mark as Shipped (Out for Delivery)
                             </button>
                         </form>
-                        <form th:action="@{'/admin/custom-orders/' + ${request.id} + '/status'}" method="post" style="display:inline;">
+
+                        <!-- When SHIPPED: allow moving to DELIVERED -->
+                        <form th:if="${request.status.name() == 'SHIPPED'}"
+                              th:action="@{'/admin/custom-orders/' + ${request.id} + '/status'}" method="post" style="display:inline;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="status" value="DELIVERED"/>
+                            <button type="submit" class="btn btn-sm" style="background:#4CAF50;color:#fff;font-weight:600;border-radius:8px;">
+                                ✅ Mark as Delivered & Collected
+                            </button>
+                        </form>
+
+                        <!-- When DELIVERED / COMPLETED -->
+                        <div th:if="${request.status.name() == 'DELIVERED' or request.status.name() == 'COMPLETED'}"
+                             style="font-size:0.85rem;color:#81C784;font-weight:700;">
+                            🎉 Order Delivered & Completed!
+                        </div>
+
+                        <!-- Cancel Option (if not delivered or already cancelled) -->
+                        <form th:if="${request.status.name() != 'DELIVERED' and request.status.name() != 'COMPLETED' and request.status.name() != 'CANCELLED'}"
+                              th:action="@{'/admin/custom-orders/' + ${request.id} + '/status'}" method="post" style="display:inline;">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                             <input type="hidden" name="status" value="CANCELLED"/>
-                            <button type="submit" class="chat-option-btn" style="color:#EF9A9A;border-color:rgba(244,67,54,0.3);">
-                                ❌ Cancel
+                            <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size:0.78rem;border-radius:8px;"
+                                    onclick="return confirm('Are you sure you want to cancel this custom order?');">
+                                ❌ Cancel Order
                             </button>
                         </form>
+
+                        <div th:if="${request.status.name() == 'CANCELLED'}" style="font-size:0.85rem;color:#EF9A9A;font-weight:700;">
+                            ❌ This order was cancelled.
+                        </div>
+
                     </div>
                 </div>
 

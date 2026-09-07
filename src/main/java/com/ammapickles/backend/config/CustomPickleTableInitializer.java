@@ -69,6 +69,11 @@ public class CustomPickleTableInitializer implements CommandLineRunner {
             safeAlterTable("ALTER TABLE custom_order_requests ADD COLUMN estimated_delivery VARCHAR(255) NULL");
             safeAlterTable("ALTER TABLE custom_order_requests ADD COLUMN delivery_address TEXT NULL");
 
+            // Migrate any legacy COMPLETED status to DELIVERED
+            try {
+                jdbcTemplate.execute("UPDATE custom_order_requests SET status = 'DELIVERED' WHERE status = 'COMPLETED'");
+            } catch (Exception ignored) {}
+
             log.info("Custom Pickle tables initialized successfully.");
         } catch (Exception e) {
             log.error("Failed to initialize Custom Pickle tables: {}", e.getMessage(), e);
