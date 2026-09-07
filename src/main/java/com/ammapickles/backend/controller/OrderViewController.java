@@ -1,6 +1,8 @@
 package com.ammapickles.backend.controller;
 
 import com.ammapickles.backend.dto.order.OrderRequest;
+import com.ammapickles.backend.entity.CustomOrderRequest;
+import com.ammapickles.backend.repository.CustomOrderRequestRepository;
 import com.ammapickles.backend.security.CustomUserDetails;
 import com.ammapickles.backend.service.AddressService;
 import com.ammapickles.backend.service.OrderService;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 @Slf4j
 @Controller
 @RequiredArgsConstructor
@@ -22,11 +26,19 @@ public class OrderViewController {
 
     private final OrderService orderService;
     private final AddressService addressService;
+    private final CustomOrderRequestRepository customOrderRepo;
 
     @GetMapping("/orders")
     public String ordersPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         model.addAttribute("orders", orderService.getOrdersByUser(userDetails.getId()));
         model.addAttribute("username", userDetails.getUser().getUsername());
+
+        // Fetch custom orders for this user (by user ID or phone number)
+        String phone = userDetails.getUser().getPhoneNumber();
+        List<CustomOrderRequest> customOrders = customOrderRepo.findByUserIdOrPhone(
+                userDetails.getId(), phone != null ? phone : "");
+        model.addAttribute("customOrders", customOrders);
+
         return "orders";
     }
 
@@ -67,4 +79,4 @@ public class OrderViewController {
         }
         return "redirect:/orders";
     }
-}
+}

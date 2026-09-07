@@ -60,9 +60,36 @@ public class CustomPickleTableInitializer implements CommandLineRunner {
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             """);
 
+            // 3. Add new financial/fulfillment columns for custom order confirmation workflow.
+            //    Using try-catch for each ALTER so existing columns don't cause failures.
+            safeAlterTable("ALTER TABLE custom_order_requests ADD COLUMN agreed_price DECIMAL(10,2) NULL");
+            safeAlterTable("ALTER TABLE custom_order_requests ADD COLUMN advance_paid DECIMAL(10,2) NULL");
+            safeAlterTable("ALTER TABLE custom_order_requests ADD COLUMN balance_due DECIMAL(10,2) NULL");
+            safeAlterTable("ALTER TABLE custom_order_requests ADD COLUMN payment_reference VARCHAR(255) NULL");
+            safeAlterTable("ALTER TABLE custom_order_requests ADD COLUMN estimated_delivery VARCHAR(255) NULL");
+            safeAlterTable("ALTER TABLE custom_order_requests ADD COLUMN delivery_address TEXT NULL");
+
             log.info("Custom Pickle tables initialized successfully.");
         } catch (Exception e) {
             log.error("Failed to initialize Custom Pickle tables: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Safely execute an ALTER TABLE statement, ignoring "Duplicate column" errors
+     * so that re-runs on an already-migrated database are harmless.
+     */
+    private void safeAlterTable(String sql) {
+        try {
+            jdbcTemplate.execute(sql);
+            log.info("Migration applied: {}", sql);
+        } catch (Exception e) {
+            // MySQL error 1060 = Duplicate column name — safe to ignore
+            if (e.getMessage() != null && e.getMessage().contains("Duplicate column")) {
+                log.debug("Column already exists, skipping: {}", sql);
+            } else {
+                log.warn("Migration skipped ({}): {}", e.getMessage(), sql);
+            }
         }
     }
 }

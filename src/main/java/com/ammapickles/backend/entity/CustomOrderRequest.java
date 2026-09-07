@@ -2,6 +2,7 @@ package com.ammapickles.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -61,6 +62,30 @@ public class CustomOrderRequest {
 
     @Column(columnDefinition = "TEXT")
     private String adminNotes;
+
+    // --- Financial fields (set when admin confirms order after discussion) ---
+
+    /** Total price agreed upon with customer */
+    @Column(precision = 10, scale = 2)
+    private BigDecimal agreedPrice;
+
+    /** Advance amount paid by customer */
+    @Column(precision = 10, scale = 2)
+    private BigDecimal advancePaid;
+
+    /** Remaining balance to collect on delivery = agreedPrice - advancePaid */
+    @Column(precision = 10, scale = 2)
+    private BigDecimal balanceDue;
+
+    /** Payment reference info e.g. "GPay UPI - TXN#789012" or "Cash" */
+    private String paymentReference;
+
+    /** Estimated delivery timeline e.g. "5-7 days after sun fermentation" */
+    private String estimatedDelivery;
+
+    /** Delivery address agreed during phone call */
+    @Column(columnDefinition = "TEXT")
+    private String deliveryAddress;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

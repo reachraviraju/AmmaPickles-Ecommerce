@@ -45,11 +45,23 @@
            style="text-decoration:none;font-size:0.8rem;">
             📞 Contacted (<span th:text="${contactedCount}">0</span>)
         </a>
+        <a href="/admin/custom-orders?status=CONFIRMED"
+           class="pill-ghost"
+           th:classappend="${currentFilter == 'CONFIRMED'} ? ' active' : ''"
+           style="text-decoration:none;font-size:0.8rem;">
+            ✅ Confirmed (<span th:text="${confirmedCount}">0</span>)
+        </a>
+        <a href="/admin/custom-orders?status=PREPARING"
+           class="pill-ghost"
+           th:classappend="${currentFilter == 'PREPARING'} ? ' active' : ''"
+           style="text-decoration:none;font-size:0.8rem;">
+            🫙 Preparing (<span th:text="${preparingCount}">0</span>)
+        </a>
         <a href="/admin/custom-orders?status=COMPLETED"
            class="pill-ghost"
            th:classappend="${currentFilter == 'COMPLETED'} ? ' active' : ''"
            style="text-decoration:none;font-size:0.8rem;">
-            ✅ Completed (<span th:text="${completedCount}">0</span>)
+            📦 Completed (<span th:text="${completedCount}">0</span>)
         </a>
         <a href="/admin/custom-orders?status=CANCELLED"
            class="pill-ghost"
@@ -70,6 +82,8 @@
                         <th>Phone</th>
                         <th>Pickle</th>
                         <th>Qty</th>
+                        <th>Agreed ₹</th>
+                        <th>Advance ₹</th>
                         <th>Status</th>
                         <th>Date</th>
                         <th>Action</th>
@@ -87,11 +101,17 @@
                         </td>
                         <td th:text="${req.pickleType}"></td>
                         <td th:text="${req.quantity}"></td>
+                        <td th:text="${req.agreedPrice != null ? '₹' + req.agreedPrice : '—'}"
+                            style="color:#81C784;font-weight:700;"></td>
+                        <td th:text="${req.advancePaid != null and req.advancePaid > 0 ? '₹' + req.advancePaid : '—'}"
+                            style="color:#64B5F6;font-weight:600;"></td>
                         <td>
                             <span th:switch="${req.status.name()}">
                                 <span th:case="'NEW'" style="color:#64B5F6;font-weight:700;">🆕 NEW</span>
                                 <span th:case="'CONTACTED'" style="color:#FFB74D;font-weight:700;">📞 CONTACTED</span>
-                                <span th:case="'COMPLETED'" style="color:#81C784;font-weight:700;">✅ COMPLETED</span>
+                                <span th:case="'CONFIRMED'" style="color:#81C784;font-weight:700;">✅ CONFIRMED</span>
+                                <span th:case="'PREPARING'" style="color:#CE93D8;font-weight:700;">🫙 PREPARING</span>
+                                <span th:case="'COMPLETED'" style="color:#A5D6A7;font-weight:700;">📦 COMPLETED</span>
                                 <span th:case="'CANCELLED'" style="color:#EF9A9A;font-weight:700;">❌ CANCELLED</span>
                             </span>
                         </td>
@@ -106,7 +126,7 @@
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(requests)}">
-                        <td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem;">
+                        <td colspan="10" style="text-align:center;color:var(--text-muted);padding:2rem;">
                             No custom order requests found.
                         </td>
                     </tr>

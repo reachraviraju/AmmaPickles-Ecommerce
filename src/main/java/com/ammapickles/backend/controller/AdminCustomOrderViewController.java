@@ -4,6 +4,7 @@ import com.ammapickles.backend.entity.ChatMessage;
 import com.ammapickles.backend.entity.CustomOrderRequest;
 import com.ammapickles.backend.entity.CustomOrderStatus;
 import com.ammapickles.backend.repository.CustomOrderRequestRepository;
+import com.ammapickles.backend.repository.UserRepository;
 import com.ammapickles.backend.service.CustomPickleChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -11,11 +12,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
  * Admin controller for managing custom pickle order requests.
- * Admin can view, filter, update status, and add notes.
+ * Admin can view, filter, update status, confirm with pricing, and add notes.
  */
 @Controller
 @RequestMapping("/admin/custom-orders")
@@ -24,6 +26,7 @@ public class AdminCustomOrderViewController {
 
     private final CustomOrderRequestRepository customOrderRepo;
     private final CustomPickleChatService chatService;
+    private final UserRepository userRepository;
 
     /**
      * Show all custom order requests with optional status filter.
@@ -48,6 +51,8 @@ public class AdminCustomOrderViewController {
         model.addAttribute("currentFilter", status);
         model.addAttribute("newCount", customOrderRepo.countByStatus(CustomOrderStatus.NEW));
         model.addAttribute("contactedCount", customOrderRepo.countByStatus(CustomOrderStatus.CONTACTED));
+        model.addAttribute("confirmedCount", customOrderRepo.countByStatus(CustomOrderStatus.CONFIRMED));
+        model.addAttribute("preparingCount", customOrderRepo.countByStatus(CustomOrderStatus.PREPARING));
         model.addAttribute("completedCount", customOrderRepo.countByStatus(CustomOrderStatus.COMPLETED));
         model.addAttribute("cancelledCount", customOrderRepo.countByStatus(CustomOrderStatus.CANCELLED));
 
@@ -88,6 +93,49 @@ public class AdminCustomOrderViewController {
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", "Invalid status");
         }
+
+        return "redirect:/admin/custom-orders/" + id;
+    }
+
+    /**
+     * Confirm a custom order with agreed price and advance payment details.
+     * Admin fills this after speaking to customer on phone.
+     */
+    @PostMapping("/{id}/confirm")
+    public String confirmOrder(@PathVariable Long id,
+                               @RequestParam BigDecimal agreedPrice,
+                               @RequestParam(required = false, defaultValue = "0") BigDecimal advancePaid,
+                               @RequestParam(required = false, defaultValue = "") String paymentReference,
+                               @RequestParam(required = false, defaultValue = "") String estimatedDelivery,
+                               @RequestParam(required = false, defaultValue = "") String deliveryAddress,
+                               @RequestParam(required = false, defaultValue = "") String notes,
+                               RedirectAttributes redirectAttributes) {
+        CustomOrderRequest request = customOrderRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Custom order not found"));
+
+        request.setAgreedPrice(agreedPrice);
+        request.setAdvancePaid(advancePaid);
+        request.setBalanceDue(agreedPrice.subtract(advancePaid));
+        request.setPaymentReference(paymentReference.isBlank() ? null : paymentReference);
+        request.setEstimatedDelivery(estimatedDelivery.isBlank() ? null : estimatedDelivery);
+        request.setDeliveryAddress(deliveryAddress.isBlank() ? null : deliveryAddress);
+        if (!notes.isBlank()) {
+            request.setAdminNotes(notes);
+        }
+        request.setStatus(CustomOrderStatus.CONFIRMED);
+
+        // Try to auto-link customer's user account by phone if not already linked
+        if (request.getUser() == null && request.getPhoneNumber() != null) {
+            String phone = request.getPhoneNumber().replaceAll("[^0-9]", "");
+            if (phone.length() == 10) {
+                userRepository.findByPhoneNumber(phone).ifPresent(request::setUser);
+            }
+        }
+
+        customOrderRepo.save(request);
+        redirectAttributes.addFlashAttribute("success",
+                "✅ Order confirmed! Agreed ₹" + agreedPrice + ", Advance ₹" + advancePaid +
+                ", Balance ₹" + request.getBalanceDue());
 
         return "redirect:/admin/custom-orders/" + id;
     }
