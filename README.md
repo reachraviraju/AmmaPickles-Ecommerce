@@ -41,32 +41,22 @@ Customers can chat with the AI, describe their taste and requirements, and get p
 
 ### How It Works
 
-1. Customer opens the **AI Custom Pickle Chef**.
-2. Customer describes the pickle they want.
-3. Gemini understands the requirements and suggests a suitable recipe.
-4. Customer can continue chatting and make changes.
-5. Once the customer confirms the requirements, the custom order details are saved in MySQL.
-6. Admin can view and manage the custom order from the admin dashboard.
-
-### Example
-
-**Customer:**
-
-> I want 2 kg of spicy mango pickle with extra garlic and less oil.
-
-**AI Chef:**
-
-> Sure! I recommend a 2 kg spicy mango pickle with extra garlic and reduced sesame oil. Would you like the spice level to be medium or extra hot?
+1. Customer opens the **AI Custom Pickle Chef** (requires a saved delivery address first).
+2. Customer describes the pickle they want in natural language.
+3. Gemini understands the requirements and suggests a recipe with quantity and spice specifications.
+4. Customer can continue chatting and adjust preferences.
+5. Once confirmed, order details, recipe notes, and delivery address are saved to `custom_order_requests`.
+6. Admin reviews requests in the admin panel, calls the customer, agrees on price/advance, and tracks status from `CONFIRMED` → `PREPARING` → `SHIPPED` → `DELIVERED`.
 
 ### Backend Integration
 
-* **AI:** Google Gemini 1.5 Flash
-* **API:** Google Generative Language API
-* **Backend:** Spring Boot
-* **Database:** MySQL
-* **Persistence:** Custom order requirements are stored in the `custom_order_requests` table.
-* **Admin:** Custom orders can be viewed and their status can be updated from the admin dashboard.
-* **Fallback:** If the Gemini API is unavailable, the system still allows the customer to submit the custom order.
+* **AI:** Google Gemini 1.5 Flash (via Google Generative Language API)
+* **Backend:** Spring Boot 3.5.6
+* **Database:** MySQL (Aiven free tier)
+* **Persistence:** Custom orders stored in `custom_order_requests`, chat transcripts in `chat_messages`
+* **Admin Management:** Dedicated admin dashboard for reviewing requests, price confirmation, notes, and status progression
+* **Data Hygiene:** Retention cleanup method in `CustomPickleChatService` to purge old chat transcripts
+* **Fallback:** If Gemini API fails or quota runs out, rule-based extraction still saves the custom order safely
 
 This combines **AI-powered conversation with a real e-commerce ordering workflow**, rather than using AI only as a chatbot.
 
@@ -101,20 +91,21 @@ This combines **AI-powered conversation with a real e-commerce ordering workflow
 **Amma Pickles** is a fully functional online store for ordering traditional Andhra pickles — Veg and Non-Veg varieties available in three sizes (½ kg, 1 kg, 2 kg). The project features a **dual architecture**: a Thymeleaf-rendered web UI for customers, and a JWT-secured REST API for external/mobile access.
 
 **What's working:**
-- 🤖 **AI Custom Pickle Chef**: Real-time culinary consultation and custom batch ordering with Google Gemini
+- 🤖 **AI Custom Pickle Chef**: Natural language chat ordering with Google Gemini 1.5 Flash, automatic address linkage, and admin order tracking
 - Browse and search products by name or category
 - Product detail page with size variants
 - Cart management (add, update, remove, clear)
 - Place orders with COD — confirmed immediately
 - Flat ₹70 delivery charge (free above ₹1000 or first order above ₹500)
 - Stock is deducted on order and restored on cancellation
-- Delivery address management
+- Order status lifecycle guards preventing modification of completed or cancelled orders
+- Delivery address management with open-redirect security validation
 - Session-based web login and JWT-based API login
 - Login with email or phone number
 - OTP email verification on registration
 - Secure forgot-password flow with email token
 - Email notifications on registration and order events
-- Admin dashboard — manage products, categories, users, and orders
+- Admin dashboard — manage products, categories, users, orders, and custom pickle requests
 - Real-time registration form validation with debounced API checks
 
 ---
