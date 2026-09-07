@@ -19,8 +19,11 @@ public class AddressViewController {
     private final AddressService addressService;
 
     @GetMapping("/addresses/add")
-    public String addAddressPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+    public String addAddressPage(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                 @RequestParam(required = false) String redirect,
+                                 Model model) {
         model.addAttribute("username", userDetails.getUser().getUsername());
+        model.addAttribute("redirect", redirect);
         return "add-address";
     }
 
@@ -32,6 +35,7 @@ public class AddressViewController {
                               @RequestParam String state,
                               @RequestParam String pincode,
                               @RequestParam String mobileNumber,
+                              @RequestParam(required = false) String redirect,
                               @AuthenticationPrincipal CustomUserDetails userDetails,
                               RedirectAttributes flash) {
         try {
@@ -48,6 +52,9 @@ public class AddressViewController {
         } catch (Exception e) {
             log.error("Failed to save address for user {}: {}", userDetails.getId(), e.getMessage(), e);
             flash.addFlashAttribute("errorMsg", e.getMessage() != null ? e.getMessage() : "Failed to save address.");
+        }
+        if (redirect != null && !redirect.isBlank()) {
+            return "redirect:" + redirect;
         }
         return "redirect:/orders/place";
     }
