@@ -40,7 +40,7 @@ public class SecurityConfig {
                              "/profile/**",
                              "/admin/**",           
                              "/products/**",
-                             "/custom-pickle/**",
+                             "/custom-pickle", "/custom-pickle/**",
                              "/api/custom-pickle/**",
                              "/css/**", "/images/**", "/js/**",
                              "/favicon.ico")
@@ -73,7 +73,7 @@ public class SecurityConfig {
                 .requestMatchers("/cart/**").authenticated()
                 .requestMatchers("/orders/**").authenticated()
                 .requestMatchers("/profile/**").authenticated()
-                .requestMatchers("/custom-pickle/**").authenticated()
+                .requestMatchers("/custom-pickle", "/custom-pickle/**").authenticated()
                 .requestMatchers("/api/custom-pickle/**").authenticated()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 

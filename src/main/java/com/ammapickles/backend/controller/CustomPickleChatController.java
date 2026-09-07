@@ -1,5 +1,7 @@
 package com.ammapickles.backend.controller;
 
+import com.ammapickles.backend.entity.Address;
+import com.ammapickles.backend.repository.AddressRepository;
 import com.ammapickles.backend.security.CustomUserDetails;
 import com.ammapickles.backend.service.CustomPickleChatService;
 import lombok.RequiredArgsConstructor;
@@ -9,8 +11,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,15 +29,26 @@ import java.util.UUID;
 public class CustomPickleChatController {
 
     private final CustomPickleChatService chatService;
+    private final AddressRepository addressRepository;
 
     /**
      * Render the chat page.
+     * Redirects to add-address first if user doesn't have any saved address yet.
      */
     @GetMapping("/custom-pickle")
     public String chatPage(@AuthenticationPrincipal CustomUserDetails userDetails,
+                           RedirectAttributes flash,
                            Model model) {
         if (userDetails != null) {
+            Long userId = userDetails.getUser().getId();
+            List<Address> addresses = addressRepository.findByUserId(userId);
+            if (addresses == null || addresses.isEmpty()) {
+                flash.addFlashAttribute("errorMsg", "Please add your delivery address first so we know where to deliver your custom batch!");
+                return "redirect:/addresses/add?redirect=/custom-pickle";
+            }
+            Address defaultAddr = addresses.get(0);
             model.addAttribute("username", userDetails.getUser().getUsername());
+            model.addAttribute("deliveryAddress", defaultAddr.getStreet() + ", " + defaultAddr.getCity() + " - " + defaultAddr.getPincode());
         }
         model.addAttribute("chatSessionId", UUID.randomUUID().toString());
         return "custom-pickle-chat";

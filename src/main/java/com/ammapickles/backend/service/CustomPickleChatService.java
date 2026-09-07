@@ -31,6 +31,7 @@ public class CustomPickleChatService {
     private final ChatMessageRepository chatMessageRepo;
     private final CustomOrderRequestRepository customOrderRepo;
     private final UserRepository userRepository;
+    private final com.ammapickles.backend.repository.AddressRepository addressRepository;
     private final GeminiService geminiService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -158,6 +159,18 @@ public class CustomPickleChatService {
 
         if (userId != null) {
             userRepository.findById(userId).ifPresent(builder::user);
+            List<Address> addresses = addressRepository.findByUserId(userId);
+            if (addresses != null && !addresses.isEmpty()) {
+                Address addr = addresses.get(0);
+                String fullAddr = addr.getName() + ", " + addr.getStreet() + ", " + addr.getCity() + ", " + addr.getState() + " - " + addr.getPincode();
+                builder.deliveryAddress(fullAddr);
+                if (phone.isBlank() || phone.length() < 10) {
+                    builder.phoneNumber(addr.getMobileNumber());
+                }
+                if (customerName.isBlank() || "Customer".equalsIgnoreCase(customerName)) {
+                    builder.customerName(addr.getName());
+                }
+            }
         }
 
         customOrderRepo.save(builder.build());
@@ -335,6 +348,18 @@ public class CustomPickleChatService {
 
         if (userId != null) {
             userRepository.findById(userId).ifPresent(builder::user);
+            List<Address> addresses = addressRepository.findByUserId(userId);
+            if (addresses != null && !addresses.isEmpty()) {
+                Address addr = addresses.get(0);
+                String fullAddr = addr.getName() + ", " + addr.getStreet() + ", " + addr.getCity() + ", " + addr.getState() + " - " + addr.getPincode();
+                builder.deliveryAddress(fullAddr);
+                if (phone.isBlank() || phone.length() < 10) {
+                    builder.phoneNumber(addr.getMobileNumber());
+                }
+                if (customerName.isBlank() || "Customer".equalsIgnoreCase(customerName)) {
+                    builder.customerName(addr.getName());
+                }
+            }
         }
 
         return builder.build();
