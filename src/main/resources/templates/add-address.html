@@ -39,6 +39,7 @@
         <div class="auth-card">
             <form th:action="@{/addresses/add}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="redirect" th:value="${redirect}" th:if="${redirect != null}"/>
 
                 <label class="ap-label">Full Name</label>
                 <input class="ap-input" type="text" name="name"
