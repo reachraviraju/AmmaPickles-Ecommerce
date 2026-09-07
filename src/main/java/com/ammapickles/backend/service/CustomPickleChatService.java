@@ -381,4 +381,16 @@ public class CustomPickleChatService {
     private String nvl(String value) {
         return (value == null || value.isBlank()) ? "None" : value;
     }
+
+    /**
+     * Cleanup old chat session messages to prevent unbounded table growth.
+     * Can be invoked via scheduled job or admin maintenance endpoint.
+     */
+    @org.springframework.transaction.annotation.Transactional
+    public int cleanupOldChatMessages(int daysOld) {
+        java.time.LocalDateTime cutoff = java.time.LocalDateTime.now().minusDays(daysOld);
+        int deleted = chatMessageRepo.deleteByTimestampBefore(cutoff);
+        log.info("Cleaned up {} chat messages older than {} days (cutoff: {})", deleted, daysOld, cutoff);
+        return deleted;
+    }
 }
