@@ -33,9 +33,9 @@ public class OrderViewController {
         model.addAttribute("orders", orderService.getOrdersByUser(userDetails.getId()));
         model.addAttribute("username", userDetails.getUser().getUsername());
 
-        // Fetch custom orders for this user (by user ID or phone number)
+        // Only fetch CONFIRMED custom orders (confirmed by admin with agreed price)
         String phone = userDetails.getUser().getPhoneNumber();
-        List<CustomOrderRequest> customOrders = customOrderRepo.findByUserIdOrPhone(
+        List<CustomOrderRequest> customOrders = customOrderRepo.findConfirmedByUserIdOrPhone(
                 userDetails.getId(), phone != null ? phone : "");
         model.addAttribute("customOrders", customOrders);
 

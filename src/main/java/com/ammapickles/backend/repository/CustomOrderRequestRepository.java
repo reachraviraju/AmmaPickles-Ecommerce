@@ -28,4 +28,17 @@ public interface CustomOrderRequestRepository extends JpaRepository<CustomOrderR
            "ORDER BY c.createdAt DESC")
     List<CustomOrderRequest> findByUserIdOrPhone(@Param("userId") Long userId,
                                                   @Param("phone") String phone);
+
+    /**
+     * Only fetch CONFIRMED, PREPARING, or COMPLETED custom orders for customer's Orders page.
+     * Unconfirmed requests (NEW, CONTACTED) remain in discussion and are not shown as orders yet.
+     */
+    @Query("SELECT c FROM CustomOrderRequest c WHERE (c.user.id = :userId " +
+           "OR (c.phoneNumber = :phone AND :phone IS NOT NULL AND :phone != '')) " +
+           "AND c.status IN (com.ammapickles.backend.entity.CustomOrderStatus.CONFIRMED, " +
+           "com.ammapickles.backend.entity.CustomOrderStatus.PREPARING, " +
+           "com.ammapickles.backend.entity.CustomOrderStatus.COMPLETED) " +
+           "ORDER BY c.createdAt DESC")
+    List<CustomOrderRequest> findConfirmedByUserIdOrPhone(@Param("userId") Long userId,
+                                                         @Param("phone") String phone);
 }

@@ -254,20 +254,23 @@
             <a href="/home" class="btn-shop">Browse Pickles →</a>
         </div>
 
-        <!-- CUSTOM ORDERS (Shown if customer has any custom orders) -->
-        <div th:each="co : ${customOrders}" class="order-card" style="border-color:rgba(212,160,23,0.35);">
+        <!-- CONFIRMED CUSTOM ORDERS (Only shown once confirmed by admin) -->
+        <div th:each="co : ${customOrders}" class="order-card">
             <div class="order-hdr">
                 <div>
                     <div style="display:flex;align-items:center;gap:0.5rem;">
-                        <span class="order-id">Custom Order #<span th:text="${co.id}"></span></span>
-                        <span style="background:rgba(212,160,23,0.12);border:1px solid rgba(212,160,23,0.3);border-radius:12px;padding:0.12rem 0.5rem;font-size:0.65rem;color:var(--gold-lt);font-family:'Cinzel',serif;">
-                            Custom Batch
+                        <span class="order-id" th:text="'Order #' + ${co.id}"></span>
+                        <span style="background:rgba(212,160,23,0.15);border:1px solid rgba(212,160,23,0.35);border-radius:12px;padding:0.12rem 0.5rem;font-size:0.62rem;color:var(--gold-lt);font-family:'Cinzel',serif;font-weight:700;">
+                            Custom
                         </span>
                     </div>
                     <div class="order-date"
                          th:text="${#temporals.format(co.createdAt, 'dd MMM yyyy, hh:mm a')}"></div>
                 </div>
-                <div>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <span style="padding:0.2rem 0.7rem;border-radius:20px;font-size:0.62rem;font-family:'Cinzel',serif;letter-spacing:1px;background:rgba(212,160,23,0.1);border:1px solid rgba(212,160,23,0.3);color:var(--gold-mid);">
+                        <i class="bi bi-cash-coin"></i> COD
+                    </span>
                     <span class="status-badge"
                           th:classappend="' status-' + ${co.status.name()}"
                           th:text="${co.status.name()}"></span>
@@ -280,48 +283,42 @@
                     Delivering to: <span th:text="${co.deliveryAddress}"></span>
                 </div>
 
-                <div class="order-item-row">
-                    <div class="oi-left">
-                        <div class="oi-thumb" title="Handcrafted Custom Pickle">
-                            <span style="font-size:1.3rem;">🏺</span>
-                        </div>
-                        <div class="oi-info">
-                            <div class="oi-name" th:text="${co.pickleType}"></div>
-                            <div class="oi-meta">
-                                <span class="oi-size-tag" th:text="${co.quantity}"></span>
-                                <span th:text="${co.oilPreference}"></span>
-                                <span>·</span>
-                                <span th:text="${co.spiceLevel}"></span> Spice
+                <div class="order-items-list">
+                    <div class="order-item-row">
+                        <div class="oi-left">
+                            <div class="oi-thumb" title="Custom Pickle">
+                                <span style="font-size:1.2rem;">🏺</span>
+                            </div>
+                            <div class="oi-info">
+                                <div class="oi-name" th:text="${co.pickleType}"></div>
+                                <div class="oi-meta">
+                                    <span class="oi-size-tag" th:text="${co.quantity}"></span>
+                                    <span th:text="${co.oilPreference}"></span>
+                                    <span>·</span>
+                                    <span th:text="${co.spiceLevel}"></span> Spice
+                                </div>
                             </div>
                         </div>
+                        <div class="oi-right">
+                            <div class="oi-qty">Qty: 1</div>
+                            <div class="oi-total" th:text="'₹' + ${co.agreedPrice}"></div>
+                        </div>
                     </div>
-                    <div class="oi-right" th:if="${co.agreedPrice != null}">
-                        <div class="oi-qty">Custom Batch</div>
-                        <div class="oi-total" th:text="'₹' + ${co.agreedPrice}"></div>
-                    </div>
-                </div>
-
-                <!-- Discussion notice if NEW/CONTACTED -->
-                <div th:if="${co.agreedPrice == null and co.status.name() != 'CANCELLED'}"
-                     style="font-size:0.78rem;color:var(--gold-lt);background:rgba(212,160,23,0.06);padding:0.5rem 0.8rem;border-radius:6px;margin-top:0.6rem;">
-                    <i class="bi bi-info-circle me-1"></i>
-                    Under review — our kitchen will call you shortly at <span th:text="${co.phoneNumber}"></span> to finalize price and taste.
                 </div>
             </div>
 
-            <!-- Financials if confirmed -->
-            <div class="order-ftr" th:if="${co.agreedPrice != null}">
-                <div class="ftr-item">
-                    <div class="fl">Agreed Total</div>
-                    <div class="fv" th:text="'₹' + ${co.agreedPrice}"></div>
-                </div>
-                <div class="ftr-item">
+            <div class="order-ftr">
+                <div class="ftr-item" th:if="${co.advancePaid != null and co.advancePaid > 0}">
                     <div class="fl">Advance Paid</div>
-                    <div class="fv" style="color:#81C784;" th:text="'₹' + ${co.advancePaid ?: 0}"></div>
+                    <div class="fv" style="color:#81C784;" th:text="'₹' + ${co.advancePaid}"></div>
+                </div>
+                <div class="ftr-item" th:if="${co.balanceDue != null}">
+                    <div class="fl">Due on Delivery</div>
+                    <div class="fv" style="color:#E8B84B;" th:text="'₹' + ${co.balanceDue}"></div>
                 </div>
                 <div class="ftr-item grand">
-                    <div class="fl">Balance on Delivery</div>
-                    <div class="fv shine-gold" th:text="'₹' + ${co.balanceDue ?: (co.agreedPrice - (co.advancePaid ?: 0))}"></div>
+                    <div class="fl">Total Amount</div>
+                    <div class="fv" th:text="'₹' + ${co.agreedPrice}"></div>
                 </div>
             </div>
         </div>
