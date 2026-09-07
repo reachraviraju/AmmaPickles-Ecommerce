@@ -313,6 +313,7 @@ body {
 .status-badge { padding:0.18rem 0.7rem; border-radius:20px; font-size:0.6rem; font-weight:700; font-family:'Cinzel',serif; letter-spacing:1px; text-transform:uppercase; }
 .status-PENDING   { background:rgba(255,152,0,0.15);  border:1px solid rgba(255,152,0,0.4);  color:#FFB74D; }
 .status-CONFIRMED { background:rgba(33,150,243,0.15); border:1px solid rgba(33,150,243,0.4); color:#64B5F6; }
+.status-PREPARING { background:rgba(230,126,34,0.15); border:1px solid rgba(230,126,34,0.4); color:#F39C12; }
 .status-SHIPPED   { background:rgba(156,39,176,0.15); border:1px solid rgba(156,39,176,0.4); color:#CE93D8; }
 .status-DELIVERED { background:rgba(76,175,80,0.15);  border:1px solid rgba(76,175,80,0.4);  color:#81C784; }
 .status-CANCELLED { background:rgba(139,0,0,0.20);    border:1px solid rgba(139,0,0,0.5);    color:#EF9A9A; }

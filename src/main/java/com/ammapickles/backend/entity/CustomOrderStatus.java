@@ -5,6 +5,9 @@ public enum CustomOrderStatus {
     CONTACTED,
     CONFIRMED,
     PREPARING,
-    COMPLETED,
-    CANCELLED
+    SHIPPED,
+    DELIVERED,
+    CANCELLED,
+    @Deprecated
+    COMPLETED
 }

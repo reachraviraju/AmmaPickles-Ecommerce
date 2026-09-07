@@ -53,7 +53,9 @@ public class AdminCustomOrderViewController {
         model.addAttribute("contactedCount", customOrderRepo.countByStatus(CustomOrderStatus.CONTACTED));
         model.addAttribute("confirmedCount", customOrderRepo.countByStatus(CustomOrderStatus.CONFIRMED));
         model.addAttribute("preparingCount", customOrderRepo.countByStatus(CustomOrderStatus.PREPARING));
-        model.addAttribute("completedCount", customOrderRepo.countByStatus(CustomOrderStatus.COMPLETED));
+        model.addAttribute("shippedCount", customOrderRepo.countByStatus(CustomOrderStatus.SHIPPED));
+        model.addAttribute("deliveredCount", customOrderRepo.countByStatus(CustomOrderStatus.DELIVERED)
+                + customOrderRepo.countByStatus(CustomOrderStatus.COMPLETED));
         model.addAttribute("cancelledCount", customOrderRepo.countByStatus(CustomOrderStatus.CANCELLED));
 
         return "admin/custom-orders";
@@ -86,7 +88,25 @@ public class AdminCustomOrderViewController {
 
         try {
             CustomOrderStatus newStatus = CustomOrderStatus.valueOf(status.toUpperCase());
+
+            // Validation: Cannot advance to PREPARING, SHIPPED, or DELIVERED before order is CONFIRMED with price
+            if ((newStatus == CustomOrderStatus.PREPARING || newStatus == CustomOrderStatus.SHIPPED || newStatus == CustomOrderStatus.DELIVERED)
+                    && request.getAgreedPrice() == null) {
+                redirectAttributes.addFlashAttribute("error",
+                        "Cannot advance to " + newStatus.name() + " yet! Please fill the 'Confirm Order' form with agreed price first.");
+                return "redirect:/admin/custom-orders/" + id;
+            }
+
             request.setStatus(newStatus);
+
+            // Auto-link user account by phone if not already linked
+            if (request.getUser() == null && request.getPhoneNumber() != null) {
+                String phone = request.getPhoneNumber().replaceAll("[^0-9]", "");
+                if (phone.length() >= 10) {
+                    userRepository.findByPhoneNumber(phone).ifPresent(request::setUser);
+                }
+            }
+
             customOrderRepo.save(request);
             redirectAttributes.addFlashAttribute("success",
                     "Status updated to " + newStatus.name());
