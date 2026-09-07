@@ -3,10 +3,12 @@ package com.ammapickles.backend.controller;
 import com.ammapickles.backend.entity.ChatMessage;
 import com.ammapickles.backend.entity.CustomOrderRequest;
 import com.ammapickles.backend.entity.CustomOrderStatus;
+import com.ammapickles.backend.exception.ResourceNotFoundException;
 import com.ammapickles.backend.repository.CustomOrderRequestRepository;
 import com.ammapickles.backend.repository.UserRepository;
 import com.ammapickles.backend.service.CustomPickleChatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +23,7 @@ import java.util.List;
  */
 @Controller
 @RequestMapping("/admin/custom-orders")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class AdminCustomOrderViewController {
 
@@ -67,7 +70,7 @@ public class AdminCustomOrderViewController {
     @GetMapping("/{id}")
     public String viewCustomOrder(@PathVariable Long id, Model model) {
         CustomOrderRequest request = customOrderRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Custom order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Custom order not found"));
 
         List<ChatMessage> chatHistory = chatService.getChatHistory(request.getSessionId());
 
@@ -84,7 +87,7 @@ public class AdminCustomOrderViewController {
                                @RequestParam String status,
                                RedirectAttributes redirectAttributes) {
         CustomOrderRequest request = customOrderRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Custom order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Custom order not found"));
 
         try {
             CustomOrderStatus newStatus = CustomOrderStatus.valueOf(status.toUpperCase());
@@ -131,7 +134,7 @@ public class AdminCustomOrderViewController {
                                @RequestParam(required = false, defaultValue = "") String notes,
                                RedirectAttributes redirectAttributes) {
         CustomOrderRequest request = customOrderRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Custom order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Custom order not found"));
 
         request.setAgreedPrice(agreedPrice);
         request.setAdvancePaid(advancePaid);
@@ -168,7 +171,7 @@ public class AdminCustomOrderViewController {
                               @RequestParam String notes,
                               RedirectAttributes redirectAttributes) {
         CustomOrderRequest request = customOrderRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Custom order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Custom order not found"));
 
         request.setAdminNotes(notes);
         customOrderRepo.save(request);
