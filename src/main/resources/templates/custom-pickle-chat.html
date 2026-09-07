@@ -203,7 +203,15 @@
     <div class="chat-header">
         <h2>🧑‍🍳 Custom Pickle Order</h2>
         <p>Tell us your preferences and we'll make it just for you!</p>
-        <span class="min-order-badge">📦 Minimum Order: 2kg</span>
+        <div style="display:flex;align-items:center;justify-content:center;gap:0.6rem;flex-wrap:wrap;margin-top:0.5rem;">
+            <span class="min-order-badge">📦 Minimum Order: 2kg</span>
+            <span th:if="${deliveryAddress != null}"
+                  style="display:inline-flex;align-items:center;gap:0.35rem;background:rgba(212,160,23,0.1);border:1px solid rgba(212,160,23,0.3);border-radius:20px;padding:0.25rem 0.75rem;font-size:0.75rem;color:var(--gold-lt);font-family:'Nunito',sans-serif;">
+                <i class="bi bi-geo-alt-fill" style="color:var(--gold-mid);"></i>
+                <span th:text="${deliveryAddress}"></span>
+                <a href="/addresses/add?redirect=/custom-pickle" style="color:#FFF0A0;text-decoration:underline;margin-left:0.3rem;">Change</a>
+            </span>
+        </div>
     </div>
 
     <div class="chat-box" id="chatBox">
@@ -219,8 +227,11 @@
     </div>
 
     <div class="completed-banner" id="completedBanner" style="display:none;">
-        ✅ Order submitted! <a href="/home">Back to Home</a> or
-        <a href="/custom-pickle">New Custom Order</a>
+        🎉 Custom order placed! We'll review your recipe and call you to confirm.
+        <div style="margin-top:0.6rem;display:flex;justify-content:center;gap:0.8rem;flex-wrap:wrap;">
+            <a href="/orders" class="btn btn-sm btn-outline-warning" style="font-family:'Cinzel',serif;font-size:0.75rem;border-radius:20px;padding:0.3rem 1rem;">View My Orders →</a>
+            <a href="/home" style="color:rgba(255,255,255,0.7);font-size:0.8rem;align-self:center;">Back to Home</a>
+        </div>
     </div>
 </div>
 
