@@ -25,6 +25,11 @@
             <span th:text="${success}"></span>
         </div>
 
+        <div th:if="${error}" class="flash-success" style="border-color:rgba(244,67,54,0.4);background:rgba(244,67,54,0.12);color:#ef9a9a;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span th:text="${error}"></span>
+        </div>
+
         <a href="/admin/orders" class="pd-back" style="display:inline-flex;margin-bottom:1.5rem;">
             <i class="bi bi-arrow-left"></i> Back to Orders
         </a>

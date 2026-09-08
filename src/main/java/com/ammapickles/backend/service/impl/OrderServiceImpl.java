@@ -180,13 +180,39 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        // Guard: cannot update completed or cancelled orders
         OrderStatus current = order.getStatus();
-        if (current == OrderStatus.DELIVERED || current == OrderStatus.CANCELLED) {
-            throw new IllegalStateException("Cannot update a " + current + " order.");
+        OrderStatus next;
+        try {
+            next = OrderStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unknown order status: " + status);
         }
 
-        order.setStatus(OrderStatus.valueOf(status.toUpperCase()));
+        if (current == next) {
+            return mapToResponse(order);
+        }
+
+        // Guard: cannot update terminal orders
+        if (current == OrderStatus.DELIVERED || current == OrderStatus.CANCELLED) {
+            throw new IllegalStateException("Cannot update an order that is already " + current + ".");
+        }
+
+        // Status transition guard:
+        // PENDING   -> CONFIRMED, CANCELLED
+        // CONFIRMED -> SHIPPED, CANCELLED
+        // SHIPPED   -> DELIVERED, CANCELLED
+        boolean isValidTransition = switch (current) {
+            case PENDING   -> next == OrderStatus.CONFIRMED || next == OrderStatus.CANCELLED;
+            case CONFIRMED -> next == OrderStatus.SHIPPED || next == OrderStatus.CANCELLED;
+            case SHIPPED   -> next == OrderStatus.DELIVERED || next == OrderStatus.CANCELLED;
+            default        -> false;
+        };
+
+        if (!isValidTransition) {
+            throw new IllegalStateException("Cannot transition order from " + current + " to " + next + ". Orders must progress in order: CONFIRMED → SHIPPED → DELIVERED.");
+        }
+
+        order.setStatus(next);
         orderRepository.save(order);
 
         return mapToResponse(order);

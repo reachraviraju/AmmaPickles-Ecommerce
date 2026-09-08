@@ -127,8 +127,12 @@ public class AdminViewController {
     public String updateStatus(@PathVariable Long id,
                                @RequestParam String status,
                                RedirectAttributes flash) {
-        orderService.updateOrderStatus(id, status);
-        flash.addFlashAttribute("success", "Order #" + id + " updated to " + status);
+        try {
+            orderService.updateOrderStatus(id, status);
+            flash.addFlashAttribute("success", "Order #" + id + " updated to " + status);
+        } catch (Exception e) {
+            flash.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/admin/orders/" + id;
     }
 
