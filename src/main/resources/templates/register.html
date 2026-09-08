@@ -266,6 +266,10 @@ async function sendOtp() {
         const fd = new FormData();
         fd.append('email', email);
         fd.append('name', name || 'Customer');
+        const csrfInput = document.querySelector('input[name="_csrf"]');
+        if (csrfInput) {
+            fd.append(csrfInput.name, csrfInput.value);
+        }
 
         const res  = await fetch('/register/send-otp', { method:'POST', body:fd });
         const data = await res.json();
@@ -357,6 +361,10 @@ async function verifyOtp() {
         const fd = new FormData();
         fd.append('email', emailInput.value.trim());
         fd.append('otp', otp);
+        const csrfInput = document.querySelector('input[name="_csrf"]');
+        if (csrfInput) {
+            fd.append(csrfInput.name, csrfInput.value);
+        }
 
         const res  = await fetch('/register/verify-otp', { method:'POST', body:fd });
         const data = await res.json();
