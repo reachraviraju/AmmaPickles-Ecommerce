@@ -31,32 +31,32 @@ Customers can chat with the AI, describe their taste and requirements, and get p
 
 ### What Customers Can Customize
 
-* 🥒 **Pickle Type** — Mango, Lemon, Ginger, Gongura, Tomato, Garlic, Chicken, etc.
-* 🌶️ **Spice Level** — Mild, Medium, Hot, or Extra Hot.
-* 🧂 **Salt Level** — Adjust salt according to preference.
-* 🫙 **Oil Type** — Sesame, Mustard, Groundnut, or Chef's Choice.
-* 🧄 **Extra Ingredients** — Garlic, Fenugreek, Curry Leaves, Hing, etc.
-* 📦 **Batch Size** — Custom batches starting from 2 kg.
-* 💬 **Natural Conversation** — Customers can describe their requirements in normal language instead of filling out a complex form.
+* 🥒 **Main Ingredient** — Full support for Vegetarian (Mango/Avakaya, Lemon/Nimmakaya, Gongura, Ginger/Allam, Tomato, Garlic, Red Chilli, Amla) and Non-Vegetarian varieties (Boneless Chicken, Natu Kodi, Mutton Kheema, Prawns/Royyalu, Fish, Crab).
+* 🌶️ **Spice Level** — Mild, Medium, Hot, or Extra Hot (Andhra Style).
+* 🧂 **Salt Level** — Low Salt, Medium Salt, or High Salt.
+* 🫙 **Oil Type** — Cold-Pressed Sesame Oil (Nuvvula Nune), Groundnut Oil, Mustard Oil, or Chef's Choice.
+* 🧄 **Extra Ingredients** — Extra Garlic, Fenugreek (Menthi), Curry Leaves, Hing (Asafoetida), or None.
+* 📦 **Batch Size** — Custom handmade batches starting from 2 kg for authentic fermentation.
+* 💬 **Natural Conversation with Guardrails** — Customers can chat in English or Telugu/Hindi transliteration (e.g. "avakaya", "royyalu", "nimmakaya"). General inquiries (price, shipping, minimum batch questions) are answered intelligently without corrupting the ingredient selection.
 
 ### How It Works
 
-1. Customer opens the **AI Custom Pickle Chef** (requires a saved delivery address first).
-2. Customer describes the pickle they want in natural language.
-3. Gemini understands the requirements and suggests a recipe with quantity and spice specifications.
-4. Customer can continue chatting and adjust preferences.
-5. Once confirmed, order details, recipe notes, and delivery address are saved to `custom_order_requests`.
-6. Admin reviews requests in the admin panel, calls the customer, agrees on price/advance, and tracks status from `CONFIRMED` → `PREPARING` → `SHIPPED` → `DELIVERED`.
+1. Customer opens the **Custom Pickle Studio** (requires a saved delivery address).
+2. A 4-stage visual progress stepper guides them: **Ingredient → Oil & Spice → Quantity → Confirm**.
+3. Customer can tap quick-select pills or type in natural language (e.g. *"I want 3kg spicy boneless mutton pickle with sesame oil"*).
+4. **Hybrid Validation Engine**:
+   - Google Gemini 1.5 Flash parses complex multi-preference requests.
+   - Deterministic Java validation checks against a culinary database, preventing unrelated chit-chat or questions from being misidentified as ingredients.
+5. Once all details and customer contact number are gathered, order details are saved to `custom_order_requests`.
+6. Admin reviews the request in the admin panel, calls the customer to agree on custom pricing and advance, and manages fulfillment (`CONFIRMED` → `PREPARING` → `SHIPPED` → `DELIVERED`).
 
-### Backend Integration
+### Backend Architecture & Guardrails
 
-* **AI:** Google Gemini 1.5 Flash (via Google Generative Language API)
-* **Backend:** Spring Boot 3.5.6
-* **Database:** MySQL (Aiven free tier)
-* **Persistence:** Custom orders stored in `custom_order_requests`, chat transcripts in `chat_messages`
-* **Admin Management:** Dedicated admin dashboard for reviewing requests, price confirmation, notes, and status progression
-* **Data Hygiene:** Retention cleanup method in `CustomPickleChatService` to purge old chat transcripts
-* **Fallback:** If Gemini API fails or quota runs out, rule-based extraction still saves the custom order safely
+* **AI Service:** Google Gemini 1.5 Flash (`temperature: 0.3` for structured data fidelity).
+* **Deterministic Guardrails:** `CustomPickleChatService` with canonical ingredient aliases and negative filters to reject non-food queries.
+* **Fallback Mode:** 100% resilient rule-based engine activates automatically if the Gemini API key is unset or network drops.
+* **Persistence:** Custom orders in `custom_order_requests`, session transcripts in `chat_messages`.
+* **Data Hygiene:** Retention cleanup method in `CustomPickleChatService` to purge aged chat transcripts.
 
 This combines **AI-powered conversation with a real e-commerce ordering workflow**, rather than using AI only as a chatbot.
 
