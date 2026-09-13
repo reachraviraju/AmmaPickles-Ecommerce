@@ -219,6 +219,12 @@ public class CustomPickleChatService {
      * Save order entity from AI-generated JSON.
      */
     private void saveOrderFromAi(String sessionId, JsonNode json, Long userId) {
+        CustomOrderRequest existing = customOrderRepo.findBySessionId(sessionId);
+        if (existing != null) {
+            log.info("Custom order already saved for session {}, skipping duplicate creation.", sessionId);
+            return;
+        }
+
         String rawPickleType = json.path("pickleType").asText("Not specified");
         String pickleType = resolveIngredient(rawPickleType);
         String oil = json.path("oilPreference").asText("Chef's Choice");
@@ -491,8 +497,11 @@ public class CustomPickleChatService {
                 if (digits.length() != 10 && digits.length() != 12) {
                     botMessage = "⚠️ Please enter a valid 10-digit mobile number (e.g. 9876543210):";
                 } else {
-                    CustomOrderRequest orderRequest = buildOrderFromHistory(sessionId, history, phone, userId);
-                    customOrderRepo.save(orderRequest);
+                    CustomOrderRequest existing = customOrderRepo.findBySessionId(sessionId);
+                    CustomOrderRequest orderRequest = existing != null ? existing : buildOrderFromHistory(sessionId, history, phone, userId);
+                    if (existing == null) {
+                        customOrderRepo.save(orderRequest);
+                    }
 
                     botMessage = "✅ **Your custom pickle order request has been received!**\n\n" +
                                  "📋 **Order Summary:**\n" +
