@@ -54,11 +54,49 @@ Customers can chat with the AI, describe their taste and requirements, and get p
 
 * **AI Service:** Google Gemini 1.5 Flash (`temperature: 0.3` for structured data fidelity).
 * **Deterministic Guardrails:** `CustomPickleChatService` with canonical ingredient aliases and negative filters to reject non-food queries.
-* **Fallback Mode:** 100% resilient rule-based engine activates automatically if the Gemini API key is unset or network drops.
+* **Fallback Mode:** Falls back to a deterministic rule-based conversation flow automatically if the Gemini API key is unset or the network is unavailable.
 * **Persistence:** Custom orders in `custom_order_requests`, session transcripts in `chat_messages`.
-* **Data Hygiene:** Retention cleanup method in `CustomPickleChatService` to purge aged chat transcripts.
+* **Data Hygiene:** Cascade deletion of chat transcripts on order removal and retention cleanup.
 
 This combines **AI-powered conversation with a real e-commerce ordering workflow**, rather than using AI only as a chatbot.
+
+---
+
+## ⚡ Performance, Resilience & System Scalability
+
+A key engineering focus of this project is reliability, database cleanliness, and resilience against external API failures.
+
+### 1. Application-Wide Performance Optimizations
+
+| Area | Implementation | Impact |
+|------|---------------|--------|
+| **Asynchronous Processing** | `@EnableAsync` with Spring ThreadPool for email dispatch (OTP, password reset, order alerts) | HTTP responses are returned without waiting on SMTP server handshakes. |
+| **Caching Layer** | `@EnableCaching` on frequent catalog reads | Reduces duplicate database queries for product listings and category browsing. |
+| **Stateless API Architecture** | JWT Bearer Token validation via `JwtAuthenticationFilter` | REST endpoints carry zero server-side HTTP session state, which is what would allow horizontal scaling across multiple instances (not yet deployed this way, but the architecture supports it). |
+| **Stock Concurrency & Integrity** | `@Transactional` inventory deduction with rollback on order cancellation | Ties stock deduction to the order transaction so a failed or cancelled order doesn't leave inventory in an inconsistent state. |
+
+---
+
+### 2. Custom Order Feature Optimizations & Data Hygiene
+
+To handle traffic, prevent database bloat, and protect external AI quota, the custom order system implements multiple layers of protection:
+
+* 🛡️ **Customer Daily Cap (Max 3 Orders / 24h)**:
+  - Enforced via normalized 10-digit mobile number and user account ID.
+  - Blocks accidental or malicious spam submissions before they reach the database.
+* ⚡ **Targeted Database Indexing**:
+  - `custom_order_requests` table is indexed on `phoneNumber`, `sessionId`, `status`, and `createdAt`.
+  - These indexes are used for order history lookups, daily limit checks, and admin status filtering.
+* 🤖 **AI Quota Protection & Session Limits**:
+  - Strict limit of 30 messages per conversation session to prevent automated bots from draining Gemini API tokens.
+  - Low temperature (`0.3`) for deterministic, fast JSON structured responses.
+* 🔌 **Deterministic Fallback**:
+  - If Google Gemini experiences network latency or API rate limits, the system activates a local rule-based conversation engine with canonical ingredient alias mapping.
+* 🧹 **Database Cleanliness & Cascade Cleanup**:
+  - Admin panel provides a 2-tier resolution: soft rejection (`CANCELLED` status with audit trail notes) or **Hard Delete**.
+  - Deleting an order transactionally purges all associated transcript records in `chat_messages` by `sessionId`, preventing orphaned table bloat.
+* 📱 **Mobile-Optimized Admin Operations**:
+  - Responsive 3-line hamburger menu with slide-out drawer allows kitchen admins to manage, confirm, reject, or delete orders on mobile devices on the go.
 
 
 
@@ -148,14 +186,14 @@ This project is specifically engineered and tuned for resource-constrained free 
 
 | Optimization | Target / Benefit | Implementation Detail |
 |---|---|---|
-| **JVM Memory & Serial GC** | Render 512 MB RAM Safety | Configured `-XX:+UseSerialGC`, `-Xss256k`, and `-XX:MaxRAMPercentage=65.0` in `Dockerfile` to prevent OOM kills and save ~80 MB RAM compared to G1GC |
-| **Non-blocking Asynchronous Emails** | Instant checkout & DB safety | `@Async` email dispatch via Brevo API decoupled from database transactions. Frees MySQL connections in < 15ms |
-| **Safe Connection Pooling** | Aiven Free Connection Limit | HikariCP pool strictly capped at 4 connections with 20s timeout to never exceed Aiven's free-tier limits |
-| **Database Indexing** | Fast queries across the internet | Indexes on `orders(user_id, status, order_date)`, `users(created_at)`, and `products(name, category_id)` eliminate full-table scans |
-| **In-Memory Principal Access** | Zero redundant SQL queries | Web controllers read user ID and profile data directly from `CustomUserDetails` in session, eliminating redundant `findByEmail` DB calls on every click |
+| **JVM Memory & Serial GC** | Render 512 MB RAM Safety | Configured `-XX:+UseSerialGC`, `-Xss256k`, and `-XX:MaxRAMPercentage=65.0` in `Dockerfile` to reduce memory overhead and lower the risk of OOM kills, compared to the default G1GC collector |
+| **Non-blocking Asynchronous Emails** | Instant checkout & DB safety | `@Async` email dispatch via Brevo API is decoupled from database transactions, so checkout doesn't block on SMTP calls |
+| **Safe Connection Pooling** | Aiven Free Connection Limit | HikariCP pool strictly capped at 4 connections with 20s timeout to stay within Aiven's free-tier connection limits |
+| **Database Indexing** | Faster queries on hot paths | Indexes on `orders(user_id, status, order_date)`, `users(created_at)`, and `products(name, category_id)` are used for frequently queried fields |
+| **In-Memory Principal Access** | Fewer redundant SQL queries | Web controllers read user ID and profile data directly from `CustomUserDetails` in session, avoiding a redundant `findByEmail` DB call on every click |
 | **Variant Order Preservation** | Consistent UI display | Grouped product variants are mapped using `LinkedHashMap` to strictly preserve price and size sort ordering |
 | **Spring Cache** | Product read scalability | `@Cacheable` on product listings and groups, auto-evicted on admin write operations |
-| **Lazy Initialization** | Fast startup & low RAM | `spring.main.lazy-initialization=true` loads beans on demand, reducing startup memory pressure |
+| **Lazy Initialization** | Faster startup & lower RAM at boot | `spring.main.lazy-initialization=true` loads beans on demand, reducing startup memory pressure |
 
 ---
 
@@ -168,7 +206,7 @@ This project is specifically engineered and tuned for resource-constrained free 
 | **Transactional Email** | Brevo SMTP / REST API | Asynchronous background dispatch, decoupled from DB transactions |
 | **Containerization** | Docker (multi-stage build) | Stage 1 builds minimal jar with Maven, Stage 2 runs lightweight JRE image |
 
-**Docker multi-stage build** — Stage 1 builds the jar using Maven, Stage 2 runs only the jar using lightweight JRE with tuned memory flags. Final image is small, memory-efficient, and production-ready.
+**Docker multi-stage build** — Stage 1 builds the jar using Maven, Stage 2 runs only the jar using a lightweight JRE image with tuned memory flags. The final image is small and memory-efficient, and the app is deployed and fully functional on Render's free tier.
 
 ---
 

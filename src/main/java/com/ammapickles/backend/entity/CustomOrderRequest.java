@@ -9,7 +9,9 @@ import java.time.LocalDateTime;
 @Table(name = "custom_order_requests", indexes = {
     @Index(name = "idx_custom_order_status", columnList = "status"),
     @Index(name = "idx_custom_order_user", columnList = "user_id"),
-    @Index(name = "idx_custom_order_date", columnList = "createdAt")
+    @Index(name = "idx_custom_order_date", columnList = "createdAt"),
+    @Index(name = "idx_custom_order_phone", columnList = "phoneNumber"),
+    @Index(name = "idx_custom_order_session", columnList = "sessionId")
 })
 @Getter
 @Setter
