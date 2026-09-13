@@ -41,9 +41,90 @@ public class CustomPickleChatService {
     );
 
     private static final List<String> POPULAR_SUGGESTIONS = List.of(
-            "Mango Avakaya (2kg)", "Lemon Pickle (2kg)", "Gongura Pickle (2kg)",
-            "Ginger (Allam) (3kg)", "Tomato Pickle (2kg)", "Red Chilli Pickle (2kg)"
+            "Mango", "Lemon", "Gongura", "Ginger", "Tomato", "Red Chilli", "Chicken", "Garlic"
     );
+
+    private static final Map<String, String> INGREDIENT_ALIASES = new LinkedHashMap<>();
+    static {
+        // Mango
+        for (String k : List.of("mango", "avakaya", "avakai", "mamidi", "mamidikaya", "aam", "kairi", "raw mango")) {
+            INGREDIENT_ALIASES.put(k, "Mango");
+        }
+        // Lemon
+        for (String k : List.of("lemon", "nimmakaya", "nimma", "nimbu", "lime", "citron")) {
+            INGREDIENT_ALIASES.put(k, "Lemon");
+        }
+        // Ginger
+        for (String k : List.of("ginger", "allam", "adrak", "inji")) {
+            INGREDIENT_ALIASES.put(k, "Ginger");
+        }
+        // Tomato
+        for (String k : List.of("tomato", "tamatar", "tomata")) {
+            INGREDIENT_ALIASES.put(k, "Tomato");
+        }
+        // Red Chilli
+        for (String k : List.of("red chilli", "red chili", "chilli", "chili", "mirchi", "mirapakaya", "pandu mirapakaya", "pandu mirchi", "lal mirch")) {
+            INGREDIENT_ALIASES.put(k, "Red Chilli");
+        }
+        // Gongura
+        for (String k : List.of("gongura", "sorrel", "sorrel leaves", "pulicha keerai", "ambada")) {
+            INGREDIENT_ALIASES.put(k, "Gongura");
+        }
+        // Amla
+        for (String k : List.of("amla", "usirikaya", "usiri", "gooseberry", "nellikai", "awla")) {
+            INGREDIENT_ALIASES.put(k, "Amla");
+        }
+        // Garlic
+        for (String k : List.of("garlic", "vellulli", "velluli", "lahsun", "poondu", "lasun")) {
+            INGREDIENT_ALIASES.put(k, "Garlic");
+        }
+        // Mixed Veg
+        for (String k : List.of("mixed veg", "mixed vegetable", "mixed", "mix veg", "veg mix")) {
+            INGREDIENT_ALIASES.put(k, "Mixed Vegetable");
+        }
+        // Cauliflower
+        for (String k : List.of("cauliflower", "gobi", "gobhi")) {
+            INGREDIENT_ALIASES.put(k, "Cauliflower");
+        }
+        // Chicken
+        for (String k : List.of("chicken", "kodi", "murgh", "boneless chicken", "natu kodi", "country chicken")) {
+            INGREDIENT_ALIASES.put(k, "Chicken");
+        }
+        // Mutton
+        for (String k : List.of("mutton", "goat", "mamsam", "gosht", "lamb", "boneless mutton", "keema", "kheema")) {
+            INGREDIENT_ALIASES.put(k, "Mutton");
+        }
+        // Prawns
+        for (String k : List.of("prawn", "prawns", "shrimp", "royyalu", "jheenga")) {
+            INGREDIENT_ALIASES.put(k, "Prawns");
+        }
+        // Fish
+        for (String k : List.of("fish", "chepa", "machli", "vanjaram")) {
+            INGREDIENT_ALIASES.put(k, "Fish");
+        }
+        // Crab
+        for (String k : List.of("crab", "peetha", "kekada")) {
+            INGREDIENT_ALIASES.put(k, "Crab");
+        }
+        // Drumstick
+        for (String k : List.of("drumstick", "mulakkada", "munakkaya", "sehjan")) {
+            INGREDIENT_ALIASES.put(k, "Drumstick");
+        }
+    }
+
+    public static String resolveIngredient(String input) {
+        if (input == null || input.isBlank()) return "Custom Batch";
+        String clean = input.trim().toLowerCase();
+        // Remove trailing words like "pickle", "achar", "pachadi"
+        clean = clean.replaceAll("\\b(pickle|pachadi|achar|pachadi|batch|recipe)\\b", "").trim();
+        for (Map.Entry<String, String> entry : INGREDIENT_ALIASES.entrySet()) {
+            if (clean.contains(entry.getKey()) || entry.getKey().contains(clean)) {
+                return entry.getValue();
+            }
+        }
+        // Capitalize first letter of input if not matched
+        return input.trim().substring(0, 1).toUpperCase() + input.trim().substring(1);
+    }
 
     /**
      * Process an incoming message or start the conversation.
@@ -131,7 +212,8 @@ public class CustomPickleChatService {
      * Save order entity from AI-generated JSON.
      */
     private void saveOrderFromAi(String sessionId, JsonNode json, Long userId) {
-        String pickleType = json.path("pickleType").asText("Not specified");
+        String rawPickleType = json.path("pickleType").asText("Not specified");
+        String pickleType = resolveIngredient(rawPickleType);
         String oil = json.path("oilPreference").asText("Chef's Choice");
         String spice = json.path("spiceLevel").asText("Medium");
         String salt = json.path("saltLevel").asText("Medium");
@@ -178,19 +260,16 @@ public class CustomPickleChatService {
     }
 
     private static final List<String> INGREDIENT_OPTIONS = List.of(
-            "Mango (Avakaya)", "Lemon (Nimmakaya)", "Ginger (Allam)",
-            "Tomato (Tomato)", "Mixed Vegetable", "Red Chilli (Mirapakaya)",
-            "Amla (Usirikaya)", "Garlic (Velluli)", "Gongura"
+            "Mango (Avakaya)", "Lemon (Nimmakaya)", "Gongura", "Ginger (Allam)",
+            "Chicken", "Mutton", "Prawns", "Garlic", "Red Chilli", "Tomato"
     );
 
     private static final List<String> OIL_OPTIONS = List.of(
-            "Sesame Oil (Nuvvula Nune)", "Mustard Oil (Aavala Nune)",
-            "Groundnut Oil (Verusenaga Nune)", "Coconut Oil",
-            "No Preference (Chef's Choice)"
+            "Sesame Oil (Nuvvula Nune)", "Groundnut Oil", "Mustard Oil", "Chef's Choice"
     );
 
     private static final List<String> SPICE_OPTIONS = List.of(
-            "Mild (తక్కువ కారం)", "Medium (మధ్యస్తం)", "Hot (ఎక్కువ కారం)", "Extra Hot (చాలా కారం)"
+            "Mild", "Medium", "Hot", "Extra Hot (Andhra Style)"
     );
 
     private static final List<String> SALT_OPTIONS = List.of(
@@ -220,6 +299,54 @@ public class CustomPickleChatService {
             "asdf", "qwerty", "blah", "none", "na", "n/a", "nil", "food", "pickle"
     );
 
+    // Comprehensive set of known valid pickling ingredients (English, Telugu, Hindi)
+    private static final Set<String> KNOWN_INGREDIENTS = Set.of(
+            "mango", "avakaya", "avakai", "mamidi", "mamidikaya", "aam", "kairi",
+            "lemon", "nimmakaya", "nimma", "nimbu", "lime", "citron",
+            "ginger", "allam", "adrak", "inji",
+            "tomato", "tamatar", "tomata",
+            "gongura", "sorrel", "pulicha keerai", "ambada",
+            "red chilli", "red chili", "chilli", "chili", "mirchi", "mirapakaya", "pandu mirapakaya", "pandu mirchi", "lal mirch",
+            "amla", "usirikaya", "usiri", "gooseberry", "nellikai", "awla",
+            "garlic", "vellulli", "velluli", "lahsun", "poondu",
+            "mixed veg", "mixed vegetable", "vegetable", "mix veg",
+            "cauliflower", "gobi", "gobhi",
+            "drumstick", "mulakkada", "munakkaya",
+            "chicken", "kodi", "murgh",
+            "mutton", "goat", "mamsam", "gosht", "keema", "kheema",
+            "prawn", "prawns", "shrimp", "royyalu",
+            "fish", "chepa", "machli",
+            "crab", "peetha",
+            "bitter gourd", "kakarakaya", "karela",
+            "brinjal", "vankaya", "baingan", "eggplant",
+            "green chilli", "pachi mirchi",
+            "onion", "ulli", "pyaz"
+    );
+
+    /**
+     * Check if the user text actually refers to an edible ingredient for pickling.
+     */
+    private boolean isValidIngredientInput(String text) {
+        if (text == null || text.isBlank()) return false;
+        String clean = text.trim().toLowerCase()
+                .replaceAll("[!.,?~\\-_()]+", " ")
+                .replaceAll("\\b(pickle|achar|pachadi|batch|taste|style|variety)\\b", "")
+                .trim();
+        if (clean.length() < 2) return false;
+
+        // Check against known ingredients or partial match
+        for (String item : KNOWN_INGREDIENTS) {
+            if (clean.equals(item) || clean.contains(item) || item.contains(clean)) {
+                return true;
+            }
+        }
+        // If not directly in known list, check if user specified a vegetable, fruit, or meat
+        if (clean.contains("veg") || clean.contains("fruit") || clean.contains("meat") || clean.contains("non veg")) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Rule-based fallback when Gemini API key is missing or network fails.
      */
@@ -234,45 +361,40 @@ public class CustomPickleChatService {
         switch (step) {
             case 0 -> {
                 botMessage = "🙏 **Welcome to Amma Pickles Custom Orders!**\n\n" +
-                             "I'll help you craft your perfect custom pickle batch, made fresh with traditional methods.\n\n" +
-                             "📌 *Minimum order: 2kg*\n\n" +
-                             "**What is the main ingredient for your pickle?**\n" +
-                             "_(Select a popular option below, or type any custom vegetable, fruit, or non-veg ingredient!)_";
+                             "Tell us what pickle you'd like, and our kitchen will craft it fresh using authentic traditional recipes.\n\n" +
+                             "📌 *Minimum custom batch: 2kg*\n\n" +
+                             "**Which main ingredient would you like to pickle?**";
                 options = INGREDIENT_OPTIONS;
             }
             case 1 -> {
-                String faq = checkGeneralInquiry(userMessage);
-                if (faq != null) {
-                    botMessage = faq + "\n\n**What is the main ingredient for your pickle?**\n" +
-                                 "_(Select from below or type any custom ingredient!)_";
+                String inquiry = checkGeneralInquiry(userMessage);
+                if (inquiry != null) {
+                    // Customer asked a question (price, delivery, etc.) -> Answer it and ask for ingredient again!
+                    botMessage = inquiry + "\n\n👉 **To get started, which main ingredient would you like?**";
                     options = INGREDIENT_OPTIONS;
                 } else if (isPureGreeting(userMessage)) {
-                    botMessage = "👋 **Hello! Welcome to Amma Pickles!**\n\n" +
-                                 "To begin crafting your custom batch, **what is the main ingredient for your pickle?**\n" +
-                                 "_(Choose below or type your custom vegetable, fruit, or meat preference)_";
+                    botMessage = "Hello! 👋 Welcome to Amma Pickles.\n\n**Which main ingredient would you like for your custom batch?**";
                     options = INGREDIENT_OPTIONS;
-                } else if (isFillerOrInvalid(userMessage)) {
-                    botMessage = "⚠️ Please select one of the popular ingredients below or type the vegetable, fruit, or meat you'd like us to pickle (e.g. Mango, Gongura, Cauliflower, Chicken):";
+                } else if (isFillerOrInvalid(userMessage) || !isValidIngredientInput(userMessage)) {
+                    // Reject unrelated text, questions, or random input!
+                    botMessage = "⚠️ Please select a valid pickling ingredient (such as **Mango**, **Lemon**, **Gongura**, **Ginger**, **Garlic**, **Chicken**, etc.) from the options below or type your vegetable/fruit/meat choice:";
                     options = INGREDIENT_OPTIONS;
                 } else {
-                    botMessage = "Excellent choice! 👌 **" + userMessage.trim() + "** will make a wonderful pickle.\n\n" +
-                                 "**Which oil do you prefer for your pickle?**\n" +
-                                 "_(Oil gives the pickle its traditional flavor and longevity)_";
+                    String resolved = resolveIngredient(userMessage);
+                    botMessage = "Excellent choice! **" + resolved + "** will make a wonderful pickle. 👌\n\n" +
+                                 "**Which oil do you prefer?**";
                     options = OIL_OPTIONS;
                 }
             }
             case 2 -> {
                 String lower = userMessage != null ? userMessage.toLowerCase() : "";
                 if (lower.contains("which") || lower.contains("best") || lower.contains("recommend") || lower.contains("suggest")) {
-                    botMessage = "💡 **Amma's Recommendation:**\n\n" +
-                                 "For traditional Andhra pickles, **Cold-Pressed Sesame Oil (Nuvvula Nune)** or **Groundnut Oil** gives the most authentic aroma and rich flavor! Mustard oil is great for northern tangy pungency.\n\n" +
+                    botMessage = "💡 **Amma's Recommendation:**\n" +
+                                 "**Cold-Pressed Sesame Oil (Nuvvula Nune)** or **Groundnut Oil** gives the most authentic aroma and rich flavor for traditional pickles.\n\n" +
                                  "**Which oil would you prefer?**";
                     options = OIL_OPTIONS;
-                } else if (isPureGreeting(userMessage)) {
-                    botMessage = "👋 Please choose your preferred oil for the pickle from the options below, or type your choice:";
-                    options = OIL_OPTIONS;
-                } else if (isFillerOrInvalid(userMessage)) {
-                    botMessage = "⚠️ Please choose an oil from the options below or specify your preference (e.g. Sesame Oil, Groundnut Oil, or Chef's Choice):";
+                } else if (isPureGreeting(userMessage) || isFillerOrInvalid(userMessage)) {
+                    botMessage = "⚠️ Please select an oil preference from below:";
                     options = OIL_OPTIONS;
                 } else {
                     botMessage = "🌶️ **What spice level do you prefer?**";
@@ -281,7 +403,7 @@ public class CustomPickleChatService {
             }
             case 3 -> {
                 if (isPureGreeting(userMessage) || isFillerOrInvalid(userMessage) || !isValidSpice(userMessage)) {
-                    botMessage = "⚠️ Please select your preferred spice level from the options below:";
+                    botMessage = "⚠️ Please select your preferred spice level:";
                     options = SPICE_OPTIONS;
                 } else {
                     botMessage = "🧂 **What salt level would you like?**";
@@ -290,88 +412,65 @@ public class CustomPickleChatService {
             }
             case 4 -> {
                 if (isPureGreeting(userMessage) || isFillerOrInvalid(userMessage) || !isValidSalt(userMessage)) {
-                    botMessage = "⚠️ Please select your preferred salt level from the options below:";
+                    botMessage = "⚠️ Please select your salt level preference:";
                     options = SALT_OPTIONS;
                 } else {
-                    botMessage = "🧄 **Any additional ingredients you'd like?**\n\n" +
-                                 "Examples: Extra garlic, fenugreek seeds (menthi), curry leaves, hing (asafoetida)\n\n" +
-                                 "Type your preferences or choose **\"None\"**:";
+                    botMessage = "🧄 **Any additional ingredients?**\n(Extra garlic, fenugreek/menthi, curry leaves, hing, or None)";
                     options = EXTRA_OPTIONS;
                 }
             }
             case 5 -> {
-                if (isPureGreeting(userMessage)) {
-                    botMessage = "👋 Would you like any extra ingredients in your batch? Choose below or say **\"None\"**:";
-                    options = EXTRA_OPTIONS;
-                } else {
-                    botMessage = "📝 **Any other special requests?**\n\n" +
-                                 "Examples: Less oil, extra tangy, organic ingredients only, specific packaging\n\n" +
-                                 "Type your request or choose **\"None\"**:";
-                    options = SPECIAL_OPTIONS;
-                }
+                botMessage = "📝 **Any special instructions?**\n(Less oil, extra tangy, organic ingredients, or None)";
+                options = SPECIAL_OPTIONS;
             }
             case 6 -> {
-                if (isPureGreeting(userMessage)) {
-                    botMessage = "👋 Any other special requests? Choose below or say **\"None\"**:";
-                    options = SPECIAL_OPTIONS;
-                } else {
-                    botMessage = "📦 **How much quantity do you need?**\n" +
-                                 "_(Minimum order: 2kg for custom batches)_";
-                    options = QUANTITY_OPTIONS;
-                }
+                botMessage = "📦 **How much quantity do you need?**\n*(Minimum order: 2kg for custom batches)*";
+                options = QUANTITY_OPTIONS;
             }
             case 7 -> {
                 if (isQuantityUnderMin(userMessage)) {
-                    botMessage = "⚠️ **Minimum order is 2kg** for custom handmade batches to ensure authentic traditional preparation and proper fermentation.\n\n" +
-                                 "Please choose at least 2kg:";
+                    botMessage = "⚠️ **Minimum order is 2kg** for custom handmade batches to ensure proper fermentation and flavor.\n\nPlease choose at least 2kg:";
                     options = QUANTITY_OPTIONS;
                 } else if (!isValidQuantity(userMessage)) {
                     botMessage = "⚠️ Please specify a quantity of at least 2kg (e.g. 2kg, 3kg, 5kg):";
                     options = QUANTITY_OPTIONS;
                 } else {
-                    botMessage = "Almost done! 👤\n\n**What is your name?**";
+                    botMessage = "Almost done! 👤\n\n**What is your full name?**";
                 }
             }
             case 8 -> {
                 String name = userMessage != null ? userMessage.trim() : "";
-                if (isPureGreeting(name)) {
-                    botMessage = "👋 Please tell us your name so our team knows who this custom batch is for:";
-                } else if (name.length() < 2 || name.matches("^[0-9\\W_]+$")) {
-                    botMessage = "⚠️ Please enter a valid name (at least 2 letters).";
+                if (isPureGreeting(name) || name.length() < 2 || name.matches("^[0-9\\W_]+$")) {
+                    botMessage = "⚠️ Please enter a valid name (at least 2 letters):";
                 } else {
-                    botMessage = "📱 **Please provide your 10-digit mobile number**\n" +
-                                 "so our kitchen team can call you to discuss pricing and delivery.";
+                    botMessage = "📱 **Please enter your 10-digit mobile number**\nso our kitchen team can contact you to confirm the batch:";
                 }
             }
             case 9 -> {
                 String phone = userMessage != null ? userMessage.trim().replaceAll("[^0-9+]", "") : "";
                 String digits = phone.replaceAll("[^0-9]", "");
                 if (digits.length() != 10 && digits.length() != 12) {
-                    botMessage = "⚠️ Please enter a valid 10-digit mobile number.\nExample: 9876543210";
+                    botMessage = "⚠️ Please enter a valid 10-digit mobile number (e.g. 9876543210):";
                 } else {
                     CustomOrderRequest orderRequest = buildOrderFromHistory(sessionId, history, phone, userId);
                     customOrderRepo.save(orderRequest);
 
-                    botMessage = "✅ **Your custom pickle order has been submitted!**\n\n" +
+                    botMessage = "✅ **Your custom pickle order request has been received!**\n\n" +
                                  "📋 **Order Summary:**\n" +
-                                 "━━━━━━━━━━━━━━━━━━━━\n" +
-                                 "🥒 Main Ingredient: **" + orderRequest.getPickleType() + "**\n" +
-                                 "🫒 Oil: **" + orderRequest.getOilPreference() + "**\n" +
-                                 "🌶️ Spice Level: **" + orderRequest.getSpiceLevel() + "**\n" +
-                                 "🧂 Salt Level: **" + orderRequest.getSaltLevel() + "**\n" +
-                                 "🧄 Extra Ingredients: **" + nvl(orderRequest.getAdditionalIngredients()) + "**\n" +
-                                 "📝 Special Requests: **" + nvl(orderRequest.getSpecialInstructions()) + "**\n" +
-                                 "📦 Quantity: **" + orderRequest.getQuantity() + "**\n" +
-                                 "━━━━━━━━━━━━━━━━━━━━\n" +
-                                 "👤 Name: **" + orderRequest.getCustomerName() + "**\n" +
-                                 "📱 Phone: **" + orderRequest.getPhoneNumber() + "**\n\n" +
-                                 "🔔 **Our team will call you within 24 hours** to discuss pricing and delivery.\n\n" +
-                                 "Thank you for choosing Amma Pickles! 🙏";
+                                 "• Main Ingredient: **" + orderRequest.getPickleType() + "**\n" +
+                                 "• Oil: **" + orderRequest.getOilPreference() + "**\n" +
+                                 "• Spice Level: **" + orderRequest.getSpiceLevel() + "**\n" +
+                                 "• Salt Level: **" + orderRequest.getSaltLevel() + "**\n" +
+                                 "• Extra Ingredients: **" + nvl(orderRequest.getAdditionalIngredients()) + "**\n" +
+                                 "• Quantity: **" + orderRequest.getQuantity() + "**\n" +
+                                 "• Name: **" + orderRequest.getCustomerName() + "**\n" +
+                                 "• Phone: **" + orderRequest.getPhoneNumber() + "**\n\n" +
+                                 "📞 Our kitchen team will call you within 24 hours to confirm pricing and dispatch details. Thank you!";
                     completed = true;
                 }
             }
             default -> {
-                botMessage = "🙏 Your order has already been submitted. Our team will contact you soon!";
+                botMessage = "🙏 Your custom order has already been submitted! Our team will contact you shortly.";
                 completed = true;
             }
         }
@@ -499,7 +598,7 @@ public class CustomPickleChatService {
             }
         }
 
-        String pickleType = validResponses.size() > 0 ? validResponses.get(0) : "Not specified";
+        String pickleType = validResponses.size() > 0 ? resolveIngredient(validResponses.get(0)) : "Custom Batch";
         String oil = validResponses.size() > 1 ? validResponses.get(1) : "Chef's Choice";
         String spice = validResponses.size() > 2 ? validResponses.get(2) : "Medium";
         String salt = validResponses.size() > 3 ? validResponses.get(3) : "Medium";
