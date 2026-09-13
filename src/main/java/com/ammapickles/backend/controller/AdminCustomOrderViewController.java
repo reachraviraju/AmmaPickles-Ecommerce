@@ -4,12 +4,14 @@ import com.ammapickles.backend.entity.ChatMessage;
 import com.ammapickles.backend.entity.CustomOrderRequest;
 import com.ammapickles.backend.entity.CustomOrderStatus;
 import com.ammapickles.backend.exception.ResourceNotFoundException;
+import com.ammapickles.backend.repository.ChatMessageRepository;
 import com.ammapickles.backend.repository.CustomOrderRequestRepository;
 import com.ammapickles.backend.repository.UserRepository;
 import com.ammapickles.backend.service.CustomPickleChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -19,7 +21,7 @@ import java.util.List;
 
 /**
  * Admin controller for managing custom pickle order requests.
- * Admin can view, filter, update status, confirm with pricing, and add notes.
+ * Admin can view, filter, update status, confirm with pricing, reject, and delete requests.
  */
 @Controller
 @RequestMapping("/admin/custom-orders")
@@ -28,6 +30,7 @@ import java.util.List;
 public class AdminCustomOrderViewController {
 
     private final CustomOrderRequestRepository customOrderRepo;
+    private final ChatMessageRepository chatMessageRepo;
     private final CustomPickleChatService chatService;
     private final UserRepository userRepository;
 
@@ -178,5 +181,51 @@ public class AdminCustomOrderViewController {
         redirectAttributes.addFlashAttribute("success", "Notes saved successfully");
 
         return "redirect:/admin/custom-orders/" + id;
+    }
+
+    /**
+     * Reject an unsettled custom order with an optional reason note.
+     */
+    @PostMapping("/{id}/reject")
+    public String rejectOrder(@PathVariable Long id,
+                              @RequestParam(required = false, defaultValue = "Order not settled / Customer declined after call") String reason,
+                              RedirectAttributes redirectAttributes) {
+        CustomOrderRequest request = customOrderRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Custom order not found"));
+
+        request.setStatus(CustomOrderStatus.CANCELLED);
+        String currentNotes = request.getAdminNotes() != null && !request.getAdminNotes().isBlank() 
+                ? request.getAdminNotes() + "\n" 
+                : "";
+        request.setAdminNotes(currentNotes + "❌ Rejected by Admin: " + reason);
+        customOrderRepo.save(request);
+
+        redirectAttributes.addFlashAttribute("success", "Order #" + id + " marked as CANCELLED (Reason: " + reason + ")");
+        return "redirect:/admin/custom-orders/" + id;
+    }
+
+    /**
+     * Permanently delete custom order request and its chat messages to keep DB clean.
+     */
+    @PostMapping("/{id}/delete")
+    @Transactional
+    public String deleteOrder(@PathVariable Long id,
+                              @RequestParam(required = false, defaultValue = "/admin/custom-orders") String redirectUrl,
+                              RedirectAttributes redirectAttributes) {
+        CustomOrderRequest request = customOrderRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Custom order not found"));
+
+        String sessionId = request.getSessionId();
+        if (sessionId != null && !sessionId.isBlank()) {
+            chatMessageRepo.deleteBySessionId(sessionId);
+        }
+
+        customOrderRepo.delete(request);
+        redirectAttributes.addFlashAttribute("success", "🗑️ Custom order #" + id + " and associated chat messages permanently deleted.");
+
+        if (redirectUrl != null && redirectUrl.startsWith("/admin/custom-orders")) {
+            return "redirect:" + (redirectUrl.contains("/" + id) ? "/admin/custom-orders" : redirectUrl);
+        }
+        return "redirect:/admin/custom-orders";
     }
 }

@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -133,6 +134,23 @@ public class CustomPickleChatService {
         return input.trim().substring(0, 1).toUpperCase() + input.trim().substring(1);
     }
 
+    public static final int MAX_ORDERS_PER_DAY = 3;
+    public static final int MAX_MESSAGES_PER_SESSION = 30;
+
+    /**
+     * Check whether the customer has already submitted the maximum allowed orders in the last 24h.
+     */
+    public boolean hasExceededDailyLimit(String phone, Long userId) {
+        String cleanPhone = (phone != null) ? phone.replaceAll("[^0-9]", "") : "";
+        String phone10 = cleanPhone.length() >= 10 ? cleanPhone.substring(cleanPhone.length() - 10) : cleanPhone;
+        LocalDateTime since = LocalDateTime.now().minusHours(24);
+        long recentCount = customOrderRepo.countOrdersSince(phone10, userId, since);
+        if (recentCount == 0 && !cleanPhone.equals(phone10) && !cleanPhone.isEmpty()) {
+            recentCount = customOrderRepo.countOrdersSince(cleanPhone, userId, since);
+        }
+        return recentCount >= MAX_ORDERS_PER_DAY;
+    }
+
     /**
      * Process an incoming message or start the conversation.
      */
@@ -152,6 +170,16 @@ public class CustomPickleChatService {
 
         // Fetch session conversation history
         List<ChatMessage> history = chatMessageRepo.findBySessionIdOrderByTimestampAsc(sessionId);
+
+        // Guard against infinite session flooding / API quota exhaustion
+        if (history.size() >= MAX_MESSAGES_PER_SESSION) {
+            String limitMsg = "🙏 Thank you for chatting with Amma's Pickle Kitchen! This session has reached its limit. " +
+                    "If you need further help or have placed an order, our team will assist you on WhatsApp or phone.";
+            saveBotMessage(sessionId, limitMsg);
+            response.put("message", limitMsg);
+            response.put("completed", true);
+            return response;
+        }
 
         // Try processing with Gemini AI first
         if (geminiService.isConfigured()) {
@@ -193,10 +221,17 @@ public class CustomPickleChatService {
             try {
                 JsonNode orderJson = objectMapper.readTree(jsonPayload);
                 if (orderJson.path("orderComplete").asBoolean(false)) {
-                    saveOrderFromAi(sessionId, orderJson, userId);
+                    boolean saved = saveOrderFromAi(sessionId, orderJson, userId);
                     completed = true;
-                    // Remove the raw code block from the message shown to the user
-                    cleanMessage = geminiRawResponse.replaceAll("```(?:custom_order)?[\\s\\S]*?```", "").trim();
+                    if (!saved) {
+                        cleanMessage = "⚠️ **Daily Order Limit Reached (Max 3 orders/day)**\n\n" +
+                                       "You have already submitted 3 custom order requests in the last 24 hours. " +
+                                       "Our kitchen team will review your existing requests and contact you shortly. " +
+                                       "For urgent requirements or changes, please call or WhatsApp us directly. Thank you!";
+                    } else {
+                        // Remove the raw code block from the message shown to the user
+                        cleanMessage = geminiRawResponse.replaceAll("```(?:custom_order)?[\\s\\S]*?```", "").trim();
+                    }
                 }
             } catch (Exception ex) {
                 log.error("Failed to parse custom_order JSON from Gemini response: {}", jsonPayload, ex);
@@ -216,13 +251,22 @@ public class CustomPickleChatService {
     }
 
     /**
-     * Save order entity from AI-generated JSON.
+     * Save order entity from AI-generated JSON. Returns true if saved or already existed, false if rejected due to rate limit.
      */
-    private void saveOrderFromAi(String sessionId, JsonNode json, Long userId) {
+    private boolean saveOrderFromAi(String sessionId, JsonNode json, Long userId) {
         CustomOrderRequest existing = customOrderRepo.findBySessionId(sessionId);
         if (existing != null) {
             log.info("Custom order already saved for session {}, skipping duplicate creation.", sessionId);
-            return;
+            return true;
+        }
+
+        String phone = json.path("phoneNumber").asText("");
+        phone = phone.replaceAll("[^0-9+]", "");
+
+        // Enforce daily cap (max 3 per customer in 24 hours)
+        if (hasExceededDailyLimit(phone, userId)) {
+            log.warn("Customer phone {} or user {} exceeded daily custom order limit (3/day) for session {}", phone, userId, sessionId);
+            return false;
         }
 
         String rawPickleType = json.path("pickleType").asText("Not specified");
@@ -234,10 +278,6 @@ public class CustomPickleChatService {
         String special = json.path("specialInstructions").asText(null);
         String quantity = json.path("quantity").asText("2kg");
         String customerName = json.path("customerName").asText("Customer");
-        String phone = json.path("phoneNumber").asText("");
-
-        // Normalize phone
-        phone = phone.replaceAll("[^0-9+]", "");
 
         CustomOrderRequest.CustomOrderRequestBuilder builder = CustomOrderRequest.builder()
                 .sessionId(sessionId)
@@ -270,6 +310,7 @@ public class CustomPickleChatService {
 
         customOrderRepo.save(builder.build());
         log.info("Successfully created custom pickle order via Gemini for session {}", sessionId);
+        return true;
     }
 
     private static final List<String> INGREDIENT_OPTIONS = List.of(
@@ -496,6 +537,12 @@ public class CustomPickleChatService {
                 String digits = phone.replaceAll("[^0-9]", "");
                 if (digits.length() != 10 && digits.length() != 12) {
                     botMessage = "⚠️ Please enter a valid 10-digit mobile number (e.g. 9876543210):";
+                } else if (hasExceededDailyLimit(digits, userId)) {
+                    botMessage = "⚠️ **Daily Custom Order Limit Reached (Max 3 orders/day)**\n\n" +
+                                 "You have already submitted 3 custom order requests in the last 24 hours.\n\n" +
+                                 "Our kitchen team will contact you regarding your existing requests. " +
+                                 "For urgent inquiries or custom changes, please call or WhatsApp us directly. Thank you for choosing Amma Pickles!";
+                    completed = true;
                 } else {
                     CustomOrderRequest existing = customOrderRepo.findBySessionId(sessionId);
                     CustomOrderRequest orderRequest = existing != null ? existing : buildOrderFromHistory(sessionId, history, phone, userId);

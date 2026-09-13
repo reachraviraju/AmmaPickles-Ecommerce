@@ -126,11 +126,23 @@
                         <td class="td-muted"
                             th:text="${#temporals.format(req.createdAt, 'dd MMM yyyy HH:mm')}"></td>
                         <td>
-                            <a th:href="@{'/admin/custom-orders/' + ${req.id}}"
-                               class="btn-order"
-                               style="font-size:0.75rem;padding:0.3rem 0.8rem;text-decoration:none;">
-                                View Details
-                            </a>
+                            <div style="display:flex;align-items:center;gap:0.4rem;">
+                                <a th:href="@{'/admin/custom-orders/' + ${req.id}}"
+                                   class="btn-order"
+                                   style="font-size:0.75rem;padding:0.3rem 0.75rem;text-decoration:none;white-space:nowrap;">
+                                    View
+                                </a>
+                                <form th:action="@{'/admin/custom-orders/' + ${req.id} + '/delete'}" method="post" style="display:inline;"
+                                      th:attr="onsubmit='return confirm(\'⚠️ Permanently delete Custom Order #' + ${req.id} + ' (' + ${req.customerName} + ') and its chat history from database?\');'">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <input type="hidden" name="redirectUrl" th:value="@{/admin/custom-orders(status=${currentFilter})}"/>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            title="Permanently delete from database"
+                                            style="padding:0.25rem 0.55rem;font-size:0.75rem;border-radius:6px;line-height:1.2;">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(requests)}">

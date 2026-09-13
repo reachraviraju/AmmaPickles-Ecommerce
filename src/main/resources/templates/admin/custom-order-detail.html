@@ -284,19 +284,62 @@
                             🎉 Order Delivered & Completed!
                         </div>
 
-                        <!-- Cancel Option (if not delivered or already cancelled) -->
-                        <form th:if="${request.status.name() != 'DELIVERED' and request.status.name() != 'COMPLETED' and request.status.name() != 'CANCELLED'}"
-                              th:action="@{'/admin/custom-orders/' + ${request.id} + '/status'}" method="post" style="display:inline;">
+                        <!-- Reject / Not Settled Option (if not delivered or already cancelled) -->
+                        <div th:if="${request.status.name() != 'DELIVERED' and request.status.name() != 'COMPLETED' and request.status.name() != 'CANCELLED'}" class="dropdown d-inline-block">
+                            <button class="btn btn-sm btn-outline-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size:0.78rem;border-radius:8px;">
+                                ❌ Reject Order
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark" style="background:#1e1e1e;border:1px solid rgba(212,160,23,0.3);font-size:0.82rem;padding:0.4rem 0;">
+                                <li>
+                                    <form th:action="@{'/admin/custom-orders/' + ${request.id} + '/reject'}" method="post">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <input type="hidden" name="reason" value="Customer declined price after phone call"/>
+                                        <button type="submit" class="dropdown-item text-warning" style="padding:0.4rem 1rem;">
+                                            📞 Price not agreed / Declined
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form th:action="@{'/admin/custom-orders/' + ${request.id} + '/reject'}" method="post">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <input type="hidden" name="reason" value="Customer not reachable / No response to calls"/>
+                                        <button type="submit" class="dropdown-item text-warning" style="padding:0.4rem 1rem;">
+                                            📵 No response / Unreachable
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form th:action="@{'/admin/custom-orders/' + ${request.id} + '/reject'}" method="post">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <input type="hidden" name="reason" value="Spam / Invalid inquiry / Testing"/>
+                                        <button type="submit" class="dropdown-item text-danger" style="padding:0.4rem 1rem;">
+                                            🚫 Fake inquiry / Spam test
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form th:action="@{'/admin/custom-orders/' + ${request.id} + '/reject'}" method="post">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <input type="hidden" name="reason" value="Customer requested cancellation"/>
+                                        <button type="submit" class="dropdown-item text-light" style="padding:0.4rem 1rem;">
+                                            ❌ Customer requested cancel
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Permanent Delete Option (Cleans DB and Chat Logs) -->
+                        <form th:action="@{'/admin/custom-orders/' + ${request.id} + '/delete'}" method="post" style="display:inline;"
+                              th:attr="onsubmit='return confirm(\'⚠️ WARNING: Permanently delete Custom Order #' + ${request.id} + ' (' + ${request.customerName} + ') and all associated chat logs from the database?\n\nThis cannot be undone and keeps your database completely clean.\');'">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                            <input type="hidden" name="status" value="CANCELLED"/>
-                            <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size:0.78rem;border-radius:8px;"
-                                    onclick="return confirm('Are you sure you want to cancel this custom order?');">
-                                ❌ Cancel Order
+                            <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size:0.78rem;border-radius:8px;">
+                                <i class="bi bi-trash3-fill me-1"></i> Delete Order (Clean DB)
                             </button>
                         </form>
 
                         <div th:if="${request.status.name() == 'CANCELLED'}" style="font-size:0.85rem;color:#EF9A9A;font-weight:700;">
-                            ❌ This order was cancelled.
+                            ❌ This order was cancelled / rejected.
                         </div>
 
                     </div>

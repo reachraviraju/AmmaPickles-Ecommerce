@@ -5,9 +5,21 @@ import com.ammapickles.backend.entity.CustomOrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CustomOrderRequestRepository extends JpaRepository<CustomOrderRequest, Long> {
+
+    /**
+     * Count custom orders placed by phone or user ID in the given time window (e.g. last 24h).
+     */
+    @Query("SELECT COUNT(c) FROM CustomOrderRequest c WHERE " +
+           "((:phone IS NOT NULL AND :phone != '' AND c.phoneNumber = :phone) " +
+           " OR (:userId IS NOT NULL AND c.user.id = :userId)) " +
+           "AND c.createdAt >= :since")
+    long countOrdersSince(@Param("phone") String phone,
+                          @Param("userId") Long userId,
+                          @Param("since") LocalDateTime since);
 
     List<CustomOrderRequest> findAllByOrderByCreatedAtDesc();
 

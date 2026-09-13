@@ -2,7 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head></head>
 <body>
-<nav th:fragment="adminNavbar" class="ap-navbar">
+<th:block th:fragment="adminNavbar">
+
+<nav class="ap-navbar">
 
     <!-- Logo -->
     <a href="/admin/dashboard" class="logo-opt1">
@@ -21,25 +23,120 @@
            th:classappend="${activePage == 'orders'} ? ' pill-gold' : ' pill-ghost'">
             <i class="bi bi-bag-check"></i> Orders
         </a>
+        <a th:href="@{/admin/custom-orders}"
+           th:classappend="${activePage == 'custom-orders'} ? ' pill-gold' : ' pill-ghost'">
+            <i class="bi bi-stars"></i> Custom Orders
+        </a>
         <a th:href="@{/admin/products}"
            th:classappend="${activePage == 'products'} ? ' pill-gold' : ' pill-ghost'">
             <i class="bi bi-box-seam"></i> Products
         </a>
-        <a href="/home" class="pill-ghost">
+        <a href="/home" class="pill-ghost" style="color:#81C784!important;">
             <i class="bi bi-shop"></i> View Store
         </a>
         
         <form th:action="@{/logout}" method="post" style="display:inline;">
+            <input type="hidden" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}"/>
             <button type="submit"
                     class="pill-ghost"
-                    style="color:rgba(255,120,120,0.8)!important; background:none; border:none;">
+                    style="color:rgba(255,120,120,0.8)!important; background:none; border:none; cursor:pointer;">
                 <i class="bi bi-box-arrow-right"></i> Logout
             </button>
         </form>
-        
-       
     </div>
 
+    <!-- 3-Lines Hamburger menu button (mobile) -->
+    <button class="nav-hamburger" id="adminNavHamburger" aria-label="Open menu">
+        <i class="bi bi-list"></i>
+    </button>
+
 </nav>
+
+<!-- Mobile overlay -->
+<div class="mobile-overlay" id="adminMobileOverlay"></div>
+
+<!-- Mobile drawer -->
+<div class="mobile-drawer" id="adminMobileDrawer">
+
+    <div class="drawer-header">
+        <div>
+            <span class="amma shine-gold"
+                  style="font-family:'Cinzel',serif;font-size:1.15rem;font-weight:900;letter-spacing:3px;">
+                AMMA
+            </span>
+            <span style="font-size:0.75rem;color:rgba(255,255,255,0.6);display:block;margin-top:2px;">Admin Panel</span>
+        </div>
+        <button class="drawer-close" id="adminDrawerClose" aria-label="Close menu">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <div class="drawer-links">
+
+        <!-- Prominent View Store button for Mobile Admin -->
+        <a href="/home" class="drawer-link" style="color:#81C784!important;background:rgba(76,175,80,0.12);font-weight:700;border-left:3px solid #81C784;">
+            <i class="bi bi-shop" style="color:#81C784;"></i> 🛍️ Back to Store
+        </a>
+
+        <hr class="drawer-divider"/>
+
+        <a th:href="@{/admin/dashboard}" class="drawer-link"
+           th:style="${activePage == 'dashboard'} ? 'color:var(--gold-lt);background:rgba(212,160,23,0.1);font-weight:700;' : ''">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <a th:href="@{/admin/orders}" class="drawer-link"
+           th:style="${activePage == 'orders'} ? 'color:var(--gold-lt);background:rgba(212,160,23,0.1);font-weight:700;' : ''">
+            <i class="bi bi-bag-check"></i> Standard Orders
+        </a>
+
+        <a th:href="@{/admin/custom-orders}" class="drawer-link"
+           th:style="${activePage == 'custom-orders'} ? 'color:var(--gold-lt);background:rgba(212,160,23,0.1);font-weight:700;' : ''">
+            <i class="bi bi-stars"></i> Custom Orders
+        </a>
+
+        <a th:href="@{/admin/products}" class="drawer-link"
+           th:style="${activePage == 'products'} ? 'color:var(--gold-lt);background:rgba(212,160,23,0.1);font-weight:700;' : ''">
+            <i class="bi bi-box-seam"></i> Manage Products
+        </a>
+
+        <hr class="drawer-divider"/>
+
+        <form th:action="@{/logout}" method="post" style="margin:0;">
+            <input type="hidden" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}"/>
+            <button type="submit"
+                    class="drawer-link drawer-logout"
+                    style="width:100%;text-align:left;">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </button>
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+(function(){
+    const ham = document.getElementById('adminNavHamburger');
+    const drawer = document.getElementById('adminMobileDrawer');
+    const overlay = document.getElementById('adminMobileOverlay');
+    const closeBtn = document.getElementById('adminDrawerClose');
+    function openDrawer(){
+        if(drawer) drawer.classList.add('open');
+        if(overlay) overlay.classList.add('open');
+        document.body.style.overflow='hidden';
+    }
+    function closeDrawer(){
+        if(drawer) drawer.classList.remove('open');
+        if(overlay) overlay.classList.remove('open');
+        document.body.style.overflow='';
+    }
+    if(ham) ham.addEventListener('click', openDrawer);
+    if(closeBtn) closeBtn.addEventListener('click', closeDrawer);
+    if(overlay) overlay.addEventListener('click', closeDrawer);
+})();
+</script>
+
+</th:block>
 </body>
 </html>
