@@ -51,7 +51,8 @@ public class GeminiService {
 
         RULES ON INGREDIENTS:
         - If the user types ANY alias above, normalize it to the standard name.
-        - Accept any edible vegetable, fruit, meat, poultry, or seafood (e.g. Gongura Chicken, Mutton Kheema, Prawns).
+        - Accept authentic edible vegetable, fruit, poultry, meat (Chicken, Mutton/Goat/Lamb), seafood (Prawns, Fish, Crab).
+        - STRICT PROHIBITION: We DO NOT prepare beef, cow meat, veal, or pork pickles under ANY circumstances (Amma Pickles follows authentic traditional South Indian culinary traditions). If asked, politely decline: explain that we do not make beef or pork pickles, but we prepare fresh Chicken, Mutton, Prawns, or Fish. NEVER accept prohibited meats.
         - If the customer text is NOT a food ingredient (e.g. asking a question, delivery inquiry, payment question, random text, or greeting), DO NOT treat it as an ingredient! Answer their question or politely ask which vegetable, fruit, or meat they would like to pickle.
 
         COLLECT these 9 fields one by one (ask 1-2 at a time, be brief):
@@ -122,17 +123,38 @@ public class GeminiService {
 
         String endpoint = apiUrl + (apiUrl.contains("?") ? "&" : "?") + "key=" + apiKey.trim();
 
-        // Build contents array for Gemini
+        // Build contents array for Gemini (strictly requires contents[0].role='user' and strict alternation)
         List<Map<String, Object>> contents = new ArrayList<>();
+        String currentRole = null;
+        List<Map<String, String>> currentParts = new ArrayList<>();
+
         for (Map<String, String> msg : history) {
             String role = "USER".equalsIgnoreCase(msg.get("sender")) ? "user" : "model";
             String text = msg.get("message");
-            if (text != null && !text.isBlank()) {
+            if (text == null || text.isBlank()) continue;
+
+            // If history starts with a bot message, prepend a user greeting so Gemini API doesn't reject with 400
+            if (contents.isEmpty() && currentRole == null && "model".equals(role)) {
                 contents.add(Map.of(
-                    "role", role,
-                    "parts", List.of(Map.of("text", text))
+                    "role", "user",
+                    "parts", List.of(Map.of("text", "Hello, I would like to order a custom pickle!"))
                 ));
             }
+
+            if (role.equals(currentRole)) {
+                // Combine consecutive messages from same role to satisfy Gemini's alternation requirement
+                currentParts.add(Map.of("text", text));
+            } else {
+                if (currentRole != null && !currentParts.isEmpty()) {
+                    contents.add(Map.of("role", currentRole, "parts", new ArrayList<>(currentParts)));
+                }
+                currentRole = role;
+                currentParts = new ArrayList<>();
+                currentParts.add(Map.of("text", text));
+            }
+        }
+        if (currentRole != null && !currentParts.isEmpty()) {
+            contents.add(Map.of("role", currentRole, "parts", currentParts));
         }
 
         // If history is empty, send an initial prompt to start the conversation
