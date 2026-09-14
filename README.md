@@ -1,114 +1,112 @@
-#  Spring Boot E-commerce Backend Project (AmmaPickles)
+# Amma Pickles — E-commerce Backend (Spring Boot)
 
 ![Java](https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=java)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-brightgreen?style=flat-square&logo=springboot)
-![Google Gemini](https://img.shields.io/badge/Google%20Gemini-1.5%20Flash%20AI-8E75B2?style=flat-square&logo=googlegemini)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?style=flat-square&logo=mysql)
 ![Spring Security](https://img.shields.io/badge/Spring%20Security-JWT%20%2B%20Session-green?style=flat-square&logo=springsecurity)
 ![Thymeleaf](https://img.shields.io/badge/Thymeleaf-Frontend-005F0F?style=flat-square&logo=thymeleaf)
 ![Docker](https://img.shields.io/badge/Docker-Containerized-blue?style=flat-square&logo=docker)
 ![Status](https://img.shields.io/badge/Status-Live-brightgreen?style=flat-square)
 
-> A full-stack e-commerce platform for authentic Andhra homemade pickles — built with Spring Boot, Thymeleaf web frontend, and a complete JWT-secured REST API backend. Features an **AI-powered Custom Pickle Chef** backed by **Google Gemini 1.5 Flash**. Containerized with Docker and deployed on Render.
+A full-stack e-commerce backend for ordering traditional Andhra homemade pickles. Built with Spring Boot, Thymeleaf for the web frontend, and a JWT-secured REST API. Includes a custom pickle ordering feature powered by Google Gemini. Containerized with Docker and deployed on Render.
+
+🔗 **Live:** [https://ammapickles-ecommerce.onrender.com](https://ammapickles-ecommerce.onrender.com)
+*(Render free tier — first load may take ~30s to wake up)*
 
 ---
 
-## 🌐 Live Demo
+## What This Project Does
 
-👉 [https://ammapickles-ecommerce.onrender.com](https://ammapickles-ecommerce.onrender.com)
+An online store for Andhra pickles (veg & non-veg), available in ½ kg, 1 kg, and 2 kg sizes.
 
-> **Note:** Hosted on Render free tier — app may take 30–40 seconds to wake up on first visit.
-
----
-
-
-
-## 🤖 AI Custom Pickle Chef — Google Gemini
-
-**Amma's Master Pickle Chef** is an AI-powered feature that helps customers create their own custom pickle batch using **Google Gemini 1.5 Flash**.
-
-Customers can chat with the AI, describe their taste and requirements, and get personalized pickle recommendations.
-
-### What Customers Can Customize
-
-* 🥒 **Main Ingredient** — Full support for Vegetarian (Mango/Avakaya, Lemon/Nimmakaya, Gongura, Ginger/Allam, Tomato, Garlic, Red Chilli, Amla) and Non-Vegetarian varieties (Boneless Chicken, Natu Kodi, Mutton Kheema, Prawns/Royyalu, Fish, Crab).
-* 🌶️ **Spice Level** — Mild, Medium, Hot, or Extra Hot (Andhra Style).
-* 🧂 **Salt Level** — Low Salt, Medium Salt, or High Salt.
-* 🫙 **Oil Type** — Cold-Pressed Sesame Oil (Nuvvula Nune), Groundnut Oil, Mustard Oil, or Chef's Choice.
-* 🧄 **Extra Ingredients** — Extra Garlic, Fenugreek (Menthi), Curry Leaves, Hing (Asafoetida), or None.
-* 📦 **Batch Size** — Custom handmade batches starting from 2 kg for authentic fermentation.
-* 💬 **Natural Conversation with Guardrails** — Customers can chat in English or Telugu/Hindi transliteration (e.g. "avakaya", "royyalu", "nimmakaya"). General inquiries (price, shipping, minimum batch questions) are answered intelligently without corrupting the ingredient selection.
-
-### How It Works
-
-1. Customer opens the **Custom Pickle Studio** (requires a saved delivery address).
-2. A 4-stage visual progress stepper guides them: **Ingredient → Oil & Spice → Quantity → Confirm**.
-3. Customer can tap quick-select pills or type in natural language (e.g. *"I want 3kg spicy boneless mutton pickle with sesame oil"*).
-4. **Hybrid Validation Engine**:
-   - Google Gemini 1.5 Flash parses complex multi-preference requests.
-   - Deterministic Java validation checks against a culinary database, preventing unrelated chit-chat or questions from being misidentified as ingredients.
-5. Once all details and customer contact number are gathered, order details are saved to `custom_order_requests`.
-6. Admin reviews the request in the admin panel, calls the customer to agree on custom pricing and advance, and manages fulfillment (`CONFIRMED` → `PREPARING` → `SHIPPED` → `DELIVERED`).
-
-### Backend Architecture & Guardrails
-
-* **AI Service:** Google Gemini 1.5 Flash (`temperature: 0.3` for structured data fidelity).
-* **Deterministic Guardrails:** `CustomPickleChatService` with canonical ingredient aliases and negative filters to reject non-food queries.
-* **Fallback Mode:** Falls back to a deterministic rule-based conversation flow automatically if the Gemini API key is unset or the network is unavailable.
-* **Persistence:** Custom orders in `custom_order_requests`, session transcripts in `chat_messages`.
-* **Data Hygiene:** Cascade deletion of chat transcripts on order removal and retention cleanup.
-
-This combines **AI-powered conversation with a real e-commerce ordering workflow**, rather than using AI only as a chatbot.
+**Current features:**
+- Browse and search products by name or category
+- Product detail page with size variants and stock status
+- Cart management — add, update quantity, remove, clear
+- Place orders (COD) with delivery address selection
+- Flat ₹70 delivery charge (free above ₹1000, or first order above ₹500)
+- Stock deducted on order placement, restored on cancellation
+- Order status lifecycle: `CONFIRMED → SHIPPED → DELIVERED` (or `CANCELLED`)
+- Delivery address management
+- Session-based web login + JWT-based API login (dual auth)
+- Login with email or phone number
+- OTP email verification on registration
+- Forgot-password flow with email token
+- Email notifications on registration and order events (async via Brevo SMTP)
+- Custom pickle ordering — conversational chat that collects ingredient preferences and creates a custom order request
+- Admin dashboard — manage products, categories, users, standard orders, and custom pickle requests
+- Real-time registration form validation with debounced API checks
 
 ---
 
-## ⚡ Performance, Resilience & System Scalability
+## Architecture
 
-A key engineering focus of this project is reliability, database cleanliness, and resilience against external API failures.
+The project uses a **dual-layer architecture** — both layers share the same service and repository code:
 
-### 1. Application-Wide Performance Optimizations
-
-| Area | Implementation | Impact |
-|------|---------------|--------|
-| **Asynchronous Processing** | `@EnableAsync` with Spring ThreadPool for email dispatch (OTP, password reset, order alerts) | HTTP responses are returned without waiting on SMTP server handshakes. |
-| **Caching Layer** | `@EnableCaching` on frequent catalog reads | Reduces duplicate database queries for product listings and category browsing. |
-| **Stateless API Architecture** | JWT Bearer Token validation via `JwtAuthenticationFilter` | REST endpoints carry zero server-side HTTP session state, which is what would allow horizontal scaling across multiple instances (not yet deployed this way, but the architecture supports it). |
-| **Stock Concurrency & Integrity** | `@Transactional` inventory deduction with rollback on order cancellation | Ties stock deduction to the order transaction so a failed or cancelled order doesn't leave inventory in an inconsistent state. |
+| Layer | Technology | Auth Method |
+|-------|-----------|-------------|
+| Web Frontend | Thymeleaf + HTML/CSS | Session-based (Spring Security form login) |
+| REST API | JSON responses | JWT Bearer Token (stateless) |
 
 ---
 
-### 2. Custom Order Feature Optimizations & Data Hygiene
+## Tech Stack
 
-To handle traffic, prevent database bloat, and protect external AI quota, the custom order system implements multiple layers of protection:
-
-* 🛡️ **Customer Daily Cap (Max 3 Orders / 24h)**:
-  - Enforced via normalized 10-digit mobile number and user account ID.
-  - Blocks accidental or malicious spam submissions before they reach the database.
-* ⚡ **Targeted Database Indexing**:
-  - `custom_order_requests` table is indexed on `phoneNumber`, `sessionId`, `status`, and `createdAt`.
-  - These indexes are used for order history lookups, daily limit checks, and admin status filtering.
-* 🤖 **AI Quota Protection & Session Limits**:
-  - Strict limit of 30 messages per conversation session to prevent automated bots from draining Gemini API tokens.
-  - Low temperature (`0.3`) for deterministic, fast JSON structured responses.
-* 🔌 **Deterministic Fallback**:
-  - If Google Gemini experiences network latency or API rate limits, the system activates a local rule-based conversation engine with canonical ingredient alias mapping.
-* 🧹 **Database Cleanliness & Cascade Cleanup**:
-  - Admin panel provides a 2-tier resolution: soft rejection (`CANCELLED` status with audit trail notes) or **Hard Delete**.
-  - Deleting an order transactionally purges all associated transcript records in `chat_messages` by `sessionId`, preventing orphaned table bloat.
-* 📱 **Mobile-Optimized Admin Operations**:
-  - Responsive 3-line hamburger menu with slide-out drawer allows kitchen admins to manage, confirm, reject, or delete orders on mobile devices on the go.
-
-
+| Category | Technology |
+|----------|-----------|
+| Language | Java 17 |
+| Framework | Spring Boot 3.5.6 |
+| ORM | Spring Data JPA / Hibernate |
+| Database | MySQL 8.0 |
+| Security | Spring Security (JWT + Session dual-chain) |
+| Frontend | Thymeleaf, HTML, CSS |
+| AI / Chat | Google Gemini 1.5 Flash (Generative Language API) |
+| Email | Brevo SMTP (async dispatch) |
+| Caching | Spring Cache (`@Cacheable`) |
+| Build Tool | Maven |
+| Containerization | Docker (multi-stage build) |
+| Validation | Jakarta Bean Validation |
+| Monitoring | Spring Boot Actuator |
+| Utilities | Lombok, SLF4J |
 
 ---
 
-## 📸 Screenshots
+## Custom Pickle Ordering (Gemini Chat)
+
+Customers can create a custom pickle order through a guided chat interface. The backend uses Google Gemini 1.5 Flash to parse natural language preferences into structured order data.
+
+**What customers can customize:**
+- Main ingredient — supports veg (Mango, Lemon, Gongura, Ginger, Tomato, etc.) and non-veg (Chicken, Mutton, Prawns, Fish, Crab)
+- Spice level, salt level, oil type (sesame, groundnut, mustard)
+- Extra ingredients (garlic, fenugreek, curry leaves, hing)
+- Batch size (minimum 2 kg)
+- Accepts English and Telugu/Hindi transliterations (e.g. "avakaya", "royyalu", "nimmakaya")
+
+**How it works:**
+1. Customer opens the chat page (requires a saved delivery address).
+2. A 4-stage progress stepper guides the conversation: Ingredient → Oil & Spice → Quantity → Confirm.
+3. Gemini parses the customer's free-text input into structured JSON fields.
+4. A Java-side validation layer (`CustomPickleChatService`) cross-checks Gemini's output against a canonical ingredient alias map — this catches cases where general chit-chat or questions get misidentified as ingredient selections.
+5. Once all details are gathered, the order is saved to `custom_order_requests`.
+6. Admin reviews the request, contacts the customer to agree on pricing, and manages fulfillment through the admin panel.
+
+**Fallback:** If the Gemini API key is not configured or the API is unreachable, the system falls back to a deterministic rule-based conversation flow that still collects all required fields.
+
+**Guardrails:**
+- 30-message limit per chat session to prevent abuse
+- Max 3 custom orders per customer per 24 hours (checked by phone number + user ID)
+- Low temperature (`0.3`) for more consistent structured responses
+- Chat transcripts are stored in `chat_messages` and cascade-deleted when an order is removed
+
+---
+
+## Screenshots
 
 ### Home Page
 ![Home](screenshots/home.png)
 
-### AI Pickle Chef Chatbot (Google Gemini)
-![AI Pickle Chef Chatbot](screenshots/gemini-pickle-chatbot.png)
+### Custom Pickle Chat
+![Custom Pickle Chat](screenshots/gemini-pickle-chatbot.png)
 
 ### Product Detail
 ![Product Detail](screenshots/product-detail.png)
@@ -124,93 +122,35 @@ To handle traffic, prevent database bloat, and protect external AI quota, the cu
 
 ---
 
-## 📌 About the Project
+## Performance & Resource Optimization
 
-**Amma Pickles** is a fully functional online store for ordering traditional Andhra pickles — Veg and Non-Veg varieties available in three sizes (½ kg, 1 kg, 2 kg). The project features a **dual architecture**: a Thymeleaf-rendered web UI for customers, and a JWT-secured REST API for external/mobile access.
+This project runs on Render's free tier (512 MB RAM) with Aiven's free MySQL tier, so I had to be deliberate about resource usage.
 
-**What's working:**
-- 🤖 **AI Custom Pickle Chef**: Natural language chat ordering with Google Gemini 1.5 Flash, automatic address linkage, and admin order tracking
-- Browse and search products by name or category
-- Product detail page with size variants
-- Cart management (add, update, remove, clear)
-- Place orders with COD — confirmed immediately
-- Flat ₹70 delivery charge (free above ₹1000 or first order above ₹500)
-- Stock is deducted on order and restored on cancellation
-- Order status lifecycle guards preventing modification of completed or cancelled orders
-- Delivery address management with open-redirect security validation
-- Session-based web login and JWT-based API login
-- Login with email or phone number
-- OTP email verification on registration
-- Secure forgot-password flow with email token
-- Email notifications on registration and order events
-- Admin dashboard — manage products, categories, users, orders, and custom pickle requests
-- Real-time registration form validation with debounced API checks
+| What I Did | Why |
+|---|---|
+| Serial GC + capped RAM (`-XX:+UseSerialGC`, `-XX:MaxRAMPercentage=65.0`) | G1GC was too memory-hungry for 512 MB; Serial GC has lower overhead at the cost of pause time, which is fine for low-traffic |
+| `@Async` email dispatch | Decouples SMTP calls from the request thread — checkout doesn't block waiting for Brevo |
+| HikariCP pool capped at 4 connections | Aiven free tier has a strict connection limit; keeping the pool small avoids exhausting it |
+| `@Cacheable` on product listings | Avoids repeated DB queries for the same catalog data; cache is evicted on admin write operations |
+| `spring.main.lazy-initialization=true` | Loads beans on demand to reduce startup memory; helps on cold starts |
+| Database indexes on hot query paths | Indexes on `orders(user_id, status, order_date)`, `users(created_at)`, `products(name, category_id)`, and custom order fields |
+| `CustomUserDetails` in session | Reads user ID and role from the security principal directly, avoiding a `findByEmail` DB call on every request |
+| `LinkedHashMap` for variant grouping | Preserves insertion order so product size variants display consistently (½ kg → 1 kg → 2 kg) |
 
 ---
 
-## 🏗️ Architecture
+## Deployment
 
-This project uses a **dual-layer architecture** — both layers share the same service and repository code:
-
-| Layer | Technology | Auth Method |
-|-------|-----------|------------|
-| Web Frontend | Thymeleaf + HTML/CSS | Session-based (Spring Security form login) |
-| REST API | JSON responses | JWT Bearer Token (stateless) |
-
----
-
-## 🛠️ Tech Stack
-
-| Category | Technology |
-|---------|-----------|
-| Language | Java 17 |
-| Framework | Spring Boot 3.5.6 |
-| **AI / LLM** | **Google Gemini 1.5 Flash (Generative Language API)** |
-| ORM | Spring Data JPA / Hibernate |
-| Database | MySQL 8.0 |
-| Security | Spring Security (JWT + Session) |
-| Frontend | Thymeleaf, HTML, CSS |
-| Email | Brevo SMTP |
-| Caching | Spring Cache |
-| Build Tool | Maven |
-| Containerization | Docker (multi-stage build) |
-| Validation | Jakarta Bean Validation |
-| Monitoring | Spring Boot Actuator |
-| Utilities | Lombok, SLF4J |
-
----
-
-## ⚡ Performance & Free-Tier Optimizations
-
-This project is specifically engineered and tuned for resource-constrained free cloud tiers (**Render 512 MB RAM**, **Aiven MySQL Free Tier**, and **Brevo Free Email**):
-
-| Optimization | Target / Benefit | Implementation Detail |
+| Component | Platform | Notes |
 |---|---|---|
-| **JVM Memory & Serial GC** | Render 512 MB RAM Safety | Configured `-XX:+UseSerialGC`, `-Xss256k`, and `-XX:MaxRAMPercentage=65.0` in `Dockerfile` to reduce memory overhead and lower the risk of OOM kills, compared to the default G1GC collector |
-| **Non-blocking Asynchronous Emails** | Instant checkout & DB safety | `@Async` email dispatch via Brevo API is decoupled from database transactions, so checkout doesn't block on SMTP calls |
-| **Safe Connection Pooling** | Aiven Free Connection Limit | HikariCP pool strictly capped at 4 connections with 20s timeout to stay within Aiven's free-tier connection limits |
-| **Database Indexing** | Faster queries on hot paths | Indexes on `orders(user_id, status, order_date)`, `users(created_at)`, and `products(name, category_id)` are used for frequently queried fields |
-| **In-Memory Principal Access** | Fewer redundant SQL queries | Web controllers read user ID and profile data directly from `CustomUserDetails` in session, avoiding a redundant `findByEmail` DB call on every click |
-| **Variant Order Preservation** | Consistent UI display | Grouped product variants are mapped using `LinkedHashMap` to strictly preserve price and size sort ordering |
-| **Spring Cache** | Product read scalability | `@Cacheable` on product listings and groups, auto-evicted on admin write operations |
-| **Lazy Initialization** | Faster startup & lower RAM at boot | `spring.main.lazy-initialization=true` loads beans on demand, reducing startup memory pressure |
+| Application | Render (Docker) | 512 MB RAM, Serial GC, auto-sleeps on inactivity |
+| Database | Aiven MySQL 8.0 | SSL required, max 4 pool connections |
+| Email | Brevo SMTP | Async background dispatch |
+| Container | Docker multi-stage build | Stage 1: Maven build → Stage 2: JRE-only image with tuned JVM flags |
 
 ---
 
-## 🚀 Deployment
-
-| Component | Platform | Configuration / Notes |
-|---|---|---|
-| **Application Server** | Render (Docker container) | 512 MB RAM, Serial GC enabled, auto-sleep on inactivity |
-| **Database** | Aiven MySQL 8.0 | SSL Required (`sslMode=REQUIRED`), max 4 Hikari pool connections |
-| **Transactional Email** | Brevo SMTP / REST API | Asynchronous background dispatch, decoupled from DB transactions |
-| **Containerization** | Docker (multi-stage build) | Stage 1 builds minimal jar with Maven, Stage 2 runs lightweight JRE image |
-
-**Docker multi-stage build** — Stage 1 builds the jar using Maven, Stage 2 runs only the jar using a lightweight JRE image with tuned memory flags. The final image is small and memory-efficient, and the app is deployed and fully functional on Render's free tier.
-
----
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/main/
@@ -219,25 +159,32 @@ src/main/
 │   ├── config/
 │   │   └── AppConfig.java
 │   ├── controller/
-│   │   ├── AuthController.java          ← REST: /api/auth/**
-│   │   ├── AuthViewController.java      ← Web: /login, /register
-│   │   ├── ProductController.java       ← REST: /api/products/**
-│   │   ├── ProductViewController.java   ← Web: /products/{id}
-│   │   ├── HomeViewController.java      ← Web: /home
-│   │   ├── CartController.java          ← REST: /api/cart/**
-│   │   ├── CartViewController.java      ← Web: /cart
-│   │   ├── OrderController.java         ← REST: /api/orders/**
-│   │   ├── OrderViewController.java     ← Web: /orders
-│   │   ├── CategoryController.java      ← REST: /api/categories/**
-│   │   ├── AddressController.java       ← REST: /api/addresses/**
-│   │   ├── AddressViewController.java   ← Web: /addresses/**
-│   │   └── UserController.java          ← REST: /api/users/**
+│   │   ├── AuthController.java              ← REST: /api/auth/**
+│   │   ├── AuthViewController.java          ← Web: /login, /register
+│   │   ├── ProductController.java           ← REST: /api/products/**
+│   │   ├── ProductViewController.java       ← Web: /products/{id}
+│   │   ├── HomeViewController.java          ← Web: /home
+│   │   ├── CartController.java              ← REST: /api/cart/**
+│   │   ├── CartViewController.java          ← Web: /cart
+│   │   ├── OrderController.java             ← REST: /api/orders/**
+│   │   ├── OrderViewController.java         ← Web: /orders
+│   │   ├── CategoryController.java          ← REST: /api/categories/**
+│   │   ├── AddressController.java           ← REST: /api/addresses/**
+│   │   ├── AddressViewController.java       ← Web: /addresses/**
+│   │   ├── CustomPickleChatController.java  ← Web + API: /custom-pickle/**
+│   │   ├── AdminViewController.java         ← Web: /admin/dashboard
+│   │   ├── AdminCustomOrderViewController.java ← Web: /admin/custom-orders/**
+│   │   ├── ProfileViewController.java       ← Web: /profile
+│   │   └── UserController.java              ← REST: /api/users/**
 │   ├── dto/
 │   ├── entity/
 │   ├── exception/
 │   ├── repository/
 │   ├── security/
 │   └── service/
+│       ├── GeminiService.java               ← Gemini API integration
+│       ├── CustomPickleChatService.java      ← Chat logic + fallback engine
+│       └── impl/
 │
 └── resources/
     ├── application.properties
@@ -253,21 +200,28 @@ src/main/
         ├── orders.html
         ├── place-order.html
         ├── product-detail.html
+        ├── profile.html
+        ├── custom-pickle-chat.html
         ├── add-address.html
-        └── fragments/
-            ├── navbar.html
-            └── footer.html
+        ├── forgot-password.html
+        ├── reset-password.html
+        ├── error.html
+        ├── fragments/
+        │   ├── navbar.html
+        │   └── footer.html
+        └── admin/
+            └── custom-orders.html
 ```
 
 ---
 
-## ⚙️ Setup & Configuration
+## Setup & Configuration
 
 ### Prerequisites
 - Java 17+
 - MySQL 8.0+
 - Maven 3.6+
-- Docker (optional — for containerized run)
+- Docker (optional)
 
 ### 1. Clone the Repository
 ```bash
@@ -318,6 +272,9 @@ spring.mail.username=your_brevo_email
 spring.mail.password=your_brevo_smtp_key
 app.mail.from=your_sender_email
 
+# Google Gemini (optional — falls back to rule-based chat if not set)
+gemini.api.key=your_gemini_api_key
+
 # Cache
 spring.cache.type=simple
 
@@ -343,7 +300,7 @@ docker run -p 8080:8080 ammapickles
 
 ---
 
-## 🔐 Security Configuration
+## Security Configuration
 
 ### Web Chain (Session-based)
 
@@ -353,8 +310,9 @@ docker run -p 8080:8080 ammapickles
 | `/login`, `/register` | Public |
 | `/css/**`, `/images/**`, `/favicon.ico` | Public |
 | `/cart/**`, `/orders/**`, `/addresses/**` | Authenticated (session) |
+| `/admin/**` | ROLE_ADMIN |
 
-- Login: `POST /login` with fields `username` (email or phone) and `password`
+- Login: `POST /login` with `username` (email or phone) and `password`
 - Logout: `GET /logout` → redirects to `/home`
 
 ### API Chain (JWT — Stateless)
@@ -377,66 +335,39 @@ docker run -p 8080:8080 ammapickles
 
 ---
 
-## 🌐 Web Pages (Thymeleaf)
+## Web Pages (Thymeleaf)
 
 | URL | Page | Auth |
 |-----|------|------|
-| `/home` | Product catalog — browse, search, filter by category | No |
+| `/home` | Product catalog — browse, search, filter | No |
 | `/products/{id}` | Product detail with size variants | No |
 | `/login` | Login form (email or phone) | No |
-| `/register` | Registration form with live validation | No |
-| `/forgot-password` | Request password reset via email | No |
+| `/register` | Registration with live validation | No |
+| `/forgot-password` | Request password reset | No |
 | `/cart` | Shopping cart | Yes |
 | `/orders` | Order history | Yes |
 | `/orders/place` | Place order — choose delivery address | Yes |
-| `/addresses/add` | Add new delivery address | Yes |
-| `/admin/dashboard` | Admin dashboard — users, products, orders | ADMIN |
+| `/addresses/add` | Add delivery address | Yes |
+| `/profile` | User profile | Yes |
+| `/custom-pickle` | Custom pickle chat | Yes |
+| `/admin/dashboard` | Admin dashboard | ADMIN |
+| `/admin/custom-orders` | Manage custom pickle orders | ADMIN |
 
 ---
 
-## 📦 Product Structure
-
-Each pickle product has **3 size variants**:
-
-| Size | Label | Weight |
-|------|-------|--------|
-| `SMALL` | ½ kg | 500g |
-| `MEDIUM` | 1 kg | 1000g |
-| `LARGE` | 2 kg | 2000g |
-
-Products are displayed **grouped by name** on the home and detail pages.
-
----
-
-## 🚚 Delivery Charge Logic
-
-| Condition | Charge |
-|-----------|--------|
-| Order total ≥ ₹1000 | FREE |
-| First order ≥ ₹500 | FREE |
-| All other orders | ₹70 flat |
-
-```
-deliveryCharge = ₹0    [if orderTotal ≥ ₹1000 OR first order ≥ ₹500]
-deliveryCharge = ₹70   [all other orders]
-grandTotal     = totalAmount + deliveryCharge
-```
-
----
-
-## 📋 REST API Endpoints
+## REST API Endpoints
 
 ### Authentication — `/api/auth`
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | POST | `/api/auth/register` | Public | Register new customer |
-| POST | `/api/auth/login` | Public | Login with email or phone, returns JWT |
-| POST | `/api/auth/forgot-password` | Public | Send password reset OTP to email |
-| POST | `/api/auth/reset-password` | Public | Reset password using OTP token |
-| GET | `/api/auth/verify/{token}` | Public | Email verification on registration |
+| POST | `/api/auth/login` | Public | Login (email or phone), returns JWT |
+| POST | `/api/auth/forgot-password` | Public | Send password reset OTP |
+| POST | `/api/auth/reset-password` | Public | Reset password using OTP |
+| GET | `/api/auth/verify/{token}` | Public | Email verification |
 
-**Register Request:**
+**Register:**
 ```json
 {
   "username": "Ravi Raju",
@@ -446,9 +377,9 @@ grandTotal     = totalAmount + deliveryCharge
 }
 ```
 
-> Password must be at least 8 characters and contain at least one number and one special character.
+> Password must be at least 8 characters with at least one number and one special character.
 
-**Login Request:**
+**Login:**
 ```json
 {
   "email": "ravi@example.com",
@@ -480,8 +411,8 @@ grandTotal     = totalAmount + deliveryCharge
 |--------|----------|------|-------------|
 | GET | `/api/users/{id}` | Authenticated | Get user by ID |
 | GET | `/api/users/email/{email}` | Authenticated | Get user by email |
-| PUT | `/api/users/{id}` | Authenticated | Update user details |
-| DELETE | `/api/users/{id}` | Authenticated | Delete user account |
+| PUT | `/api/users/{id}` | Authenticated | Update user |
+| DELETE | `/api/users/{id}` | Authenticated | Delete user |
 
 ---
 
@@ -490,8 +421,8 @@ grandTotal     = totalAmount + deliveryCharge
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | GET | `/api/categories` | Public | Get all categories |
-| GET | `/api/categories/{id}` | Public | Get category by ID |
-| POST | `/api/categories` | ADMIN | Add new category |
+| GET | `/api/categories/{id}` | Public | Get by ID |
+| POST | `/api/categories` | ADMIN | Add category |
 | PUT | `/api/categories/{id}` | ADMIN | Update category |
 | DELETE | `/api/categories/{id}` | ADMIN | Delete category |
 
@@ -503,9 +434,9 @@ grandTotal     = totalAmount + deliveryCharge
 |--------|----------|------|-------------|
 | GET | `/api/products?page=0&size=10&sort=price,asc` | Public | All products (paginated) |
 | GET | `/api/products/{id}` | Public | Single product |
-| GET | `/api/products/category/{categoryId}` | Public | By category (paginated) |
+| GET | `/api/products/category/{categoryId}` | Public | By category |
 | GET | `/api/products/search?name=mango` | Public | Search by name |
-| GET | `/api/products/grouped` | Public | All products grouped by name with size variants |
+| GET | `/api/products/grouped` | Public | Grouped by name with variants |
 | GET | `/api/products/grouped/category/{categoryId}` | Public | Grouped by category |
 | GET | `/api/products/grouped/search?keyword=chicken` | Public | Grouped search |
 | POST | `/api/products` | ADMIN | Add product |
@@ -533,36 +464,35 @@ grandTotal     = totalAmount + deliveryCharge
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/api/cart/user/{userId}` | CUSTOMER | Get cart with items and total |
+| GET | `/api/cart/user/{userId}` | CUSTOMER | Get cart |
 | POST | `/api/cart/user/{userId}/product/{productId}?quantity=2` | CUSTOMER | Add item |
 | PUT | `/api/cart/item/{cartItemId}?quantity=3` | CUSTOMER | Update quantity |
 | DELETE | `/api/cart/item/{cartItemId}` | CUSTOMER | Remove item |
 | DELETE | `/api/cart/user/{userId}/clear` | CUSTOMER | Clear cart |
 
-> Adding an existing product to the cart **merges** the quantity rather than duplicating it.
-> Adding out-of-stock products is blocked with a clear error message.
+> Adding an existing product merges the quantity. Out-of-stock products are blocked.
 
 ---
 
 ### Orders — `/api/orders`
 
-#### Customer Endpoints
+#### Customer
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | GET | `/api/orders/user/{userId}` | CUSTOMER | Get my orders |
-| GET | `/api/orders/{id}` | CUSTOMER | Get order (JWT-verified ownership) |
+| GET | `/api/orders/{id}` | CUSTOMER | Get order (ownership verified via JWT) |
 | POST | `/api/orders` | CUSTOMER | Place COD order |
 | DELETE | `/api/orders/{id}` | CUSTOMER | Cancel order |
 
-**Place Order Request:**
+**Place Order:**
 ```json
 {
   "addressId": 1
 }
 ```
 
-> `userId` is read from the JWT token — not the request body. This prevents placing orders under another user's ID.
+> `userId` is extracted from the JWT token, not the request body.
 
 **Order Response:**
 ```json
@@ -587,9 +517,9 @@ grandTotal     = totalAmount + deliveryCharge
 }
 ```
 
-**Cancellation rule:** Only `CONFIRMED` orders can be cancelled. Stock is automatically restored.
+Only `CONFIRMED` orders can be cancelled. Stock is restored on cancellation.
 
-#### Admin Endpoints
+#### Admin
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
@@ -597,7 +527,7 @@ grandTotal     = totalAmount + deliveryCharge
 | GET | `/api/orders/admin/{id}` | ADMIN | Any order by ID |
 | PUT | `/api/orders/admin/{id}/status?status=SHIPPED` | ADMIN | Update status |
 
-**Order statuses:** `PENDING` → `CONFIRMED` → `SHIPPED` → `DELIVERED` / `CANCELLED`
+Status transitions: `PENDING → CONFIRMED → SHIPPED → DELIVERED` / `CANCELLED`
 
 ---
 
@@ -606,7 +536,7 @@ grandTotal     = totalAmount + deliveryCharge
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | GET | `/api/addresses/user/{userId}` | CUSTOMER | Get all addresses |
-| GET | `/api/addresses/{id}` | CUSTOMER | Get address by ID |
+| GET | `/api/addresses/{id}` | CUSTOMER | Get by ID |
 | POST | `/api/addresses/user/{userId}` | CUSTOMER | Add address |
 | PUT | `/api/addresses/{id}` | CUSTOMER | Update address |
 | DELETE | `/api/addresses/{userId}/{id}` | CUSTOMER | Delete address |
@@ -637,26 +567,38 @@ grandTotal     = totalAmount + deliveryCharge
 
 ---
 
-## 🗄️ Database Tables
+## Database Tables
 
-| Table | Description |
-|-------|-------------|
+| Table | Purpose |
+|-------|---------|
 | `users` | Customer and admin accounts |
 | `roles` | ROLE_CUSTOMER, ROLE_ADMIN |
-| `user_roles` | Many-to-many join |
+| `user_roles` | Many-to-many join table |
 | `categories` | Veg / Non-Veg |
 | `products` | All variants (name + size + stock) |
 | `carts` | One cart per user |
-| `cart_items` | Items with quantity |
+| `cart_items` | Cart line items with quantity |
 | `orders` | Orders with total, delivery charge, status |
 | `order_items` | Line items with price snapshot at order time |
 | `addresses` | Delivery addresses |
-| `password_reset_tokens` | Secure tokens for forgot-password flow |
-| `email_verification_tokens` | Tokens for email verification on registration |
+| `custom_order_requests` | Custom pickle orders from chat |
+| `chat_messages` | Chat transcripts per session |
+| `password_reset_tokens` | Tokens for forgot-password flow |
+| `email_verification_tokens` | Tokens for registration email verification |
 
 ---
 
-## ⚠️ Error Handling
+## Delivery Charge Logic
+
+| Condition | Charge |
+|-----------|--------|
+| Order total ≥ ₹1000 | Free |
+| First order ≥ ₹500 | Free |
+| All other orders | ₹70 flat |
+
+---
+
+## Error Handling
 
 All REST errors return a consistent format:
 
@@ -669,11 +611,11 @@ All REST errors return a consistent format:
 ```
 
 | Scenario | HTTP Status |
-|----------|------------|
+|----------|-------------|
 | Resource not found | 404 |
 | Duplicate email on register | 400 |
 | Empty cart on order | 400 |
-| Out of stock on add to cart | 400 |
+| Out of stock | 400 |
 | Cancelling non-CONFIRMED order | 400 |
 | Insufficient stock | 400 |
 | Validation errors | 400 |
@@ -682,92 +624,57 @@ All REST errors return a consistent format:
 
 ---
 
-## 🧪 Testing the API (Postman)
+## Testing the API (Postman)
 
-### Step 1 — Register
+### 1. Register
 ```
-POST https://ammapickles-ecommerce.onrender.com/api/auth/register
-Content-Type: application/json
-
-{
-  "username": "Test User",
-  "email": "test@example.com",
-  "password": "test@1234",
-  "phoneNumber": "9876543210"
-}
+POST /api/auth/register
 ```
 
-### Step 2 — Login & Copy Token
+### 2. Login & Copy Token
 ```
-POST https://ammapickles-ecommerce.onrender.com/api/auth/login
-Content-Type: application/json
-
-{
-  "email": "test@example.com",
-  "password": "test@1234"
-}
+POST /api/auth/login
 ```
 
-### Step 3 — Set Bearer Token in Postman
-Authorization tab → Bearer Token → paste the token.
+### 3. Set Bearer Token
+Authorization tab → Bearer Token → paste token.
 
-### Step 4 — Browse Products
+### 4. Browse Products
 ```
-GET https://ammapickles-ecommerce.onrender.com/api/products/grouped
-```
-
-### Step 5 — Add to Cart
-```
-POST https://ammapickles-ecommerce.onrender.com/api/cart/user/1/product/5?quantity=2
-Authorization: Bearer <token>
+GET /api/products/grouped
 ```
 
-### Step 6 — Add Address
+### 5. Add to Cart
 ```
-POST https://ammapickles-ecommerce.onrender.com/api/addresses/user/1
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "name": "Home",
-  "street": "12 Main Road",
-  "city": "Kurnool",
-  "district": "Kurnool",
-  "state": "Andhra Pradesh",
-  "pincode": "518001"
-}
+POST /api/cart/user/1/product/5?quantity=2
 ```
 
-### Step 7 — Place Order
+### 6. Add Address
 ```
-POST https://ammapickles-ecommerce.onrender.com/api/orders
-Authorization: Bearer <token>
-Content-Type: application/json
+POST /api/addresses/user/1
+```
 
-{
-  "addressId": 1
-}
+### 7. Place Order
+```
+POST /api/orders
+{ "addressId": 1 }
 ```
 
 ---
 
-## 🔜 Planned Features
+## Planned Features
 
-| Feature | Description | Status |
-|---------|------------|--------|
-| Product Image Support | Add imageUrl field to products so each pickle displays its own photo | 📋 Planned |
-| Razorpay Payment | Online payment integration | 📋 Planned |
-| Order Detail Page (Web) | Individual order detail page showing full breakdown | 📋 Planned |
-| Interactive Orders Page | Expandable timeline panel with order status tracking | 📋 Planned |
+| Feature | Status |
+|---------|--------|
+| Product image support (imageUrl field per product) | Planned |
+| Razorpay online payment integration | Planned |
+| Individual order detail page with full breakdown | Planned |
+| Expandable order timeline with status tracking | Planned |
 
 ---
 
-## 👨‍💻 Developer
+## Developer
 
 **Ravi Raju Chintalapudi**
 Java Backend Developer
-🔗 [GitHub: @reachraviraju](https://github.com/reachraviraju)
-
----
-
-*Built with ❤️ and spice — straight from Andhra.*
+[GitHub: @reachraviraju](https://github.com/reachraviraju)
